@@ -302,6 +302,7 @@ export default async function PublicBookingPage({
   const showInfo = showHours || showAddress || Boolean(establishment.cancellationPolicy);
 
   const navItems = [
+    { href: "#", label: "Início", show: true },
     { href: "#agendar", label: "Agendar", show: true },
     { href: "#servicos", label: "Serviços", show: showServices },
     { href: "#equipe", label: "Equipe", show: showTeam },
