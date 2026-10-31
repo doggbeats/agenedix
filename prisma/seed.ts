@@ -9,7 +9,7 @@
  */
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
-import { addDaysToDate, todayInZone, zonedTimeToUtc } from "../lib/timezone";
+import { addDaysToDate, todayInZone, zonedTimeToUtc } from "../src/lib/timezone";
 
 const prisma = new PrismaClient();
 const ROUNDS = 10;
