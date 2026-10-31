@@ -198,12 +198,12 @@ export function BookingWizard({
 
   if (services.length === 0) {
     return (
-      <div className="rounded-xl border border-line bg-white p-8 text-center">
-        <Scissors className="mx-auto h-6 w-6 text-slate-500" />
-        <p className="mt-3 font-semibold text-slate-900">
+      <div className="rounded-xl border border-[#303030] bg-[#1D1D1D] p-8 text-center">
+        <Scissors className="mx-auto h-6 w-6 text-[#A5A5A5]" />
+        <p className="mt-3 font-semibold text-white">
           Nenhum serviço disponível para agendamento online.
         </p>
-        <p className="mt-1 text-sm text-slate-600">
+        <p className="mt-1 text-sm text-[#A5A5A5]">
           Fale com o estabelecimento pelo WhatsApp para verificar os horários.
         </p>
         {whatsappUrl && (
@@ -229,7 +229,7 @@ export function BookingWizard({
 
   return (
     <div>
-      <div className="mb-5 rounded-xl border border-line bg-white p-2 shadow-sm">
+      <div className="mb-5 rounded-xl border border-[#303030] bg-[#1D1D1D] p-2 shadow-sm">
         <ol className="grid grid-cols-4 gap-1" aria-label="Etapas do agendamento">
           {steps.map((step, index) => {
             const active = index + 1 === currentStep;
@@ -242,7 +242,7 @@ export function BookingWizard({
                   className={`flex w-full flex-col items-start gap-1 rounded-lg px-2.5 py-2 text-left transition sm:flex-row sm:items-center sm:gap-2 ${
                     active
                       ? "bg-brand/10 text-brand"
-                      : "text-slate-500 hover:bg-paper hover:text-ink"
+                      : "text-[#A5A5A5] hover:bg-[#141414] hover:text-white"
                   }`}
                 >
                   <span
@@ -250,8 +250,8 @@ export function BookingWizard({
                       step.done
                         ? "bg-brand text-white"
                         : active
-                          ? "bg-white text-brand ring-1 ring-inset ring-brand/20"
-                          : "bg-slate-100 text-slate-500"
+                          ? "bg-[#1D1D1D] text-brand ring-1 ring-inset ring-brand/20"
+                          : "bg-[#141414] text-[#A5A5A5]"
                     }`}
                   >
                     {step.done ? <Check className="h-3 w-3" /> : step.number}
@@ -270,7 +270,7 @@ export function BookingWizard({
         <div className="min-w-0 space-y-5">
           <section
             id="etapa-servico"
-            className="scroll-mt-24 rounded-xl border border-line bg-white p-4 shadow-sm sm:p-5"
+            className="scroll-mt-24 rounded-xl border border-[#303030] bg-[#1D1D1D] p-4 shadow-sm sm:p-5"
           >
             <StepTitle number="1" title="Escolha o serviço" />
             <div className="mt-4 grid gap-2 sm:grid-cols-2">
@@ -290,26 +290,26 @@ export function BookingWizard({
                   className={`rounded-lg border p-3.5 text-left transition ${
                     active
                       ? "border-brand bg-brand/10"
-                      : "border-line bg-white hover:border-slate-300"
+                      : "border-[#303030] bg-[#1D1D1D] hover:border-[#303030]"
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-sm font-semibold text-slate-900">{service.name}</p>
-                      <p className="mt-0.5 text-[11px] text-slate-500">
+                      <p className="text-sm font-semibold text-white">{service.name}</p>
+                      <p className="mt-0.5 text-[11px] text-[#A5A5A5]">
                         {formatDuration(service.durationMin)} · {formatCurrency(service.price)}
                       </p>
                     </div>
                     <span
                       className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full border ${
-                        active ? "border-brand bg-brand text-white" : "border-slate-300"
+                        active ? "border-brand bg-brand text-white" : "border-[#303030]"
                       }`}
                     >
                       {active && <Check className="h-3 w-3" />}
                     </span>
                   </div>
                   {service.description && (
-                    <p className="mt-2 line-clamp-2 text-[11px] leading-relaxed text-slate-500">
+                    <p className="mt-2 line-clamp-2 text-[11px] leading-relaxed text-[#A5A5A5]">
                       {service.description}
                     </p>
                   )}
@@ -321,7 +321,7 @@ export function BookingWizard({
 
           <section
             id="etapa-profissional"
-            className="scroll-mt-24 rounded-xl border border-line bg-white p-4 shadow-sm sm:p-5"
+            className="scroll-mt-24 rounded-xl border border-[#303030] bg-[#1D1D1D] p-4 shadow-sm sm:p-5"
           >
             <StepTitle number="2" title="Com quem você quer atendimento?" />
             <div className="mt-4 grid gap-2 sm:grid-cols-2">
@@ -336,17 +336,17 @@ export function BookingWizard({
               className={`flex items-center gap-3 rounded-lg border p-3.5 text-left transition ${
                 professionalId === "any"
                   ? "border-brand bg-brand/10"
-                  : "border-line bg-white hover:border-slate-300"
+                  : "border-[#303030] bg-[#1D1D1D] hover:border-[#303030]"
               }`}
             >
-              <span className="grid h-9 w-9 place-items-center rounded-full bg-slate-100 text-slate-600">
+              <span className="grid h-9 w-9 place-items-center rounded-full bg-[#141414] text-[#A5A5A5]">
                 <Users className="h-4 w-4" />
               </span>
               <span className="min-w-0">
-                <span className="block text-sm font-semibold text-slate-900">
+                <span className="block text-sm font-semibold text-white">
                   Qualquer profissional
                 </span>
-                <span className="block text-[11px] text-slate-500">
+                <span className="block text-[11px] text-[#A5A5A5]">
                   Mostra todos os horários livres
                 </span>
               </span>
@@ -354,7 +354,7 @@ export function BookingWizard({
                 className={`ml-auto grid h-4 w-4 shrink-0 place-items-center rounded-full ${
                   professionalId === "any"
                     ? "bg-brand text-white"
-                    : "border border-slate-300"
+                    : "border border-[#303030]"
                 }`}
                 aria-hidden
               >
@@ -376,7 +376,7 @@ export function BookingWizard({
                   className={`flex items-center gap-3 rounded-lg border p-3.5 text-left transition ${
                     active
                       ? "border-brand bg-brand/10"
-                      : "border-line bg-white hover:border-slate-300"
+                      : "border-[#303030] bg-[#1D1D1D] hover:border-[#303030]"
                   }`}
                 >
                   {professional.photoUrl ? (
@@ -387,21 +387,21 @@ export function BookingWizard({
                       className="h-9 w-9 rounded-full object-cover"
                     />
                   ) : (
-                    <span className="grid h-9 w-9 place-items-center rounded-full bg-slate-100 text-[11px] font-semibold text-slate-600">
+                    <span className="grid h-9 w-9 place-items-center rounded-full bg-[#141414] text-[11px] font-semibold text-[#A5A5A5]">
                       {professional.name.slice(0, 2).toUpperCase()}
                     </span>
                   )}
                   <span className="min-w-0">
-                    <span className="block truncate text-sm font-semibold text-slate-900">
+                    <span className="block truncate text-sm font-semibold text-white">
                       {professional.name}
                     </span>
-                    <span className="block truncate text-[11px] text-slate-500">
+                    <span className="block truncate text-[11px] text-[#A5A5A5]">
                       {professional.specialties ?? "Profissional"}
                     </span>
                   </span>
                   <span
                     className={`ml-auto grid h-4 w-4 shrink-0 place-items-center rounded-full ${
-                      active ? "bg-brand text-white" : "border border-slate-300"
+                      active ? "bg-brand text-white" : "border border-[#303030]"
                     }`}
                     aria-hidden
                   >
@@ -415,7 +415,7 @@ export function BookingWizard({
 
           <section
             id="etapa-horario"
-            className="scroll-mt-24 rounded-xl border border-line bg-white p-4 shadow-sm sm:p-5"
+            className="scroll-mt-24 rounded-xl border border-[#303030] bg-[#1D1D1D] p-4 shadow-sm sm:p-5"
           >
             <StepTitle number="3" title="Escolha o dia e o horário" />
             <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
@@ -434,7 +434,7 @@ export function BookingWizard({
                   className={`min-w-[62px] shrink-0 rounded-lg border px-2 py-3 text-center transition ${
                     active
                       ? "border-brand bg-brand text-white"
-                      : "border-line bg-white text-slate-700 hover:border-slate-300"
+                      : "border-[#303030] bg-[#1D1D1D] text-[#A5A5A5] hover:border-[#303030]"
                   }`}
                 >
                   <span className="block text-[10px] font-semibold uppercase">
@@ -448,7 +448,7 @@ export function BookingWizard({
           </div>
 
           <div
-            className="mt-4 min-h-[92px] rounded-lg border border-line bg-paper p-3"
+            className="mt-4 min-h-[92px] rounded-lg border border-[#303030] bg-[#141414] p-3"
             aria-live="polite"
             aria-busy={slotsLoading}
           >
@@ -459,7 +459,7 @@ export function BookingWizard({
                   {Array.from({ length: 10 }).map((_, index) => (
                     <span
                       key={index}
-                      className="h-9 animate-pulse rounded-md border border-line bg-white"
+                      className="h-9 animate-pulse rounded-md border border-[#303030] bg-[#1D1D1D]"
                     />
                   ))}
                 </div>
@@ -470,10 +470,10 @@ export function BookingWizard({
               </p>
             ) : slots.length === 0 ? (
               <div className="py-5 text-center">
-                <p className="text-sm font-medium text-slate-700">
+                <p className="text-sm font-medium text-[#A5A5A5]">
                   Nenhum horário livre neste dia.
                 </p>
-                <p className="mt-1 text-xs text-slate-500">
+                <p className="mt-1 text-xs text-[#A5A5A5]">
                   Tente outra data ou fale com o estabelecimento.
                 </p>
               </div>
@@ -499,7 +499,7 @@ export function BookingWizard({
                       className={`rounded-md border py-2 text-sm font-semibold transition ${
                         active
                           ? "border-brand bg-brand text-white"
-                          : "border-line bg-white text-slate-700 hover:border-brand/30"
+                          : "border-[#303030] bg-[#1D1D1D] text-[#A5A5A5] hover:border-brand/30"
                       }`}
                     >
                       {slot.time}
@@ -515,13 +515,13 @@ export function BookingWizard({
             id="etapa-dados"
             className={`scroll-mt-24 rounded-xl border p-4 shadow-sm transition sm:p-5 ${
               selectedTime
-                ? "border-brand/25 bg-white"
-                : "border-line bg-paper/60"
+                ? "border-brand/25 bg-[#1D1D1D]"
+                : "border-[#303030] bg-[#141414]/60"
             }`}
           >
             <StepTitle number="4" title="Seus dados" />
           {!selectedTime ? (
-            <p className="mt-3 text-sm text-slate-600">
+            <p className="mt-3 text-sm text-[#A5A5A5]">
               Escolha um horário acima para liberar o formulário de confirmação.
             </p>
           ) : (
@@ -530,7 +530,7 @@ export function BookingWizard({
                 <div>
                   <label
                     htmlFor="booking-name"
-                    className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-slate-600"
+                    className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-[#A5A5A5]"
                   >
                     Nome completo
                   </label>
@@ -548,7 +548,7 @@ export function BookingWizard({
                 <div>
                   <label
                     htmlFor="booking-phone"
-                    className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-slate-600"
+                    className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-[#A5A5A5]"
                   >
                     WhatsApp
                   </label>
@@ -566,7 +566,7 @@ export function BookingWizard({
               <div>
                 <label
                   htmlFor="booking-email"
-                  className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-slate-600"
+                  className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-[#A5A5A5]"
                 >
                   E-mail (opcional)
                 </label>
@@ -582,7 +582,7 @@ export function BookingWizard({
               <div>
                 <label
                   htmlFor="booking-notes"
-                  className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-slate-600"
+                  className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-[#A5A5A5]"
                 >
                   Observações (opcional)
                 </label>
@@ -605,13 +605,13 @@ export function BookingWizard({
                 onChange={(event) => setWebsite(event.target.value)}
                 className="hidden"
               />
-              <label className="flex items-start gap-2.5 text-xs text-slate-600">
+              <label className="flex items-start gap-2.5 text-xs text-[#A5A5A5]">
                 <input
                   type="checkbox"
                   checked={consent}
                   onChange={(event) => setConsent(event.target.checked)}
                   required
-                  className="mt-0.5 h-4 w-4 rounded border-slate-300 accent-brand"
+                  className="mt-0.5 h-4 w-4 rounded border-[#303030] accent-brand"
                 />
                 <span>
                   Concordo com o uso dos meus dados para este agendamento, conforme a
@@ -641,7 +641,7 @@ export function BookingWizard({
                   </>
                 )}
               </button>
-              <p className="text-center text-[10px] text-slate-500">
+              <p className="text-center text-[10px] text-[#A5A5A5]">
                 O horário é validado novamente no servidor antes de ser reservado.
               </p>
             </form>
@@ -650,23 +650,23 @@ export function BookingWizard({
       </div>
 
         <aside className="lg:sticky lg:top-20">
-          <div className="overflow-hidden rounded-xl border border-line border-t-2 border-t-brand bg-white shadow-sm">
+          <div className="overflow-hidden rounded-xl border border-[#303030] border-t-2 border-t-brand bg-[#1D1D1D] shadow-sm">
             <div className="p-5">
           <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-brand">
             Resumo
           </p>
           <div className="mt-4 space-y-4 text-sm">
             <div className="flex gap-3">
-              <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-md bg-slate-100">
-                <Scissors className="h-4 w-4 text-slate-500" />
+              <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-md bg-[#141414]">
+                <Scissors className="h-4 w-4 text-[#A5A5A5]" />
               </span>
               <div>
-                <p className="text-[11px] uppercase tracking-wide text-slate-500">Serviço</p>
-                <p className="font-medium text-slate-900">
+                <p className="text-[11px] uppercase tracking-wide text-[#A5A5A5]">Serviço</p>
+                <p className="font-medium text-white">
                   {selectedService?.name ?? "Escolha um serviço"}
                 </p>
                 {selectedService && (
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-[#A5A5A5]">
                     {formatDuration(selectedService.durationMin)} ·{" "}
                     {formatCurrency(selectedService.price)}
                   </p>
@@ -674,14 +674,14 @@ export function BookingWizard({
               </div>
             </div>
             <div className="flex gap-3">
-              <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-md bg-slate-100">
-                <UserRound className="h-4 w-4 text-slate-500" />
+              <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-md bg-[#141414]">
+                <UserRound className="h-4 w-4 text-[#A5A5A5]" />
               </span>
               <div>
-                <p className="text-[11px] uppercase tracking-wide text-slate-500">
+                <p className="text-[11px] uppercase tracking-wide text-[#A5A5A5]">
                   Profissional
                 </p>
-                <p className="font-medium text-slate-900">
+                <p className="font-medium text-white">
                   {professionalId === "any"
                     ? slotProfessional || "Qualquer profissional"
                     : (professionals.find((p) => p.id === professionalId)?.name ??
@@ -690,12 +690,12 @@ export function BookingWizard({
               </div>
             </div>
             <div className="flex gap-3">
-              <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-md bg-slate-100">
-                <CalendarDays className="h-4 w-4 text-slate-500" />
+              <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-md bg-[#141414]">
+                <CalendarDays className="h-4 w-4 text-[#A5A5A5]" />
               </span>
               <div>
-                <p className="text-[11px] uppercase tracking-wide text-slate-500">Data</p>
-                <p className="font-medium text-slate-900">
+                <p className="text-[11px] uppercase tracking-wide text-[#A5A5A5]">Data</p>
+                <p className="font-medium text-white">
                   {selectedDate
                     ? `${selectedDate.weekday}, ${selectedDate.day}/${selectedDate.month}`
                     : "Escolha uma data"}
@@ -703,25 +703,25 @@ export function BookingWizard({
               </div>
             </div>
             <div className="flex gap-3">
-              <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-md bg-slate-100">
-                <Clock3 className="h-4 w-4 text-slate-500" />
+              <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-md bg-[#141414]">
+                <Clock3 className="h-4 w-4 text-[#A5A5A5]" />
               </span>
               <div>
-                <p className="text-[11px] uppercase tracking-wide text-slate-500">Horário</p>
-                <p className="font-medium text-slate-900">
+                <p className="text-[11px] uppercase tracking-wide text-[#A5A5A5]">Horário</p>
+                <p className="font-medium text-white">
                   {selectedTime || "Escolha um horário"}
                 </p>
               </div>
             </div>
           </div>
-          <div className="mt-5 border-t border-line pt-4">
+          <div className="mt-5 border-t border-[#303030] pt-4">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-slate-500">Total</span>
-              <span className="text-lg font-semibold text-slate-900">
+              <span className="text-[#A5A5A5]">Total</span>
+              <span className="text-lg font-semibold text-white">
                 {selectedService ? formatCurrency(selectedService.price) : "—"}
               </span>
             </div>
-            <p className="mt-1 text-[10px] text-slate-500">
+            <p className="mt-1 text-[10px] text-[#A5A5A5]">
               Pagamento no estabelecimento. Nenhuma cobrança online.
             </p>
           </div>
@@ -730,13 +730,13 @@ export function BookingWizard({
               href={whatsappUrl}
               target="_blank"
               rel="noreferrer"
-              className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg border border-line px-4 py-2.5 text-xs font-semibold text-slate-700 transition hover:border-brand/30 hover:text-brand"
+              className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg border border-[#303030] px-4 py-2.5 text-xs font-semibold text-[#A5A5A5] transition hover:border-brand/30 hover:text-brand"
             >
               <MessageCircle className="h-4 w-4" />
               Falar com {establishmentName}
             </a>
           )}
-          <p className="mt-3 text-center text-[10px] leading-relaxed text-slate-500">
+          <p className="mt-3 text-center text-[10px] leading-relaxed text-[#A5A5A5]">
             Fuso horário: {timezone}. Agendamentos online podem exigir confirmação do
             estabelecimento.
           </p>
@@ -754,7 +754,7 @@ function StepTitle({ number, title }: { number: string; title: string }) {
       <span className="grid h-6 w-6 place-items-center rounded-md bg-brand/10 font-mono text-[11px] font-semibold text-brand">
         {number}
       </span>
-      <h2 className="text-sm font-semibold text-slate-900 sm:text-base">{title}</h2>
+      <h2 className="text-sm font-semibold text-white sm:text-base">{title}</h2>
       <ChevronRight className="h-4 w-4 text-slate-300" />
     </div>
   );
