@@ -314,7 +314,7 @@ export default async function PublicBookingPage({
       className="min-h-screen bg-[var(--brand-bg)] text-[var(--brand-text)]"
       style={brandingCssVars(branding) as React.CSSProperties}
     >
-      <header className="sticky top-0 z-40 border-b border-[var(--brand-line)] bg-[var(--brand-bg)]/95 backdrop-blur">
+      <header className="sticky top-0 z-40 border-b border-[var(--brand-line)] bg-[var(--brand-bg)]/80 shadow-sm backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
           <Link href={`/agendar/${establishment.slug}`} className="flex min-w-0 items-center gap-2.5">
             {establishment.logoUrl ? (
@@ -344,7 +344,7 @@ export default async function PublicBookingPage({
               <a
                 key={item.href}
                 href={item.href}
-                className="rounded-md px-3 py-2 text-xs font-semibold text-[var(--muted)] transition hover:bg-[var(--brand-surface)] hover:text-[var(--brand-text)]"
+                className="rounded-full px-4 py-2 text-xs font-semibold text-[var(--muted)] transition-all duration-200 hover:bg-[var(--brand-surface)] hover:text-[var(--brand-text)]"
               >
                 {item.label}
               </a>
@@ -372,13 +372,13 @@ export default async function PublicBookingPage({
       </header>
 
       <main>
-        <section className="border-b border-[var(--brand-line)] bg-[var(--brand-surface)]">
+        <section className="relative overflow-hidden border-b border-[var(--brand-line)] bg-gradient-to-br from-[var(--brand-surface)] via-[var(--brand-bg)] to-[var(--brand-surface)]">
           <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
             <div>
               <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--brand)]">
                 {branding.tagline ?? "Agendamento online"}
               </p>
-              <h1 className="mt-3 font-display text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
+              <h1 className="mt-3 font-display text-4xl font-bold leading-[1.02] tracking-tight sm:text-5xl lg:text-6xl">
                 {establishment.name}
               </h1>
               <p className="mt-4 max-w-2xl text-sm leading-relaxed text-[var(--muted)] sm:text-base">
@@ -507,7 +507,7 @@ export default async function PublicBookingPage({
                 {services.map((service) => (
                   <div
                     key={service.id}
-                    className="rounded-xl border border-[var(--brand-line)] bg-[var(--brand-bg)] p-4"
+                    className="rounded-2xl border border-[var(--brand-line)] bg-[var(--brand-bg)] p-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
@@ -545,7 +545,7 @@ export default async function PublicBookingPage({
                 {professionals.map((professional) => (
                   <div
                     key={professional.id}
-                    className="flex items-start gap-3 rounded-xl border border-[var(--brand-line)] bg-[var(--brand-bg)] p-4"
+                    className="flex items-start gap-3 rounded-2xl border border-[var(--brand-line)] bg-[var(--brand-bg)] p-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
                   >
                     {professional.photoUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
