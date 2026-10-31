@@ -302,9 +302,9 @@ export default async function PublicBookingPage({
   const showInfo = showHours || showAddress || Boolean(establishment.cancellationPolicy);
 
   const navItems = [
-    { href: "#", label: "Início", show: true },
+    { href: "#agendar", label: "Agendar", show: true },
     { href: "#servicos", label: "Serviços", show: showServices },
-    { href: "#equipe", label: "Barbeiros", show: showTeam },
+    { href: "#equipe", label: "Equipe", show: showTeam },
     { href: "#galeria", label: "Galeria", show: showGallery },
     { href: "#informacoes", label: "Contato", show: showInfo },
   ].filter((item) => item.show);
@@ -376,19 +376,36 @@ export default async function PublicBookingPage({
           <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
             <div>
               <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--brand)]">
-                ESTILO • CONFIANÇA • ATITUDE
+                {branding.tagline ?? "Agendamento online"}
               </p>
               <h1 className="mt-3 font-display text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
-                Seu estilo,{" "}
-                <span className="text-[var(--brand)]">nossa paixão.</span>
+                {establishment.name}
               </h1>
               <p className="mt-4 max-w-2xl text-sm leading-relaxed text-[var(--muted)] sm:text-base">
-                Agende seu horário e viva a melhor experiência de barbearia.
+                {establishment.description ??
+                  "Escolha o serviço, o profissional e o melhor horário para você."}
               </p>
+
+              <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-xs text-[var(--muted)]">
+                {address && (
+                  <span className="inline-flex items-center gap-1.5">
+                    <MapPin className="h-3.5 w-3.5 text-[var(--brand)]" />
+                    {address}
+                  </span>
+                )}
+                <span className="inline-flex items-center gap-1.5">
+                  <UserRound className="h-3.5 w-3.5 text-[var(--brand)]" />
+                  {professionals.length} profissional(is)
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <Scissors className="h-3.5 w-3.5 text-[var(--brand)]" />
+                  {services.length} serviço(s) online
+                </span>
+              </div>
 
               <div className="mt-7 flex flex-wrap gap-2">
                 <a href="#agendar" className={buttonTenant}>
-                  <CalendarDays className="h-4 w-4" /> AGENDAR AGORA
+                  <CalendarDays className="h-4 w-4" /> Agendar horário
                 </a>
                 {whatsappUrl && (
                   <a
@@ -664,181 +681,41 @@ export default async function PublicBookingPage({
         )}
       </main>
 
-      <section className="border-t border-[var(--brand-line)] bg-[var(--brand-bg)]">
-        <div className="mx-auto grid max-w-6xl gap-6 px-4 py-10 sm:px-6 sm:py-12 md:grid-cols-2 lg:grid-cols-4">
-          {[
-            {
-              icon: CalendarDays,
-              title: "AGENDAMENTO RÁPIDO",
-              text: "Marque seu horário em poucos cliques.",
-            },
-            {
-              icon: UserRound,
-              title: "PROFISSIONAIS QUALIFICADOS",
-              text: "Barbeiros experientes para um resultado impecável.",
-            },
-            {
-              icon: ShieldCheck,
-              title: "AMBIENTE PREMIUM",
-              text: "Conforto e qualidade que você merece.",
-            },
-            {
-              icon: MessageCircle,
-              title: "PAGAMENTO FACILITADO",
-              text: "Diversas formas de pagamento para sua comodidade.",
-            },
-          ].map((item) => (
-            <div key={item.title} className="flex items-start gap-3">
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-[var(--brand)]/10 text-[var(--brand)]">
-                <item.icon className="h-5 w-5" />
-              </span>
-              <div>
-                <h3 className="text-xs font-bold uppercase tracking-wide text-[var(--brand-text)]">
-                  {item.title}
-                </h3>
-                <p className="mt-1 text-xs text-[var(--muted)]">{item.text}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
       <footer className="border-t border-[var(--brand-line)] bg-[var(--brand-surface)]">
-        <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:px-6 lg:grid-cols-5">
+        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-7 text-[11px] text-[var(--muted)] sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <div>
-            <div className="flex items-center gap-2.5">
-              {establishment.logoUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={establishment.logoUrl}
-                  alt=""
-                  className="h-9 w-9 shrink-0 rounded-lg object-cover"
-                />
-              ) : (
-                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-[var(--brand)] text-xs font-bold text-white">
-                  {establishment.name.slice(0, 2).toUpperCase()}
-                </span>
-              )}
-              <span className="font-display text-sm font-semibold text-[var(--brand-text)]">
-                {establishment.name}
-              </span>
-            </div>
-            <p className="mt-3 text-xs leading-relaxed text-[var(--muted)]">
-              Mais que um corte, uma experiência. Estilo, atitude e qualidade em cada
-              detalhe.
-            </p>
-            <div className="mt-4 flex gap-2">
-              {branding.instagram && (
-                <a
-                  href={branding.instagram}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="grid h-8 w-8 place-items-center rounded-md border border-[var(--brand-line)] text-[var(--muted)] transition hover:border-[var(--brand)] hover:text-[var(--brand)]"
-                  aria-label="Instagram"
-                >
-                  <Camera className="h-4 w-4" />
-                </a>
-              )}
-              {branding.facebook && (
-                <a
-                  href={branding.facebook}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="grid h-8 w-8 place-items-center rounded-md border border-[var(--brand-line)] text-[var(--muted)] transition hover:border-[var(--brand)] hover:text-[var(--brand)]"
-                  aria-label="Facebook"
-                >
-                  <Users className="h-4 w-4" />
-                </a>
-              )}
-              {whatsappUrl && (
-                <a
-                  href={whatsappUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="grid h-8 w-8 place-items-center rounded-md border border-[var(--brand-line)] text-[var(--muted)] transition hover:border-[var(--brand)] hover:text-[var(--brand)]"
-                  aria-label="WhatsApp"
-                >
-                  <MessageCircle className="h-4 w-4" />
-                </a>
-              )}
-            </div>
-          </div>
-
-          <div>
-            <h4 className="text-xs font-bold uppercase tracking-wide text-[var(--brand-text)]">
-              Navegação
-            </h4>
-            <ul className="mt-3 space-y-2 text-xs text-[var(--muted)]">
-              <li>
-                <a href="#" className="hover:text-[var(--brand)]">
-                  Início
-                </a>
-              </li>
-              <li>
-                <a href="#servicos" className="hover:text-[var(--brand)]">
-                  Serviços
-                </a>
-              </li>
-              <li>
-                <a href="#equipe" className="hover:text-[var(--brand)]">
-                  Barbeiros
-                </a>
-              </li>
-              <li>
-                <a href="#galeria" className="hover:text-[var(--brand)]">
-                  Galeria
-                </a>
-              </li>
-              <li>
-                <a href="#informacoes" className="hover:text-[var(--brand)]">
-                  Contato
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="text-xs font-bold uppercase tracking-wide text-[var(--brand-text)]">
-              Serviços
-            </h4>
-            <ul className="mt-3 space-y-2 text-xs text-[var(--muted)]">
-              {services.slice(0, 5).map((service) => (
-                <li key={service.id}>{service.name}</li>
-              ))}
-              {services.length === 0 && <li>Consulte os serviços disponíveis.</li>}
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="text-xs font-bold uppercase tracking-wide text-[var(--brand-text)]">
-              Contato
-            </h4>
-            <ul className="mt-3 space-y-2 text-xs text-[var(--muted)]">
-              <li>{formatPhone(establishment.phone)}</li>
-              {establishment.email && <li>{establishment.email}</li>}
-              {address && <li>{address}</li>}
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="text-xs font-bold uppercase tracking-wide text-[var(--brand-text)]">
-              Horário de funcionamento
-            </h4>
-            <ul className="mt-3 space-y-2 text-xs text-[var(--muted)]">
-              <li>Segunda a sexta: 09h às 20h</li>
-              <li>Sábado: 09h às 20h</li>
-              <li>Domingo: Fechado</li>
-            </ul>
-          </div>
-        </div>
-
-        <div className="border-t border-[var(--brand-line)]">
-          <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-4 text-[10px] text-[var(--muted)] sm:flex-row sm:items-center sm:justify-between sm:px-6">
-            <p>© 2026 {establishment.name}. Todos os direitos reservados.</p>
             <p>
-              Desenvolvido com ♥ por{" "}
-              <span className="font-semibold text-[var(--brand)]">CODE_PH</span>.
+              Agenda operada por{" "}
+              <strong className="font-semibold text-[var(--brand-text)]">
+                {establishment.name}
+              </strong>
+              . Agendamentos sujeitos à confirmação do estabelecimento.
             </p>
+            <p className="mt-1">
+              {branding.website ? (
+                <a
+                  href={branding.website}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="hover:text-[var(--brand)]"
+                >
+                  Site oficial
+                </a>
+              ) : (
+                "Agendamento online com AgendamentoON."
+              )}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-4">
+            <Link href="/privacidade" className="hover:text-[var(--brand)]">
+              Privacidade
+            </Link>
+            <Link href="/termos" className="hover:text-[var(--brand)]">
+              Termos
+            </Link>
+            <Link href="/agendar" className="hover:text-[var(--brand)]">
+              Outras agendas
+            </Link>
           </div>
         </div>
       </footer>

@@ -2,11 +2,11 @@ import type { TenantBranding } from "@prisma/client";
 import { BRAND_PALETTE } from "./constants";
 
 export const DEFAULT_BRANDING = {
-  primaryColor: "#C69A55",
-  secondaryColor: "#D9B477",
-  backgroundColor: "#080808",
-  textColor: "#FFFFFF",
-  buttonColor: "#C69A55",
+  primaryColor: BRAND_PALETTE.primary,
+  secondaryColor: BRAND_PALETTE.secondary,
+  backgroundColor: BRAND_PALETTE.white,
+  textColor: BRAND_PALETTE.ink,
+  buttonColor: BRAND_PALETTE.ink,
   fontFamily: "sans",
   buttonStyle: "rounded",
   coverUrl: null,
