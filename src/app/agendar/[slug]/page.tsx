@@ -301,13 +301,21 @@ export default async function PublicBookingPage({
   const showAddress = branding.showAddress && Boolean(address);
   const showInfo = showHours || showAddress || Boolean(establishment.cancellationPolicy);
 
-  const navItems = [
-    { href: "#agendar", label: "Agendar", show: true },
-    { href: "#servicos", label: "Serviços", show: showServices },
-    { href: "#equipe", label: "Equipe", show: showTeam },
-    { href: "#galeria", label: "Galeria", show: showGallery },
-    { href: "#informacoes", label: "Contato", show: showInfo },
-  ].filter((item) => item.show);
+  const navItems =
+    establishment.slug === "manicure-da-lu"
+      ? [
+          { href: "#", label: "Início", show: true },
+          { href: "#servicos", label: "Serviços", show: showServices },
+          { href: "#galeria", label: "Galeria", show: showGallery },
+          { href: "#informacoes", label: "Contato", show: showInfo },
+        ].filter((item) => item.show)
+      : [
+          { href: "#agendar", label: "Agendar", show: true },
+          { href: "#servicos", label: "Serviços", show: showServices },
+          { href: "#equipe", label: "Equipe", show: showTeam },
+          { href: "#galeria", label: "Galeria", show: showGallery },
+          { href: "#informacoes", label: "Contato", show: showInfo },
+        ].filter((item) => item.show);
 
   return (
     <div
