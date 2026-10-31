@@ -1,26 +1,20 @@
-import React, { useState } from 'react';
+import React from 'react';
+import Link from 'next/link';
 import { Check, Sparkles, Shield, ArrowRight } from 'lucide-react';
 import { PRICING_PLANS } from '../data/mockData';
 import type { PricingPlan } from '../types';
 
 interface PricingSectionProps {
   plans?: PricingPlan[];
-  onOpenSignup: (planSlug?: string) => void;
 }
 
-export const PricingSection: React.FC<PricingSectionProps> = ({ plans, onOpenSignup }) => {
-  const [isAnnual, setIsAnnual] = useState(false);
+export const PricingSection: React.FC<PricingSectionProps> = ({ plans }) => {
   const catalog = plans && plans.length > 0 ? plans : PRICING_PLANS;
-  const annualSavings = catalog.reduce((highest, plan) => {
-    if (!plan.priceMonthly || !plan.priceAnnual) return highest;
-    const percent = Math.round((1 - plan.priceAnnual / plan.priceMonthly) * 100);
-    return Math.max(highest, percent);
-  }, 0);
 
   return (
     <section id="planos" className="py-20 md:py-28 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto mb-12">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#e4ded5] bg-[#f5efe6] text-[#8f5e3b] text-xs font-semibold uppercase tracking-wider mb-4">
@@ -31,44 +25,19 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ plans, onOpenSig
             Planos simples que crescem com você
           </h2>
           <p className="mt-4 text-[#6b645c] text-base sm:text-lg">
-            Teste por 7 dias no cartão ou pague o primeiro período no Pix. Sem fidelidade e cancele quando quiser.
+            Cobrança mensal, 7 dias de teste no cartão ou pagamento imediato no Pix. Sem fidelidade e cancele quando quiser.
           </p>
-
-          {/* Billing Toggle */}
-          <div className="mt-8 inline-flex items-center p-1.5 rounded-2xl bg-[#ede7df] border border-[#ded5c8]">
-            <button
-              onClick={() => setIsAnnual(false)}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                !isAnnual
-                  ? 'bg-white text-[#171513] shadow-xs'
-                  : 'text-[#6b645c] hover:text-[#171513]'
-              }`}
-            >
-              Cobrança Mensal
-            </button>
-            <button
-              onClick={() => setIsAnnual(true)}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                isAnnual
-                  ? 'bg-[#171513] text-white shadow-xs'
-                  : 'text-[#6b645c] hover:text-[#171513]'
-              }`}
-            >
-              <span>Cobrança Anual</span>
-              <span className="bg-[#af7e56] text-white text-[10px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-wider">
-                {annualSavings > 0 ? `Economize ${annualSavings}%` : 'Melhor valor'}
-              </span>
-            </button>
+          <div className="mt-6 inline-flex items-center gap-2 rounded-full bg-white border border-[#ded5c8] px-4 py-2 text-xs font-bold text-[#57534e]">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            Todos os planos com 7 dias de teste
           </div>
         </div>
 
         {/* Pricing Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 xl:gap-5 items-stretch">
           {catalog.map((plan) => {
-            const annualPrice = plan.priceAnnual > 0 ? plan.priceAnnual : plan.priceMonthly;
-            const price = isAnnual ? annualPrice : plan.priceMonthly;
-            const priceLabel = price.toLocaleString('pt-BR', {
-              minimumFractionDigits: Number.isInteger(price) ? 0 : 2,
+            const priceLabel = plan.priceMonthly.toLocaleString('pt-BR', {
+              minimumFractionDigits: 2,
               maximumFractionDigits: 2,
             });
 
@@ -103,7 +72,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ plans, onOpenSig
                       {priceLabel}
                     </span>
                     <span className="text-xs font-medium text-[#78716c]">
-                      /mês {isAnnual && <span className="block text-[10px] text-emerald-700 font-semibold">faturado anualmente</span>}
+                      /mês
                     </span>
                   </div>
 
@@ -125,17 +94,17 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ plans, onOpenSig
 
                 {/* CTA Button */}
                 <div className="pt-4 border-t border-[#f0ece5]">
-                  <button
-                    onClick={() => onOpenSignup(plan.slug)}
+                  <Link
+                    href={plan.slug ? `/cadastro?plano=${encodeURIComponent(plan.slug)}` : '/cadastro'}
                     className={`w-full py-3.5 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer ${
                       plan.isPopular
                         ? 'bg-[#af7e56] hover:bg-[#9d6d48] text-white shadow-warm'
                         : 'bg-[#171513] hover:bg-[#2d2824] text-white shadow-xs'
                     }`}
                   >
-                    <span>{plan.ctaText}</span>
+                    <span>{plan.ctaText || 'Começar teste de 7 dias'}</span>
                     <ArrowRight className="w-4 h-4" />
-                  </button>
+                  </Link>
                   <p className="text-[11px] text-center text-[#8c827a] mt-2.5">
                     Teste grátis de 7 dias • Sem fidelidade
                   </p>

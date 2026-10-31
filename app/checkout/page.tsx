@@ -93,7 +93,6 @@ export default async function CheckoutPage({
     name: plan.name,
     description: plan.description ?? "",
     priceMonthly: toNumber(plan.priceMonthly),
-    priceYearly: toNumber(plan.priceYearly),
     trialDays: plan.trialDays,
     highlight: plan.highlight,
     maxProfessionals: plan.maxProfessionals,
@@ -158,7 +157,6 @@ export default async function CheckoutPage({
           mode={changing ? "change" : "start"}
           plans={catalog}
           initialPlanSlug={selectedSlug}
-          initialCycle="MONTHLY"
           currentPlanSlug={subscription?.plan.slug ?? null}
           establishmentName={establishment.name}
           configured={config.configured}

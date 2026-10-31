@@ -31,7 +31,6 @@ export type CheckoutPlan = {
   name: string;
   description: string;
   priceMonthly: number;
-  priceYearly: number;
   trialDays: number;
   highlight: boolean;
   maxProfessionals: number;
@@ -90,15 +89,10 @@ function formatDate(value: string | null): string | null {
   return date.toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
 }
 
-function planPrice(plan: CheckoutPlan, cycle: "MONTHLY" | "YEARLY"): number {
-  return cycle === "YEARLY" ? plan.priceYearly : plan.priceMonthly;
-}
-
 export function CheckoutClient({
   mode,
   plans,
   initialPlanSlug,
-  initialCycle,
   currentPlanSlug,
   establishmentName,
   configured,
@@ -109,7 +103,6 @@ export function CheckoutClient({
   mode: "start" | "change";
   plans: CheckoutPlan[];
   initialPlanSlug?: string;
-  initialCycle: "MONTHLY" | "YEARLY";
   currentPlanSlug: string | null;
   establishmentName: string;
   configured: boolean;
@@ -119,7 +112,6 @@ export function CheckoutClient({
 }) {
   const router = useRouter();
   const [planSlug, setPlanSlug] = useState(initialPlanSlug ?? plans[0]?.slug ?? "");
-  const [cycle, setCycle] = useState<"MONTHLY" | "YEARLY">(initialCycle);
   const [method, setMethod] = useState<Method>("card");
   const [dismissedPixId, setDismissedPixId] = useState<string | null>(null);
   const [cardError, setCardError] = useState<string | null>(null);
@@ -168,9 +160,7 @@ export function CheckoutClient({
     return () => window.clearInterval(timer);
   }, [pix, router]);
 
-  const price = selectedPlan ? planPrice(selectedPlan, cycle) : 0;
-  const monthlyEquivalent =
-    selectedPlan && cycle === "YEARLY" ? selectedPlan.priceYearly / 12 : price;
+  const price = selectedPlan?.priceMonthly ?? 0;
   const busy = cardPending || pixPending || tokenizing;
   const state = method === "card" ? cardState : pixState;
 
@@ -184,7 +174,7 @@ export function CheckoutClient({
     const form = event.currentTarget;
     const formData = new FormData(form);
     formData.set("planSlug", selectedPlan.slug);
-    formData.set("cycle", cycle);
+    formData.set("cycle", "MONTHLY");
 
     if (method === "card") {
       if (!configured) return;
@@ -306,37 +296,9 @@ export function CheckoutClient({
             })}
           </div>
 
-          <div className="mt-4 flex items-center gap-2">
-            <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-              Cobrança
-            </span>
-            <div className="inline-flex rounded-lg border border-line bg-paper p-0.5">
-              {(
-                [
-                  { value: "MONTHLY", label: "Mensal" },
-                  { value: "YEARLY", label: "Anual" },
-                ] as const
-              ).map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={() => setCycle(option.value)}
-                  className={`rounded-md px-2.5 py-1 text-[11px] font-semibold transition ${
-                    cycle === option.value
-                      ? "bg-white text-ink shadow-sm"
-                      : "text-slate-500 hover:text-ink"
-                  }`}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-            {cycle === "YEARLY" && selectedPlan && (
-              <span className="text-[10px] font-semibold text-emerald-700">
-                economize {Math.round((1 - selectedPlan.priceYearly / (selectedPlan.priceMonthly * 12)) * 100)}%
-              </span>
-            )}
-          </div>
+          <p className="mt-4 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+            Cobrança mensal · cancele quando quiser
+          </p>
         </section>
 
         {pix ? (
@@ -417,15 +379,10 @@ export function CheckoutClient({
         ) : mode === "change" ? (
           <form
             action={changeDispatch}
-            onSubmit={(event) => {
-              const formData = new FormData(event.currentTarget);
-              formData.set("planSlug", planSlug);
-              formData.set("cycle", cycle);
-            }}
             className="mt-5 rounded-2xl border border-line bg-white p-4 shadow-sm sm:p-5"
           >
             <input type="hidden" name="planSlug" value={planSlug} />
-            <input type="hidden" name="cycle" value={cycle} />
+            <input type="hidden" name="cycle" value="MONTHLY" />
             <h2 className="text-sm font-semibold text-ink">2. Confirme a troca</h2>
             <p className="mt-1 text-[11px] leading-relaxed text-slate-500">
               O cartão salvo no Pagar.me continua o mesmo. A diferença de valor é ajustada na
@@ -708,23 +665,15 @@ export function CheckoutClient({
               <p className="text-sm font-semibold text-ink">
                 {selectedPlan?.name ?? "Plano"}
               </p>
-              <p className="text-[11px] text-slate-500">
-                {cycle === "YEARLY" ? "Cobrança anual" : "Cobrança mensal"}
-              </p>
+              <p className="text-[11px] text-slate-500">Cobrança mensal</p>
             </div>
             <p className="text-right text-sm font-semibold text-ink">
               {formatCurrency(price)}
-              <span className="block text-[10px] font-normal text-slate-500">
-                {cycle === "YEARLY" ? "por ano" : "por mês"}
-              </span>
+              <span className="block text-[10px] font-normal text-slate-500">por mês</span>
             </p>
           </div>
 
           <dl className="mt-3 space-y-2 text-[11px]">
-            <div className="flex items-center justify-between gap-2">
-              <dt className="text-slate-500">Equivalente mensal</dt>
-              <dd className="font-medium text-slate-700">{formatCurrency(monthlyEquivalent)}</dd>
-            </div>
             <div className="flex items-center justify-between gap-2">
               <dt className="text-slate-500">Profissionais</dt>
               <dd className="font-medium text-slate-700">{selectedPlan?.maxProfessionals ?? "—"}</dd>
