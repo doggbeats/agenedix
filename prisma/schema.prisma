@@ -1,0 +1,621 @@
+// Agendix — modelo multiempresa
+// Regras: todo dado operacional carrega establishmentId e as consultas são
+// sempre filtradas pelo vínculo do usuário autenticado.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum EstablishmentStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum MembershipRole {
+  OWNER
+  ADMIN
+  PROFESSIONAL
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum AppointmentOrigin {
+  ONLINE
+  PANEL
+  WHATSAPP
+}
+
+enum AppointmentEventType {
+  CREATED
+  UPDATED
+  CONFIRMED
+  CANCELLED
+  RESCHEDULED
+  COMPLETED
+  NO_SHOW
+  EXPIRED
+}
+
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PENDING_PAYMENT
+  PAST_DUE
+  CANCELED
+  SUSPENDED
+}
+
+enum BillingCycle {
+  MONTHLY
+  YEARLY
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum NotificationType {
+  BOOKING_CREATED
+  BOOKING_CONFIRMED
+  BOOKING_CANCELLED
+  BOOKING_RESCHEDULED
+  BOOKING_REMINDER
+  PAYMENT
+  SYSTEM
+}
+
+enum NotificationChannel {
+  EMAIL
+  WHATSAPP
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+  SKIPPED
+}
+
+model Establishment {
+  id                       String              @id @default(cuid())
+  slug                     String              @unique
+  name                     String
+  segment                  String              @default("Outros")
+  ownerName                String
+  email                    String
+  phone                    String
+  whatsapp                 String
+  address                  String?
+  logoUrl                  String?
+  description              String?
+  brandColor               String              @default("#9A6B4F")
+  timezone                 String              @default("America/Sao_Paulo")
+  status                   EstablishmentStatus @default(ACTIVE)
+  publicPageEnabled        Boolean             @default(true)
+  autoConfirmBookings      Boolean             @default(false)
+  minAdvanceMinutes        Int                 @default(60)
+  maxAdvanceDays           Int                 @default(60)
+  cancellationNoticeHours  Int                 @default(4)
+  defaultServiceMin        Int                 @default(30)
+  slotIntervalMinutes      Int                 @default(15)
+  cancellationPolicy       String?
+  whatsappMessage          String?
+  onboardingCompletedAt    DateTime?           @db.Timestamptz(3)
+  holdMinutes              Int                 @default(30)
+  emailNotifications       Boolean             @default(true)
+  notifyBookingCreated     Boolean             @default(true)
+  notifyBookingCancelled   Boolean             @default(true)
+  notifyBookingRescheduled Boolean             @default(true)
+  reminderHours            Int                 @default(24)
+  createdAt                DateTime            @default(now()) @db.Timestamptz(3)
+  updatedAt                DateTime            @updatedAt @db.Timestamptz(3)
+  archivedAt               DateTime?           @db.Timestamptz(3)
+
+  memberships                Membership[]
+  professionals              Professional[]
+  services                   Service[]
+  businessHours              BusinessHours[]
+  timeBlocks                 TimeBlock[]
+  customers                  Customer[]
+  appointments               Appointment[]
+  subscription               Subscription?
+  auditLogs                  AuditLog[]
+  appointmentEvents          AppointmentEvent[]
+  professionalServices       ProfessionalService[]
+  professionalAvailabilities ProfessionalAvailability[]
+  branding                   TenantBranding?
+  units                      Unit[]
+  scheduleExceptions         ScheduleException[]
+  payments                   Payment[]
+  notifications              Notification[]
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+model User {
+  id              String    @id @default(cuid())
+  name            String
+  email           String    @unique
+  passwordHash    String
+  isPlatformAdmin Boolean   @default(false)
+  emailVerifiedAt DateTime? @db.Timestamptz(3)
+  lastLoginAt     DateTime? @db.Timestamptz(3)
+  createdAt       DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime  @updatedAt @db.Timestamptz(3)
+
+  sessions                Session[]
+  memberships             Membership[]
+  auditLogs               AuditLog[]
+  createdAppointments     Appointment[]            @relation("AppointmentCreatedBy")
+  appointmentEvents       AppointmentEvent[]
+  passwordResetTokens     PasswordResetToken[]
+  emailVerificationTokens EmailVerificationToken[]
+
+  @@index([isPlatformAdmin])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  userId    String
+  expiresAt DateTime @db.Timestamptz(3)
+  ip        String?
+  userAgent String?
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model Membership {
+  id              String         @id @default(cuid())
+  userId          String
+  establishmentId String
+  role            MembershipRole
+  professionalId  String?        @unique
+  createdAt       DateTime       @default(now()) @db.Timestamptz(3)
+
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  establishment Establishment @relation(fields: [establishmentId], references: [id], onDelete: Cascade)
+  professional  Professional? @relation(fields: [professionalId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, establishmentId])
+  @@index([establishmentId, role])
+}
+
+model Professional {
+  id              String   @id @default(cuid())
+  establishmentId String
+  unitId          String?
+  name            String
+  bio             String?
+  photoUrl        String?
+  specialties     String?
+  active          Boolean  @default(true)
+  sortOrder       Int      @default(0)
+  createdAt       DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime @updatedAt @db.Timestamptz(3)
+
+  establishment      Establishment              @relation(fields: [establishmentId], references: [id], onDelete: Restrict)
+  unit               Unit?                      @relation(fields: [unitId], references: [id], onDelete: SetNull)
+  services           ProfessionalService[]
+  availability       ProfessionalAvailability[]
+  memberships        Membership[]
+  timeBlocks         TimeBlock[]
+  appointments       Appointment[]
+  scheduleExceptions ScheduleException[]
+
+  @@index([establishmentId, active])
+  @@index([establishmentId, sortOrder])
+  @@index([unitId])
+}
+
+model Service {
+  id              String    @id @default(cuid())
+  establishmentId String
+  name            String
+  description     String?
+  category        String?
+  price           Decimal   @db.Decimal(10, 2)
+  durationMin     Int
+  bufferMin       Int       @default(0)
+  imageUrl        String?
+  onlineEnabled   Boolean   @default(true)
+  active          Boolean   @default(true)
+  sortOrder       Int       @default(0)
+  createdAt       DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime  @updatedAt @db.Timestamptz(3)
+  deletedAt       DateTime? @db.Timestamptz(3)
+
+  establishment Establishment         @relation(fields: [establishmentId], references: [id], onDelete: Restrict)
+  professionals ProfessionalService[]
+  appointments  Appointment[]
+
+  @@index([establishmentId, active, deletedAt])
+  @@index([establishmentId, category])
+}
+
+model ProfessionalService {
+  establishmentId String
+  professionalId  String
+  serviceId       String
+
+  establishment Establishment @relation(fields: [establishmentId], references: [id], onDelete: Cascade)
+  professional  Professional  @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  service       Service       @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@id([professionalId, serviceId])
+  @@index([establishmentId, serviceId])
+}
+
+model BusinessHours {
+  id               String  @id @default(cuid())
+  establishmentId  String
+  weekday          Int
+  isOpen           Boolean @default(true)
+  openMinute       Int     @default(540)
+  closeMinute      Int     @default(1140)
+  breakStartMinute Int?
+  breakEndMinute   Int?
+
+  establishment Establishment @relation(fields: [establishmentId], references: [id], onDelete: Cascade)
+
+  @@unique([establishmentId, weekday])
+}
+
+model ProfessionalAvailability {
+  id               String  @id @default(cuid())
+  establishmentId  String
+  professionalId   String
+  weekday          Int
+  isWorking        Boolean @default(true)
+  startMinute      Int     @default(540)
+  endMinute        Int     @default(1140)
+  breakStartMinute Int?
+  breakEndMinute   Int?
+
+  establishment Establishment @relation(fields: [establishmentId], references: [id], onDelete: Cascade)
+  professional  Professional  @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+
+  @@unique([professionalId, weekday])
+  @@index([establishmentId])
+}
+
+model TimeBlock {
+  id              String   @id @default(cuid())
+  establishmentId String
+  professionalId  String?
+  startsAt        DateTime @db.Timestamptz(3)
+  endsAt          DateTime @db.Timestamptz(3)
+  reason          String?
+  createdAt       DateTime @default(now()) @db.Timestamptz(3)
+
+  establishment Establishment @relation(fields: [establishmentId], references: [id], onDelete: Cascade)
+  professional  Professional? @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+
+  @@index([establishmentId, startsAt, endsAt])
+  @@index([professionalId, startsAt, endsAt])
+}
+
+model Customer {
+  id              String    @id @default(cuid())
+  establishmentId String
+  name            String
+  phone           String
+  email           String?
+  notes           String?
+  anonymizedAt    DateTime? @db.Timestamptz(3)
+  createdAt       DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime  @updatedAt @db.Timestamptz(3)
+
+  establishment Establishment @relation(fields: [establishmentId], references: [id], onDelete: Restrict)
+  appointments  Appointment[]
+
+  @@unique([establishmentId, phone])
+  @@index([establishmentId, name])
+}
+
+model Appointment {
+  id                 String            @id @default(cuid())
+  publicCode         String            @unique
+  accessTokenHash    String            @unique
+  establishmentId    String
+  unitId             String?
+  customerId         String
+  professionalId     String
+  serviceId          String
+  createdByUserId    String?
+  holdExpiresAt      DateTime?         @db.Timestamptz(3)
+  startAt            DateTime          @db.Timestamptz(3)
+  endAt              DateTime          @db.Timestamptz(3)
+  durationMin        Int
+  bufferMin          Int               @default(0)
+  price              Decimal           @db.Decimal(10, 2)
+  currency           String            @default("BRL")
+  status             AppointmentStatus @default(PENDING)
+  origin             AppointmentOrigin @default(ONLINE)
+  notes              String?
+  serviceName        String
+  professionalName   String
+  customerName       String
+  customerPhone      String
+  cancellationReason String?
+  cancelledAt        DateTime?         @db.Timestamptz(3)
+  confirmedAt        DateTime?         @db.Timestamptz(3)
+  completedAt        DateTime?         @db.Timestamptz(3)
+  createdAt          DateTime          @default(now()) @db.Timestamptz(3)
+  updatedAt          DateTime          @updatedAt @db.Timestamptz(3)
+
+  establishment Establishment      @relation(fields: [establishmentId], references: [id], onDelete: Restrict)
+  unit          Unit?              @relation(fields: [unitId], references: [id], onDelete: SetNull)
+  customer      Customer           @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  professional  Professional       @relation(fields: [professionalId], references: [id], onDelete: Restrict)
+  service       Service            @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+  createdBy     User?              @relation("AppointmentCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  events        AppointmentEvent[]
+  notifications Notification[]
+
+  @@index([establishmentId, startAt])
+  @@index([professionalId, startAt])
+  @@index([customerId, startAt])
+  @@index([establishmentId, status, startAt])
+  @@index([status, holdExpiresAt])
+  @@index([unitId, startAt])
+}
+
+model AppointmentEvent {
+  id              String               @id @default(cuid())
+  establishmentId String
+  appointmentId   String
+  type            AppointmentEventType
+  actorUserId     String?
+  actorLabel      String?
+  fromStartAt     DateTime?            @db.Timestamptz(3)
+  fromEndAt       DateTime?            @db.Timestamptz(3)
+  toStartAt       DateTime?            @db.Timestamptz(3)
+  toEndAt         DateTime?            @db.Timestamptz(3)
+  metadata        Json?
+  createdAt       DateTime             @default(now()) @db.Timestamptz(3)
+
+  establishment Establishment @relation(fields: [establishmentId], references: [id], onDelete: Cascade)
+  appointment   Appointment   @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  actor         User?         @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([appointmentId, createdAt])
+  @@index([establishmentId, createdAt])
+}
+
+model SubscriptionPlan {
+  id                   String   @id @default(cuid())
+  slug                 String   @unique
+  name                 String
+  description          String?
+  priceMonthly         Decimal  @db.Decimal(10, 2)
+  priceYearly          Decimal  @db.Decimal(10, 2)
+  maxProfessionals     Int      @default(3)
+  maxServices          Int      @default(20)
+  maxUnits             Int      @default(1)
+  maxUsers             Int      @default(2)
+  maxAppointmentsMonth Int?
+  trialDays            Int      @default(7)
+  features             Json?
+  active               Boolean  @default(true)
+  isDemo               Boolean  @default(false)
+  highlight            Boolean  @default(false)
+  sortOrder            Int      @default(0)
+  createdAt            DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt            DateTime @updatedAt @db.Timestamptz(3)
+
+  subscriptions Subscription[]
+}
+
+model Subscription {
+  id                     String             @id @default(cuid())
+  establishmentId        String             @unique
+  planId                 String
+  status                 SubscriptionStatus @default(TRIALING)
+  billingCycle           BillingCycle       @default(MONTHLY)
+  trialEndsAt            DateTime?          @db.Timestamptz(3)
+  currentPeriodStart     DateTime?          @db.Timestamptz(3)
+  currentPeriodEnd       DateTime?          @db.Timestamptz(3)
+  cancelAtPeriodEnd      Boolean            @default(false)
+  toleranceDays          Int                @default(3)
+  provider               String             @default("MANUAL")
+  providerCustomerId     String?
+  providerSubscriptionId String?
+  notes                  String?
+  createdAt              DateTime           @default(now()) @db.Timestamptz(3)
+  updatedAt              DateTime           @updatedAt @db.Timestamptz(3)
+
+  establishment Establishment    @relation(fields: [establishmentId], references: [id], onDelete: Cascade)
+  plan          SubscriptionPlan @relation(fields: [planId], references: [id], onDelete: Restrict)
+  payments      Payment[]
+
+  @@index([status])
+  @@index([planId])
+}
+
+model AuditLog {
+  id              String   @id @default(cuid())
+  actorUserId     String?
+  establishmentId String?
+  action          String
+  entityType      String
+  entityId        String?
+  metadata        Json?
+  ip              String?
+  userAgent       String?
+  createdAt       DateTime @default(now()) @db.Timestamptz(3)
+
+  actor         User?          @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+  establishment Establishment? @relation(fields: [establishmentId], references: [id], onDelete: SetNull)
+
+  @@index([establishmentId, createdAt])
+  @@index([actorUserId, createdAt])
+  @@index([action, createdAt])
+}
+
+model TenantBranding {
+  id              String   @id @default(cuid())
+  establishmentId String   @unique
+  primaryColor    String   @default("#B08D68")
+  secondaryColor  String   @default("#C4A484")
+  backgroundColor String   @default("#FFFFFF")
+  textColor       String   @default("#0B0B0B")
+  buttonColor     String   @default("#0B0B0B")
+  fontFamily      String   @default("sans")
+  buttonStyle     String   @default("rounded")
+  coverUrl        String?
+  gallery         Json?
+  instagram       String?
+  facebook        String?
+  website         String?
+  tagline         String?
+  showTeam        Boolean  @default(true)
+  showServices    Boolean  @default(true)
+  showGallery     Boolean  @default(true)
+  showHours       Boolean  @default(true)
+  showAddress     Boolean  @default(true)
+  createdAt       DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime @updatedAt @db.Timestamptz(3)
+
+  establishment Establishment @relation(fields: [establishmentId], references: [id], onDelete: Cascade)
+}
+
+model Unit {
+  id              String   @id @default(cuid())
+  establishmentId String
+  name            String
+  address         String?
+  phone           String?
+  timezone        String   @default("America/Sao_Paulo")
+  active          Boolean  @default(true)
+  isDefault       Boolean  @default(false)
+  createdAt       DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime @updatedAt @db.Timestamptz(3)
+
+  establishment Establishment  @relation(fields: [establishmentId], references: [id], onDelete: Cascade)
+  professionals Professional[]
+  appointments  Appointment[]
+
+  @@index([establishmentId, active])
+}
+
+model ScheduleException {
+  id              String   @id @default(cuid())
+  establishmentId String
+  professionalId  String?
+  date            DateTime @db.Date
+  isClosed        Boolean  @default(true)
+  openMinute      Int?
+  closeMinute     Int?
+  reason          String?
+  createdAt       DateTime @default(now()) @db.Timestamptz(3)
+
+  establishment Establishment @relation(fields: [establishmentId], references: [id], onDelete: Cascade)
+  professional  Professional? @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+
+  @@index([establishmentId, date])
+  @@index([professionalId, date])
+}
+
+model Payment {
+  id                String        @id @default(cuid())
+  establishmentId   String
+  subscriptionId    String?
+  amount            Decimal       @db.Decimal(10, 2)
+  currency          String        @default("BRL")
+  status            PaymentStatus @default(PENDING)
+  provider          String        @default("MANUAL")
+  providerPaymentId String?       @unique
+  providerEventId   String?       @unique
+  method            String?
+  paidAt            DateTime?     @db.Timestamptz(3)
+  periodStart       DateTime?     @db.Timestamptz(3)
+  periodEnd         DateTime?     @db.Timestamptz(3)
+  notes             String?
+  metadata          Json?
+  createdAt         DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime      @updatedAt @db.Timestamptz(3)
+
+  establishment Establishment @relation(fields: [establishmentId], references: [id], onDelete: Cascade)
+  subscription  Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+
+  @@index([establishmentId, createdAt])
+  @@index([status, paidAt])
+}
+
+model Notification {
+  id              String              @id @default(cuid())
+  establishmentId String
+  appointmentId   String?
+  type            NotificationType
+  channel         NotificationChannel @default(EMAIL)
+  status          NotificationStatus  @default(PENDING)
+  recipient       String
+  subject         String
+  body            String
+  dedupeKey       String?             @unique
+  error           String?
+  sentAt          DateTime?           @db.Timestamptz(3)
+  createdAt       DateTime            @default(now()) @db.Timestamptz(3)
+
+  establishment Establishment @relation(fields: [establishmentId], references: [id], onDelete: Cascade)
+  appointment   Appointment?  @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+
+  @@index([establishmentId, createdAt])
+  @@index([appointmentId, type])
+  @@index([status, createdAt])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  userId    String
+  expiresAt DateTime  @db.Timestamptz(3)
+  usedAt    DateTime? @db.Timestamptz(3)
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+}
+
+model EmailVerificationToken {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  userId    String
+  expiresAt DateTime  @db.Timestamptz(3)
+  usedAt    DateTime? @db.Timestamptz(3)
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+}
+
+model RateLimitBucket {
+  key         String   @id
+  count       Int      @default(0)
+  windowStart DateTime @db.Timestamptz(3)
+  expiresAt   DateTime @db.Timestamptz(3)
+
+  @@index([expiresAt])
+}

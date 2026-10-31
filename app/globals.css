@@ -1,24 +1,361 @@
 @import "tailwindcss";
 
 :root {
-  --background: #fafaf9;
-  --foreground: #1c1917;
+--background: #FFFFFF;
+--foreground: #0B0B0B;
+
+--brand: #B08D68;
+--brand-hover: #977452;
+--brand-soft: #C4A484;
+
+--ink: #0B0B0B;
+--paper: #F3F3F3;
+--muted: #6B6259;
+--line: #E7E1D9;
+
+--success: #16A34A;
+--danger: #DC2626;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-soft: var(--brand-soft);
+  --color-ink: var(--ink);
+  --color-paper: var(--paper);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+  --font-sans: var(--font-jakarta-sans);
+  --font-mono: var(--font-lekton);
+  --font-display: var(--font-lekton);
+}
+
+* {
+  border-color: var(--line);
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-jakarta-sans), "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  text-rendering: optimizeLegibility;
 }
 
 ::selection {
-  background: #d97706;
-  color: #fff;
+  background: color-mix(in srgb, var(--brand) 18%, transparent);
+  color: var(--ink);
+}
+
+:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--brand) 55%, transparent);
+  outline-offset: 2px;
+}
+
+input,
+textarea,
+select {
+  color-scheme: light;
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--brand);
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:not(:disabled) {
+  transition: filter 150ms ease, transform 150ms ease;
+}
+
+@media (hover: hover) {
+  button:not(:disabled):hover {
+    filter: brightness(0.94);
+  }
+}
+
+summary::-webkit-details-marker {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #d8ccc1 transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background-clip: content-box;
+    background-color: #d8ccc1;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: #b9a696;
+  }
+}
+
+.dark-surface {
+  color-scheme: light;
+}
+
+.brand-shadow {
+  box-shadow:
+    0 1px 2px rgb(23 19 16 / 0.04),
+    0 20px 48px -32px rgb(23 19 16 / 0.16);
+}
+
+.surface-hover {
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.surface-hover:hover {
+  border-color: #d8ccc1;
+  box-shadow:
+    0 1px 2px rgb(23 19 16 / 0.04),
+    0 16px 36px -28px rgb(23 19 16 / 0.2);
+  transform: translateY(-1px);
+}
+
+.paper-grid {
+  background-image: linear-gradient(
+      to right,
+      color-mix(in srgb, var(--line) 70%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--line) 70%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: 32px 32px;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-rise {
+  animation: rise 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-fade {
+  animation: fade 0.2s ease-out both;
+}
+
+.animate-slide-in {
+  animation: slide-in 0.22s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .animate-rise,
+  .animate-fade,
+  .animate-slide-in {
+    animation: none;
+  }
+  .surface-hover:hover {
+    transform: none;
+  }
+  button:not(:disabled) {
+    transition: none;
+  }
+}
+
+
+/* ------------------------------------------------------------------ */
+/* Landing page (components/landing)                                   */
+/* Estilos que vieram do projeto Vite e ficam escopados nesta área.    */
+/* ------------------------------------------------------------------ */
+
+.landing-scope {
+  --font-heading: var(--font-space-grotesk), "Space Grotesk", var(--font-jakarta-sans), ui-sans-serif, system-ui, sans-serif;
+  background-color: #fbfaf8;
+  color: #1c1917;
+}
+
+.landing-scope h1,
+.landing-scope h2,
+.landing-scope h3,
+.landing-scope .font-heading {
+  font-family: var(--font-heading);
+  letter-spacing: -0.02em;
+}
+
+.landing-scope .shadow-soft {
+  box-shadow:
+    0 1px 2px rgb(28 25 23 / 0.04),
+    0 12px 32px -20px rgb(28 25 23 / 0.18);
+}
+
+.landing-scope .shadow-elevated {
+  box-shadow:
+    0 1px 2px rgb(28 25 23 / 0.05),
+    0 24px 48px -28px rgb(28 25 23 / 0.28);
+}
+
+.landing-scope .shadow-warm {
+  box-shadow:
+    0 1px 2px rgb(89 56 30 / 0.18),
+    0 14px 30px -14px rgb(175 126 86 / 0.55);
+}
+
+.landing-scope .scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.landing-scope .scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+@keyframes landing-float-subtle {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes landing-pulse-subtle {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(0.98);
+  }
+}
+
+@keyframes landing-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes landing-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes landing-zoom-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes landing-slide-in-top {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.landing-scope .animate-float {
+  animation: landing-float-subtle 4s ease-in-out infinite;
+}
+
+.landing-scope .animate-pulse-subtle {
+  animation: landing-pulse-subtle 2.5s ease-in-out infinite;
+}
+
+/* Equivalente mínimo do tailwindcss-animate usado pelo layout original. */
+.landing-scope .animate-in {
+  animation-duration: 200ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  animation-fill-mode: both;
+}
+
+.landing-scope .animate-in.fade-in {
+  animation-name: landing-fade-in;
+}
+
+.landing-scope .animate-in.zoom-in-95 {
+  animation-name: landing-zoom-in;
+}
+
+.landing-scope .animate-in.slide-in-from-top-1,
+.landing-scope .animate-in.slide-in-from-top-2 {
+  animation-name: landing-slide-in-top;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-scope .animate-float,
+  .landing-scope .animate-pulse-subtle,
+  .landing-scope .animate-in {
+    animation: none;
+  }
+}
+
+/* Tipografia de destaque usada na landing e na tela de login. */
+.font-space {
+  font-family: var(--font-space-grotesk), var(--font-jakarta-sans), ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.02em;
 }

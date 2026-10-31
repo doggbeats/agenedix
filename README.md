@@ -1,36 +1,266 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Agendix — agendamento online para negócios de beleza e bem-estar
 
-## Getting Started
+O **Agendix** é um SaaS multiestabelecimento de agenda online. Cada negócio tem a própria página pública de agendamento, identidade visual, equipe, serviços e regras de funcionamento. A plataforma central cuida de planos, assinaturas, pagamentos manuais, auditoria e suporte.
 
-First, run the development server:
+O projeto foi construído sobre Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4, Prisma 6 e PostgreSQL.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Experiências
+
+- **Site público:** landing page da plataforma em `/`, diretório de agendas em `/agendar` e página de cada estabelecimento em `/agendar/[slug]`.
+- **Painel do estabelecimento:** visão geral, agenda, agendamentos, clientes, serviços, profissionais, relatórios, equipe, plano e personalização.
+- **Administração da plataforma:** visão geral, estabelecimentos, planos, pagamentos e auditoria em `/admin`.
+
+## Papéis e permissões
+
+| Papel | Acesso |
+| --- | --- |
+| **Superadmin** (`isPlatformAdmin`) | Plataforma inteira: estabelecimentos, planos, pagamentos, auditoria e suporte. Não participa da operação diária de um estabelecimento sem vínculo. |
+| **Proprietário** (`OWNER`) | Acesso completo ao estabelecimento, incluindo equipe, plano, personalização e configurações. |
+| **Administrador / recepção** (`ADMIN`) | Agenda, agendamentos, clientes, serviços, profissionais, relatórios, configurações e personalização. Não gerencia equipe nem assinatura. |
+| **Profissional** (`PROFESSIONAL`) | Apenas os próprios atendimentos, a própria agenda e a própria jornada. |
+
+O isolamento é feito no servidor por `establishmentId` e vínculo (`Membership`). Nenhuma consulta operacional cruza estabelecimentos.
+
+## Planos
+
+| Plano | Valor mensal | Profissionais | Serviços | Unidades | Usuários | Teste |
+| --- | --- | --- | --- | --- | --- | --- |
+| **Essencial** | R$ 79,90 | 1 | 15 | 1 | 2 | 7 dias |
+| **Profissional** | R$ 119,90 | 5 | 60 | 1 | 5 | 7 dias |
+| **Equipe** | R$ 169,90 | 15 | 200 | 3 | 15 | 7 dias |
+
+Os valores, limites e textos dos planos podem ser editados pelo superadmin em `/admin/planos`. O plano Essencial tem limite de 300 agendamentos por mês; os demais não têm limite mensal. A cobrança é combinada diretamente com a equipe Agendix — não há gateway de cartão nesta versão.
+
+## O que está implementado
+
+### Página pública
+
+- Landing page da plataforma e diretório de estabelecimentos com busca.
+- Página por estabelecimento com branding próprio: cores, fonte, capa, galeria, redes sociais, tagline e seções condicionais.
+- Serviços, equipe, horários, endereço, política de cancelamento e contato por WhatsApp.
+- Reserva em etapas com serviços, profissional (ou “qualquer profissional”), data e horário.
+- Disponibilidade calculada no servidor, considerando funcionamento, jornada, pausas, bloqueios, exceções de agenda, antecedência e duração.
+- Nenhum horário indisponível é exibido; a reserva é revalidada no servidor e protegida por constraint de exclusão no PostgreSQL.
+- Confirmação com protocolo, token de acesso, status, contato, Google Agenda, download `.ics` e cancelamento dentro do prazo.
+- Página pública bloqueada quando o estabelecimento está suspenso, com a página desativada ou com assinatura sem período válido.
+
+### Painel do estabelecimento
+
+- Visão geral com indicadores reais do dia e próximos atendimentos.
+- Agenda diária/semanal, criação manual, confirmação, conclusão, cancelamento, falta e remarcação.
+- Clientes com histórico, busca e anonimização.
+- Serviços com preço, duração, buffer, categoria, imagem, profissionais habilitados e publicação online.
+- Profissionais com bio, foto, especialidades, jornada, pausas e vínculo de acesso.
+- Relatórios com receita, volume, distribuição e exportação CSV autenticada.
+- Configurações do estabelecimento, horários, bloqueios, exceções, política de cancelamento e notificações.
+- Personalização visual com prévia e aplicação imediata na página pública.
+- Onboarding guiado em cinco etapas.
+- Equipe com convite, papéis e remoção de vínculo (somente `OWNER`).
+- Plano atual, período de teste, limites, comparação e histórico de pagamentos.
+
+### Administração da plataforma
+
+- Estabelecimentos com status, assinatura e acesso rápido à página pública.
+- Planos com criação, edição, ativação e limites.
+- Pagamentos manuais com ativação e extensão de período.
+- Webhook de pagamentos com assinatura HMAC, idempotência e ativação de assinatura.
+- Auditoria com filtros por ação e estabelecimento, paginação e metadados.
+- Lembretes por e-mail via rota de cron protegida.
+
+### Autenticação e segurança
+
+- Login, logout, recuperação e redefinição de senha.
+- Verificação de e-mail com token de uso único e validade de 24 horas.
+- Sessões em banco com cookie `HttpOnly`, `SameSite=Lax` e `Secure` em produção.
+- Tokens de sessão, redefinição, verificação e acesso público armazenados apenas como hash SHA-256.
+- Senhas com bcrypt.
+- Rate limiting em login, reserva e cancelamento.
+- Validação Zod nos formulários e rotas.
+- Auditoria de ações sensíveis sem armazenar senhas ou tokens.
+
+## Rotas principais
+
+| Área | Rota |
+| --- | --- |
+| Landing page | `/` |
+| Diretório de agendas | `/agendar` |
+| Reserva pública | `/agendar/[slug]` |
+| Confirmação do cliente | `/agendar/[slug]/confirmacao?protocolo=...&token=...` |
+| Login | `/login` |
+| Cadastro de estabelecimento | `/cadastro` |
+| Recuperação de senha | `/recuperar-senha`, `/redefinir-senha` |
+| Verificação de e-mail | `/verificar-email` |
+| Painel | `/painel` |
+| Agenda | `/painel/agenda` |
+| Agendamentos | `/painel/agendamentos` |
+| Clientes | `/painel/clientes` |
+| Serviços | `/painel/servicos` |
+| Profissionais | `/painel/profissionais` |
+| Relatórios | `/painel/relatorios` |
+| Equipe | `/painel/equipe` |
+| Personalização | `/painel/personalizar` |
+| Plano e cobrança | `/painel/plano` |
+| Onboarding | `/painel/onboarding` |
+| Configurações | `/painel/configuracoes` |
+| Administração | `/admin` |
+| Estabelecimentos | `/admin/estabelecimentos` |
+| Planos | `/admin/planos` |
+| Pagamentos | `/admin/pagamentos` |
+| Auditoria | `/admin/auditoria` |
+| Legal | `/privacidade`, `/termos` |
+
+## Requisitos
+
+- Node.js 20 ou superior
+- npm 10 ou superior
+- PostgreSQL 14 ou superior com permissão para criar a extensão `btree_gist`
+- Banco compatível com PostgreSQL (Neon, Supabase, Railway, RDS etc.)
+
+## Instalação local
+
+1. Instale as dependências:
+
+   ```bash
+   npm install
+   ```
+
+2. Crie o arquivo de ambiente:
+
+   ```bash
+   cp .env.example .env.local
+   ```
+
+   No PowerShell:
+
+   ```powershell
+   Copy-Item .env.example .env.local
+   ```
+
+3. Preencha `DATABASE_URL`, `NEXT_PUBLIC_APP_URL` e, se quiser, as chaves de e-mail, webhook e cron.
+
+4. Aplique as migrações:
+
+   ```bash
+   npm run db:migrate
+   ```
+
+5. Gere o Prisma Client e carregue os dados de demonstração:
+
+   ```bash
+   npm run db:generate
+   npm run db:seed
+   ```
+
+6. Inicie o servidor:
+
+   ```bash
+   npm run dev
+   ```
+
+7. Abra [http://localhost:3000](http://localhost:3000).
+
+### Banco novo
+
+Em um banco novo, `npm run db:migrate` executa `prisma migrate deploy` usando `.env.local`. As migrações criam tabelas, enums, índices, a extensão `btree_gist` e a constraint de exclusão de horários.
+
+Se o usuário da aplicação não puder criar extensões, execute uma vez com um usuário administrador:
+
+```sql
+CREATE EXTENSION IF NOT EXISTS btree_gist;
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+> Em bancos que já rodaram o protótipo anterior, tabelas antigas (`appointments`, `barbers`, `clients`, `services`) podem causar drift no `prisma migrate dev`. Use `prisma migrate deploy` e não execute `prisma migrate reset`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Acesso de demonstração
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+O seed padrão cria os planos e a **Barbearia Nobre**:
 
-## Learn More
+| Perfil | E-mail | Senha |
+| --- | --- | --- |
+| Proprietário — Barbearia Nobre | `dono@barbearianobre.com.br` | `Demo@2026` |
+| Administrador — Barbearia Nobre | `admin@barbearianobre.com.br` | `Demo@2026` |
+| Profissional — Barbearia Nobre | `bruno@barbearianobre.com.br` | `Demo@2026` |
 
-To learn more about Next.js, take a look at the following resources:
+Página pública: `/agendar/barbearia-nobre`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Com `SEED_EXTRA_DEMO=true`, o seed também cria:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Perfil | E-mail | Senha |
+| --- | --- | --- |
+| Superadmin da plataforma | `admin@agendix.app` | `Admin@2026` |
+| Proprietária — Studio Aurora (teste) | `dono@studioaurora.com.br` | `Demo@2026` |
 
-## Deploy on Vercel
+As senhas podem ser trocadas por `SEED_ADMIN_PASSWORD`, `SEED_OWNER_PASSWORD` e `SEED_PROFESSIONAL_PASSWORD`. Troque-as antes de usar o projeto em um ambiente compartilhado.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## E-mail, webhook e cron
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### E-mail
+
+Sem `RESEND_API_KEY`, os e-mails são registrados no log do servidor (útil em desenvolvimento). Com a chave, o envio usa a API da Resend. Configure `EMAIL_FROM` com um remetente verificado.
+
+### Webhook de pagamentos
+
+`POST /api/webhooks/payments` recebe eventos financeiros assinados com HMAC SHA-256 no header `x-agendix-signature` (aceita também `x-webhook-signature` e `x-signature`, com ou sem o prefixo `sha256=`). A assinatura é calculada sobre o corpo bruto usando `PAYMENT_WEBHOOK_SECRET`.
+
+Exemplo de payload:
+
+```json
+{
+  "eventId": "evt_123",
+  "type": "payment.paid",
+  "establishmentSlug": "barbearia-nobre",
+  "providerPaymentId": "pay_456",
+  "amount": 79.9,
+  "currency": "BRL",
+  "method": "Pix",
+  "paidAt": "2026-10-30T12:00:00.000Z",
+  "extendDays": 30
+}
+```
+
+Tipos aceitos: `payment.paid`, `payment.pending`, `payment.failed`, `payment.refunded`. O evento é idempotente por `eventId`; `payment.paid` ativa a assinatura e estende o período. Sem `PAYMENT_WEBHOOK_SECRET`, a rota responde `503`.
+
+### Cron de lembretes
+
+`GET` ou `POST /api/cron/reminders` envia lembretes de agendamentos conforme `reminderHours` de cada estabelecimento. Proteja com `CRON_SECRET` no header `Authorization: Bearer <segredo>` ou `x-cron-secret`. Sem `CRON_SECRET`, a rota responde `503`.
+
+Exemplo de `vercel.json`:
+
+```json
+{
+  "crons": [{ "path": "/api/cron/reminders", "schedule": "0 * * * *" }]
+}
+```
+
+Na Vercel, o cron envia automaticamente o header `Authorization: Bearer $CRON_SECRET` quando a variável está configurada.
+
+## Scripts
+
+| Comando | Função |
+| --- | --- |
+| `npm run dev` | Servidor de desenvolvimento |
+| `npm run build` | Gera o Prisma Client e compila a aplicação |
+| `npm run start` | Inicia o build de produção |
+| `npm run lint` | Executa o ESLint |
+| `npm run typecheck` | Verifica os tipos TypeScript |
+| `npm test` | Executa a suíte Vitest |
+| `npm run db:generate` | Gera o Prisma Client |
+| `npm run db:migrate` | Aplica migrações com `.env.local` |
+| `npm run db:seed` | Popula planos e dados de demonstração |
+| `npm run db:studio` | Abre o Prisma Studio |
+
+## Documentação
+
+- [Funcionalidades implementadas](docs/FUNCIONALIDADES.md)
+- [Banco de dados e migrações](docs/BANCO-DE-DADOS.md)
+- [Configuração externa e variáveis de ambiente](docs/CONFIGURACAO-EXTERNA.md)
+- [Deploy em Vercel + PostgreSQL](docs/DEPLOY.md)
+- [Testes](docs/TESTES.md)
+
+## Limites conhecidos
+
+- O WhatsApp é integrado por links `wa.me`; o envio depende do usuário confirmar a conversa no aplicativo.
+- Não há gateway de cartão, checkout automático, emissão de nota fiscal ou conciliação bancária. Pagamentos são registrados manualmente ou por webhook de um provedor externo.
+- Logo, capa e galeria são enviadas por anexo, otimizadas no navegador e salvas no banco, sem depender de storage externo. Foto de profissional ainda usa URL externa validada.
+- O cron de lembretes precisa ser agendado no provedor de hospedagem.
+- Os agendamentos criados pelo seed usam tokens de demonstração e não servem para testar o link público de confirmação. Crie um agendamento novo pela página pública para validar esse fluxo.

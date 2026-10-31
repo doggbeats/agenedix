@@ -1,0 +1,166 @@
+import React, { useState } from 'react';
+import { Check, Sparkles, Shield, ArrowRight } from 'lucide-react';
+import { PRICING_PLANS } from '../data/mockData';
+import type { PricingPlan } from '../types';
+
+interface PricingSectionProps {
+  plans?: PricingPlan[];
+  onOpenSignup: (planSlug?: string) => void;
+}
+
+export const PricingSection: React.FC<PricingSectionProps> = ({ plans, onOpenSignup }) => {
+  const [isAnnual, setIsAnnual] = useState(true);
+  const catalog = plans && plans.length > 0 ? plans : PRICING_PLANS;
+  const annualSavings = catalog.reduce((highest, plan) => {
+    if (!plan.priceMonthly || !plan.priceAnnual) return highest;
+    const percent = Math.round((1 - plan.priceAnnual / plan.priceMonthly) * 100);
+    return Math.max(highest, percent);
+  }, 0);
+
+  return (
+    <section id="planos" className="py-20 md:py-28 relative">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* Header */}
+        <div className="text-center max-w-2xl mx-auto mb-12">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#e4ded5] bg-[#f5efe6] text-[#8f5e3b] text-xs font-semibold uppercase tracking-wider mb-4">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Preço Justo e Sem Surpresas</span>
+          </div>
+          <h2 className="text-3xl sm:text-4xl lg:text-[42px] font-bold text-[#171513] tracking-tight">
+            Planos simples que crescem com você
+          </h2>
+          <p className="mt-4 text-[#6b645c] text-base sm:text-lg">
+            Teste gratuitamente por 7 dias. Não pedimos cartão de crédito antecipado. Cancele quando quiser.
+          </p>
+
+          {/* Billing Toggle */}
+          <div className="mt-8 inline-flex items-center p-1.5 rounded-2xl bg-[#ede7df] border border-[#ded5c8]">
+            <button
+              onClick={() => setIsAnnual(false)}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                !isAnnual
+                  ? 'bg-white text-[#171513] shadow-xs'
+                  : 'text-[#6b645c] hover:text-[#171513]'
+              }`}
+            >
+              Cobrança Mensal
+            </button>
+            <button
+              onClick={() => setIsAnnual(true)}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                isAnnual
+                  ? 'bg-[#171513] text-white shadow-xs'
+                  : 'text-[#6b645c] hover:text-[#171513]'
+              }`}
+            >
+              <span>Cobrança Anual</span>
+              <span className="bg-[#af7e56] text-white text-[10px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-wider">
+                {annualSavings > 0 ? `Economize ${annualSavings}%` : 'Melhor valor'}
+              </span>
+            </button>
+          </div>
+        </div>
+
+        {/* Pricing Cards */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
+          {catalog.map((plan) => {
+            const annualPrice = plan.priceAnnual > 0 ? plan.priceAnnual : plan.priceMonthly;
+            const price = isAnnual ? annualPrice : plan.priceMonthly;
+            const priceLabel = price.toLocaleString('pt-BR', {
+              minimumFractionDigits: Number.isInteger(price) ? 0 : 2,
+              maximumFractionDigits: 2,
+            });
+
+            return (
+              <div
+                key={plan.id}
+                className={`rounded-3xl p-7 sm:p-9 flex flex-col justify-between transition-all duration-200 relative ${
+                  plan.isPopular
+                    ? 'bg-white border-2 border-[#af7e56] shadow-xl scale-[1.02] z-10'
+                    : 'bg-white/80 border border-[#e5dfd4] shadow-soft hover:shadow-elevated'
+                }`}
+              >
+                {/* Popular pill */}
+                {plan.badge && (
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
+                    <span className="bg-[#af7e56] text-white text-[11px] font-extrabold px-3.5 py-1 rounded-full uppercase tracking-wider shadow-sm">
+                      {plan.badge}
+                    </span>
+                  </div>
+                )}
+
+                <div>
+                  <h3 className="text-xl font-bold text-[#171513] mb-2">{plan.name}</h3>
+                  <p className="text-xs text-[#78716c] leading-relaxed min-h-[36px] mb-6">
+                    {plan.description}
+                  </p>
+
+                  {/* Price */}
+                  <div className="flex items-baseline gap-1.5 mb-6 pb-6 border-b border-[#f0ece5]">
+                    <span className="text-xs font-bold text-[#78716c]">R$</span>
+                    <span className="text-4xl sm:text-5xl font-extrabold text-[#171513] tracking-tight">
+                      {priceLabel}
+                    </span>
+                    <span className="text-xs font-medium text-[#78716c]">
+                      /mês {isAnnual && <span className="block text-[10px] text-emerald-700 font-semibold">faturado anualmente</span>}
+                    </span>
+                  </div>
+
+                  {/* Features list */}
+                  <div className="space-y-3.5 mb-8">
+                    <div className="text-xs font-bold uppercase tracking-wider text-[#8c827a]">
+                      O que está incluso:
+                    </div>
+                    {plan.features.map((feature, idx) => (
+                      <div key={idx} className="flex items-start gap-2.5 text-xs text-[#38332d]">
+                        <div className="w-4 h-4 rounded-full bg-[#f4eee6] text-[#af7e56] flex items-center justify-center shrink-0 mt-0.5">
+                          <Check className="w-2.5 h-2.5 stroke-[3]" />
+                        </div>
+                        <span className="leading-snug">{feature}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* CTA Button */}
+                <div className="pt-4 border-t border-[#f0ece5]">
+                  <button
+                    onClick={() => onOpenSignup(plan.slug)}
+                    className={`w-full py-3.5 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                      plan.isPopular
+                        ? 'bg-[#af7e56] hover:bg-[#9d6d48] text-white shadow-warm'
+                        : 'bg-[#171513] hover:bg-[#2d2824] text-white shadow-xs'
+                    }`}
+                  >
+                    <span>{plan.ctaText}</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                  <p className="text-[11px] text-center text-[#8c827a] mt-2.5">
+                    Teste grátis de 7 dias • Sem fidelidade
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Security / Guarantee Seal */}
+        <div className="mt-14 max-w-3xl mx-auto bg-white/70 border border-[#e5dfd4] rounded-2xl p-5 flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
+          <div className="w-12 h-12 rounded-2xl bg-[#e8f7ee] text-emerald-600 flex items-center justify-center shrink-0">
+            <Shield className="w-6 h-6" />
+          </div>
+          <div>
+            <h4 className="font-bold text-sm text-[#171513]">
+              Garantia Incondicional de Satisfação
+            </h4>
+            <p className="text-xs text-[#6b645c] mt-0.5">
+              Experimente o Agendix por 7 dias. Se você e sua equipe não sentirem a diferença na pontualidade e na redução de faltas, basta cancelar no painel com 1 clique.
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  );
+};
