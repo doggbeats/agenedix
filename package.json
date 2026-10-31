@@ -13,6 +13,7 @@
     "db:migrate": "dotenv -e .env.local -- prisma migrate deploy",
     "db:seed": "dotenv -e .env.local -- prisma db seed",
     "db:clear-registrations": "dotenv -e .env.local -- tsx scripts/clear-registrations.ts",
+    "admin:create": "dotenv -e .env.local -- tsx scripts/create-admin.ts",
     "db:studio": "dotenv -e .env.local -- prisma studio"
   },
   "prisma": {
