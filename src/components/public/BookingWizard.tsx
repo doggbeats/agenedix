@@ -649,7 +649,7 @@ export function BookingWizard({
         </section>
       </div>
 
-        <aside className="lg:sticky lg:top-20">
+        <aside className="order-first lg:order-last lg:sticky lg:top-20">
           <div className="overflow-hidden rounded-xl border border-line border-t-2 border-t-brand bg-white shadow-sm">
             <div className="p-5">
           <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-brand">
