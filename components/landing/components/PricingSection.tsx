@@ -9,7 +9,7 @@ interface PricingSectionProps {
 }
 
 export const PricingSection: React.FC<PricingSectionProps> = ({ plans, onOpenSignup }) => {
-  const [isAnnual, setIsAnnual] = useState(true);
+  const [isAnnual, setIsAnnual] = useState(false);
   const catalog = plans && plans.length > 0 ? plans : PRICING_PLANS;
   const annualSavings = catalog.reduce((highest, plan) => {
     if (!plan.priceMonthly || !plan.priceAnnual) return highest;
