@@ -1,6 +1,6 @@
 # Configuração externa
 
-O Agendix funciona localmente apenas com PostgreSQL. E-mail, webhook de pagamentos e cron de lembretes são opcionais e ficam desativados com segurança quando não configurados. A URL pública e o WhatsApp de suporte são configuráveis.
+O AgendamentoON funciona localmente com PostgreSQL e as chaves do Pagar.me para liberar o checkout. E-mail, webhook genérico e cron de lembretes são opcionais e ficam desativados com segurança quando não configurados. A URL pública e o WhatsApp de suporte são configuráveis.
 
 ## Variáveis de ambiente
 
@@ -10,8 +10,12 @@ O Agendix funciona localmente apenas com PostgreSQL. E-mail, webhook de pagament
 | `NEXT_PUBLIC_APP_URL` | Recomendada | Público/servidor | URL canônica usada em links de confirmação, e-mails, `.ics` e compartilhamentos |
 | `NEXT_PUBLIC_SUPPORT_WHATSAPP` | Opcional | Público | WhatsApp de suporte da plataforma, somente dígitos com DDI; oculta os botões quando vazio |
 | `RESEND_API_KEY` | Opcional | Servidor | Chave da Resend para envio de e-mail transacional |
-| `EMAIL_FROM` | Opcional | Servidor | Remetente verificado, por exemplo `Agendix <nao-responda@agendix.app>` |
-| `PAYMENT_WEBHOOK_SECRET` | Opcional | Servidor | Segredo HMAC do webhook de pagamentos |
+| `EMAIL_FROM` | Opcional | Servidor | Remetente verificado, por exemplo `AgendamentoON <nao-responda@agendix.app>` |
+| `PAYMENT_WEBHOOK_SECRET` | Opcional | Servidor | Segredo HMAC do webhook genérico de pagamentos |
+| `PAGARME_SECRET_KEY` | Sim para cobrança | Servidor | Chave secreta da API Pagar.me (Core v5) |
+| `NEXT_PUBLIC_PAGARME_PUBLIC_KEY` | Sim para cobrança | Público | Chave pública usada para tokenizar o cartão no navegador |
+| `PAGARME_WEBHOOK_SECRET` | Sim para cobrança | Servidor | Segredo HMAC do webhook do Pagar.me |
+| `PAYMENTS_DEV_BYPASS` | Opcional | Servidor | `true` libera o painel sem cobrança apenas fora de produção |
 | `CRON_SECRET` | Opcional | Servidor | Segredo que protege a rota de cron de lembretes |
 | `SEED_ADMIN_EMAIL` | Opcional | Seed | E-mail do superadmin de demonstração |
 | `SEED_ADMIN_PASSWORD` | Opcional | Seed | Senha do superadmin de demonstração |
@@ -62,7 +66,37 @@ Cada envio é registrado em `Notification`, com destinatário, assunto, corpo, s
 
 Para trocar de provedor, implemente outro adaptador mantendo a interface `sendEmail` de `lib/email.ts`.
 
-## Webhook de pagamentos
+## Pagar.me
+
+O checkout usa a Core API v5 em `https://api.pagar.me/core/v5`.
+
+- `PAGARME_SECRET_KEY`: chave secreta, usada apenas no servidor.
+- `NEXT_PUBLIC_PAGARME_PUBLIC_KEY`: chave pública, usada pelo navegador para tokenizar o cartão.
+- `PAGARME_WEBHOOK_SECRET`: segredo configurado no webhook.
+
+O número, o CVV e a validade do cartão vão direto do navegador para o Pagar.me. O servidor recebe somente o `card_token` de uso único, então nenhum dado sensível de cartão é armazenado no banco.
+
+Fluxos:
+
+| Método | Comportamento |
+| --- | --- |
+| Cartão | Assinatura criada com 7 dias de teste; primeira cobrança automática no 8º dia |
+| Pix | Cobrança única do primeiro período; painel liberado após o webhook confirmar o pagamento |
+
+Planos do Pagar.me são criados sob demanda e o ID fica em cache em `SubscriptionPlan.providerPlanIdMonthly` e `providerPlanIdYearly`.
+
+Para testar sem as chaves, defina `PAYMENTS_DEV_BYPASS=true` em desenvolvimento. O atalho nunca funciona quando `NODE_ENV=production`.
+
+## Webhook do Pagar.me
+
+Endpoint: `POST /api/webhooks/pagarme`.
+
+- Assinatura HMAC com `PAGARME_WEBHOOK_SECRET`, aceitando `x-hub-signature`, `x-pagarme-signature` ou `x-signature` (sha1/sha256).
+- Idempotência por `eventId` e `providerPaymentId`.
+- Sem o segredo, responde `503`; assinatura inválida responde `401`.
+- Eventos de pagamento pago ativam a assinatura; falha ou reembolso marcam `PAST_DUE`; cancelamento encerra a assinatura.
+
+## Webhook genérico de pagamentos
 
 Endpoint: `POST /api/webhooks/payments`.
 
@@ -97,7 +131,7 @@ Tipos aceitos:
 | `payment.failed` | Registra pagamento `FAILED` |
 | `payment.refunded` | Registra pagamento `REFUNDED` |
 
-O webhook é uma integração genérica de provedor, não um gateway de cartão. Não há checkout, captura, estorno automático ou emissão de nota fiscal.
+O webhook genérico é uma integração de provedor externo. O checkout oficial do produto usa o Pagar.me; este endpoint permanece para integrações e registros manuais.
 
 ## Cron de lembretes
 
@@ -159,7 +193,7 @@ Não há APM ou serviço de erro integrado. Os logs ficam disponíveis na plataf
 
 - A política de privacidade está em `/privacidade`.
 - Os termos de uso estão em `/termos`.
-- Cada estabelecimento é controlador dos dados dos seus clientes; a operação do Agendix atua como operadora.
+- Cada estabelecimento é controlador dos dados dos seus clientes; a operação do AgendamentoON atua como operadora.
 - O canal de suporte exibido ao usuário depende de `NEXT_PUBLIC_SUPPORT_WHATSAPP`.
 - Pedidos de titular devem ser atendidos pelo estabelecimento e, quando envolverem a operação técnica, pelo suporte da plataforma.
 - Clientes podem ser anonimizados no painel sem apagar o histórico estatístico.
@@ -172,7 +206,8 @@ Não há APM ou serviço de erro integrado. Os logs ficam disponíveis na plataf
 - [ ] `NEXT_PUBLIC_APP_URL` com o domínio final.
 - [ ] `NEXT_PUBLIC_SUPPORT_WHATSAPP` com um número real ou vazio de forma consciente.
 - [ ] `RESEND_API_KEY` e `EMAIL_FROM` configurados se o e-mail for usado.
-- [ ] `PAYMENT_WEBHOOK_SECRET` configurado se houver provedor de pagamento.
+- [ ] `PAYMENT_WEBHOOK_SECRET` configurado se houver provedor genérico.
+- [ ] Chaves do Pagar.me configuradas e webhook apontando para `/api/webhooks/pagarme`.
 - [ ] `CRON_SECRET` configurado e cron agendado.
 - [ ] Senhas de seed alteradas ou seed não executado em produção.
 - [ ] Backup do banco configurado.

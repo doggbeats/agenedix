@@ -38,8 +38,9 @@ export function PricingSection({ plans }: { plans: PricingPlan[] }) {
               Preço claro. Ativação confirmada por gente.
             </h2>
             <p className="mt-3 text-slate-600">
-              O cadastro inicia um período de teste. A mudança para um plano pago é uma
-              solicitação registrada; a equipe Agendix confirma o pagamento antes de ativar.
+              Todos os planos incluem 7 dias de teste. No cartão, a cobrança automática começa
+              no 8º dia; no Pix, o primeiro período é pago na hora e o acesso libera após a
+              confirmação.
             </p>
           </div>
 
@@ -156,8 +157,7 @@ export function PricingSection({ plans }: { plans: PricingPlan[] }) {
         )}
 
         <p className="mt-5 text-xs leading-relaxed text-slate-500">
-          Nenhum pagamento é processado neste site. A ativação de planos pagos é registrada
-          manualmente após confirmação com a equipe Agendix. Consulte os{" "}
+          Pagamentos processados pelo Pagar.me via Pix ou cartão de crédito. Consulte os{" "}
           <Link href="/termos" className="text-slate-600 underline underline-offset-2">
             termos de uso
           </Link>

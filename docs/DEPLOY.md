@@ -32,7 +32,7 @@ Não é necessário executar o seed em produção. Se quiser criar a Barbearia N
    NEXT_PUBLIC_APP_URL=https://seu-dominio.com
    NEXT_PUBLIC_SUPPORT_WHATSAPP=5561999999999
    RESEND_API_KEY=re_...
-   EMAIL_FROM=Agendix <nao-responda@seu-dominio.com>
+   EMAIL_FROM=AgendamentoON <nao-responda@seu-dominio.com>
    PAYMENT_WEBHOOK_SECRET=...
    CRON_SECRET=...
    ```
@@ -55,19 +55,25 @@ Crie `vercel.json` na raiz:
 
 Configure `CRON_SECRET` na Vercel. A Vercel envia `Authorization: Bearer $CRON_SECRET` automaticamente. Sem o segredo, a rota responde `503` e nenhum lembrete é enviado.
 
-## 4. Webhook de pagamentos
+## 4. Pagar.me e webhooks
 
-Cadastre no provedor externo:
+Configure na Vercel:
+
+- `PAGARME_SECRET_KEY`
+- `NEXT_PUBLIC_PAGARME_PUBLIC_KEY`
+- `PAGARME_WEBHOOK_SECRET`
+
+Cadastre no painel do Pagar.me o webhook:
 
 ```text
-POST https://seu-dominio.com/api/webhooks/payments
+POST https://seu-dominio.com/api/webhooks/pagarme
 ```
 
-- Assinatura HMAC SHA-256 com `PAYMENT_WEBHOOK_SECRET`.
-- Header `x-agendix-signature` (ou `x-webhook-signature` / `x-signature`).
-- Idempotência por `eventId`.
+- Assinatura HMAC com `PAGARME_WEBHOOK_SECRET` (`x-hub-signature`, `x-pagarme-signature` ou `x-signature`).
+- Idempotência por `eventId` e `providerPaymentId`.
+- Eventos de pagamento pago ativam a assinatura; falha/reembolso marcam `PAST_DUE`.
 
-Sem o segredo, a rota responde `503`. Sem provedor externo, os pagamentos podem ser registrados manualmente em `/admin/pagamentos`.
+Sem essas chaves, o checkout responde com erro de configuração e nenhuma assinatura é criada. O webhook genérico `POST /api/webhooks/payments` continua disponível para integrações manuais, com `PAYMENT_WEBHOOK_SECRET`.
 
 ## 5. Domínio
 
@@ -81,7 +87,8 @@ Sem o segredo, a rota responde `503`. Sem provedor externo, os pagamentos podem 
 ### Plataforma
 
 - [ ] `/` abre a landing page e `/agendar` lista os estabelecimentos publicados.
-- [ ] `/cadastro` cria estabelecimento, branding inicial, unidade padrão e teste de 7 dias.
+- [ ] `/cadastro` cria estabelecimento, branding inicial, unidade padrão e assinatura pendente.
+- [ ] `/checkout` aceita Pix e cartão, libera o painel após pagamento ou teste e bloqueia contas sem plano válido.
 - [ ] Login em `/login` funciona e o painel abre no estabelecimento correto.
 - [ ] `/admin` exige `isPlatformAdmin` e mostra dados reais.
 - [ ] Planos aparecem em `/admin/planos` com preços e limites corretos.
@@ -132,8 +139,8 @@ O código remove buckets de rate limit expirados ocasionalmente. Para volumes ma
 
 ## 9. Limitações operacionais
 
-- Não há gateway de cartão, checkout automático, nota fiscal ou conciliação bancária.
-- Pagamentos são registrados manualmente ou por webhook de um provedor externo.
+- O checkout usa o Pagar.me Core API v5. Emissão de nota fiscal, conciliação bancária e estorno automático não estão implementadas.
+- Pagamentos manuais em `/admin/pagamentos` continuam disponíveis para cortesias e ajustes de suporte.
 - WhatsApp é link externo, sem envio automático.
 - Logo, capa e galeria são anexadas nos formulários e salvas no banco como data URL. A foto de profissional usa URL externa validada.
 - O cron de lembretes precisa ser agendado no provedor de hospedagem.

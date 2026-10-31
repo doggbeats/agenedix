@@ -1,6 +1,6 @@
-# Agendix — agendamento online para negócios de beleza e bem-estar
+# AgendamentoON — agendamento online para negócios de beleza e bem-estar
 
-O **Agendix** é um SaaS multiestabelecimento de agenda online. Cada negócio tem a própria página pública de agendamento, identidade visual, equipe, serviços e regras de funcionamento. A plataforma central cuida de planos, assinaturas, pagamentos manuais, auditoria e suporte.
+O **AgendamentoON** é um SaaS multiestabelecimento de agenda online. Cada negócio tem a própria página pública de agendamento, identidade visual, equipe, serviços e regras de funcionamento. A plataforma central cuida de planos, assinaturas, cobrança via Pagar.me, auditoria e suporte.
 
 O projeto foi construído sobre Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4, Prisma 6 e PostgreSQL.
 
@@ -23,13 +23,14 @@ O isolamento é feito no servidor por `establishmentId` e vínculo (`Membership`
 
 ## Planos
 
-| Plano | Valor mensal | Profissionais | Serviços | Unidades | Usuários | Teste |
-| --- | --- | --- | --- | --- | --- | --- |
-| **Essencial** | R$ 79,90 | 1 | 15 | 1 | 2 | 7 dias |
-| **Profissional** | R$ 119,90 | 5 | 60 | 1 | 5 | 7 dias |
-| **Equipe** | R$ 169,90 | 15 | 200 | 3 | 15 | 7 dias |
+| Plano | Valor mensal | Valor anual | Profissionais | Serviços | Unidades | Usuários | Teste |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| **Essencial** | R$ 79,90 | R$ 799,00 | 1 | 15 | 1 | 2 | 7 dias |
+| **Profissional** | R$ 109,90 | R$ 1.099,00 | 5 | 60 | 1 | 5 | 7 dias |
+| **Equipe** | R$ 139,90 | R$ 1.399,00 | 15 | 200 | 3 | 15 | 7 dias |
+| **Premium** | R$ 189,90 | R$ 1.899,00 | 20 | 200 | 5 | 20 | 7 dias |
 
-Os valores, limites e textos dos planos podem ser editados pelo superadmin em `/admin/planos`. O plano Essencial tem limite de 300 agendamentos por mês; os demais não têm limite mensal. A cobrança é combinada diretamente com a equipe Agendix — não há gateway de cartão nesta versão.
+Os valores, limites e textos dos planos podem ser editados pelo superadmin em `/admin/planos`. O plano Essencial tem limite de 300 agendamentos por mês; os demais não têm limite mensal. A cobrança é processada pelo Pagar.me: no cartão, o cliente testa 7 dias e a primeira cobrança automática acontece no 8º dia; no Pix, o primeiro período é pago na hora e o acesso libera após a confirmação do webhook.
 
 ## O que está implementado
 
@@ -57,13 +58,15 @@ Os valores, limites e textos dos planos podem ser editados pelo superadmin em `/
 - Onboarding guiado em cinco etapas.
 - Equipe com convite, papéis e remoção de vínculo (somente `OWNER`).
 - Plano atual, período de teste, limites, comparação e histórico de pagamentos.
+- Checkout com Pix ou cartão de crédito via Pagar.me, tokenização no navegador e liberação automática por webhook.
 
 ### Administração da plataforma
 
 - Estabelecimentos com status, assinatura e acesso rápido à página pública.
 - Planos com criação, edição, ativação e limites.
-- Pagamentos manuais com ativação e extensão de período.
-- Webhook de pagamentos com assinatura HMAC, idempotência e ativação de assinatura.
+- Pagamentos manuais para exceções, com ativação e extensão de período.
+- Webhook do Pagar.me com assinatura HMAC, idempotência e ativação de assinatura.
+- Webhook genérico de pagamentos com assinatura HMAC, idempotência e ativação de assinatura.
 - Auditoria com filtros por ação e estabelecimento, paginação e metadados.
 - Lembretes por e-mail via rota de cron protegida.
 
@@ -88,6 +91,7 @@ Os valores, limites e textos dos planos podem ser editados pelo superadmin em `/
 | Confirmação do cliente | `/agendar/[slug]/confirmacao?protocolo=...&token=...` |
 | Login | `/login` |
 | Cadastro de estabelecimento | `/cadastro` |
+| Checkout do plano | `/checkout` |
 | Recuperação de senha | `/recuperar-senha`, `/redefinir-senha` |
 | Verificação de e-mail | `/verificar-email` |
 | Painel | `/painel` |
@@ -136,7 +140,7 @@ Os valores, limites e textos dos planos podem ser editados pelo superadmin em `/
    Copy-Item .env.example .env.local
    ```
 
-3. Preencha `DATABASE_URL`, `NEXT_PUBLIC_APP_URL` e, se quiser, as chaves de e-mail, webhook e cron.
+3. Preencha `DATABASE_URL`, `NEXT_PUBLIC_APP_URL` e as chaves do Pagar.me (`PAGARME_SECRET_KEY`, `NEXT_PUBLIC_PAGARME_PUBLIC_KEY`, `PAGARME_WEBHOOK_SECRET`). E-mail, webhook genérico e cron são opcionais.
 
 4. Aplique as migrações:
 
@@ -198,7 +202,19 @@ As senhas podem ser trocadas por `SEED_ADMIN_PASSWORD`, `SEED_OWNER_PASSWORD` e 
 
 Sem `RESEND_API_KEY`, os e-mails são registrados no log do servidor (útil em desenvolvimento). Com a chave, o envio usa a API da Resend. Configure `EMAIL_FROM` com um remetente verificado.
 
-### Webhook de pagamentos
+### Webhook do Pagar.me
+
+`POST /api/webhooks/pagarme` recebe os eventos do Pagar.me. A assinatura HMAC é verificada com `PAGARME_WEBHOOK_SECRET` nos headers `x-hub-signature`, `x-pagarme-signature` ou `x-signature` (sha1 ou sha256). O evento é idempotente por `eventId` e por `providerPaymentId`.
+
+Eventos de cobrança paga ativam a assinatura, eventos de falha ou reembolso marcam `PAST_DUE` e eventos de cancelamento encerram o acesso. Sem `PAGARME_WEBHOOK_SECRET`, a rota responde `503`.
+
+Configure no painel do Pagar.me a URL:
+
+```text
+https://seu-dominio.com/api/webhooks/pagarme
+```
+
+### Webhook genérico de pagamentos
 
 `POST /api/webhooks/payments` recebe eventos financeiros assinados com HMAC SHA-256 no header `x-agendix-signature` (aceita também `x-webhook-signature` e `x-signature`, com ou sem o prefixo `sha256=`). A assinatura é calculada sobre o corpo bruto usando `PAYMENT_WEBHOOK_SECRET`.
 
@@ -260,7 +276,7 @@ Na Vercel, o cron envia automaticamente o header `Authorization: Bearer $CRON_SE
 ## Limites conhecidos
 
 - O WhatsApp é integrado por links `wa.me`; o envio depende do usuário confirmar a conversa no aplicativo.
-- Não há gateway de cartão, checkout automático, emissão de nota fiscal ou conciliação bancária. Pagamentos são registrados manualmente ou por webhook de um provedor externo.
+- O checkout usa o Pagar.me Core API v5. Sem as chaves configuradas, o painel permanece bloqueado para novas contas. Emissão de nota fiscal e conciliação bancária não estão implementadas.
 - Logo, capa e galeria são enviadas por anexo, otimizadas no navegador e salvas no banco, sem depender de storage externo. Foto de profissional ainda usa URL externa validada.
 - O cron de lembretes precisa ser agendado no provedor de hospedagem.
 - Os agendamentos criados pelo seed usam tokens de demonstração e não servem para testar o link público de confirmação. Crie um agendamento novo pela página pública para validar esse fluxo.

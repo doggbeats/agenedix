@@ -1,5 +1,5 @@
 /**
- * Dados de demonstração do Agendix.
+ * Dados de demonstração do AgendamentoON.
  *
  * O script é idempotente: pode ser executado várias vezes. Todos os registros
  * de demonstração usam IDs fixos e são atualizados no lugar.
@@ -73,8 +73,8 @@ const plans: PlanSeed[] = [
     slug: "profissional",
     name: "Profissional",
     description: "A escolha de salões e barbearias em crescimento.",
-    priceMonthly: 119.9,
-    priceYearly: 1199,
+    priceMonthly: 109.9,
+    priceYearly: 1099,
     maxProfessionals: 5,
     maxServices: 60,
     maxUnits: 1,
@@ -97,8 +97,8 @@ const plans: PlanSeed[] = [
     slug: "equipe",
     name: "Equipe",
     description: "Para operações com várias equipes e alto volume.",
-    priceMonthly: 169.9,
-    priceYearly: 1699,
+    priceMonthly: 139.9,
+    priceYearly: 1399,
     maxProfessionals: 15,
     maxServices: 200,
     maxUnits: 3,
@@ -110,9 +110,33 @@ const plans: PlanSeed[] = [
       "200 serviços cadastrados",
       "Até 3 unidades",
       "Relatórios completos",
-      "Suporte prioritário Agendix",
+      "Suporte prioritário AgendamentoON",
     ],
     sortOrder: 3,
+    highlight: false,
+    isDemo: false,
+  },
+  {
+    id: "plan-premium",
+    slug: "premium",
+    name: "Premium",
+    description: "Para redes e operações que precisam de escala e personalização.",
+    priceMonthly: 189.9,
+    priceYearly: 1899,
+    maxProfessionals: 20,
+    maxServices: 200,
+    maxUnits: 5,
+    maxUsers: 20,
+    maxAppointmentsMonth: null,
+    trialDays: 7,
+    features: [
+      "20 profissionais ativos",
+      "200 serviços cadastrados",
+      "Múltiplas cores e identidade visual",
+      "Relatórios completos",
+      "Suporte prioritário AgendamentoON",
+    ],
+    sortOrder: 4,
     highlight: false,
     isDemo: false,
   },

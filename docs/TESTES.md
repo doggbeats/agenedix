@@ -68,9 +68,11 @@ npm run lint
 - constraint de exclusão em concorrência;
 - server actions e rotas HTTP;
 - fluxo de autenticação com cookies e tokens;
-- webhook de pagamentos e idempotência;
+- webhook do Pagar.me e idempotência;
+- webhook genérico de pagamentos e idempotência;
 - cron de lembretes e envio de e-mail;
-- gating de assinatura nas rotas públicas;
+- gating de assinatura nas rotas públicas e no painel;
+- tokenização de cartão no navegador;
 - interface visual e acessibilidade em navegador.
 
 Esses fluxos devem ser validados manualmente antes de cada publicação. Para uma verificação completa:
@@ -87,9 +89,12 @@ Esses fluxos devem ser validados manualmente antes de cada publicação. Para um
 10. Ajuste cores em `/painel/personalizar` e confira a página pública.
 11. Convide um membro em `/painel/equipe` e teste o acesso com o papel `ADMIN`.
 12. Abra `/painel/plano` e confira limites e histórico de pagamentos.
-13. Entre como superadmin em `/admin`, registre um pagamento manual em `/admin/pagamentos` e confira a assinatura.
-14. Verifique a trilha em `/admin/auditoria`.
-15. Teste recuperação de senha em `/recuperar-senha` e verificação em `/verificar-email`.
+13. Crie uma conta nova em `/cadastro` e confirme que o painel redireciona para `/checkout`.
+14. Teste o checkout com Pix e com cartão; confirme a liberação do painel após o pagamento ou o início do teste.
+15. Envie um evento duplicado ao webhook do Pagar.me e confirme que o pagamento não é registrado duas vezes.
+16. Entre como superadmin em `/admin`, registre um pagamento manual em `/admin/pagamentos` e confira a assinatura.
+17. Verifique a trilha em `/admin/auditoria`.
+18. Teste recuperação de senha em `/recuperar-senha` e verificação em `/verificar-email`.
 
 Os agendamentos criados pelo seed usam tokens de demonstração fixos. Para testar o link público de confirmação, crie uma reserva nova pelo fluxo público.
 

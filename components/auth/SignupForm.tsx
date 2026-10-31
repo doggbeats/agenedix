@@ -2,28 +2,107 @@
 
 import { useActionState, useState } from "react";
 import Link from "next/link";
+import { Check, ShieldCheck } from "lucide-react";
 import { Alert, FieldError, inputClass, labelClass } from "@/components/ui";
 import { PasswordInput } from "@/components/PasswordInput";
 import { SubmitButton } from "@/components/SubmitButton";
 import { signupAction } from "@/lib/actions/auth";
 import { initialActionState } from "@/lib/action-utils";
 import { SEGMENTS } from "@/lib/constants";
-import { maskPhoneInput } from "@/lib/format";
+import { formatCurrency, maskPhoneInput } from "@/lib/format";
 
-export function SignupForm({ planName }: { planName?: string }) {
+export type SignupPlanOption = {
+  slug: string;
+  name: string;
+  description: string;
+  priceMonthly: number;
+  trialDays: number;
+  highlight: boolean;
+};
+
+export function SignupForm({
+  plans,
+  selectedSlug,
+}: {
+  plans: SignupPlanOption[];
+  selectedSlug?: string;
+}) {
   const [state, formAction] = useActionState(signupAction, initialActionState);
   const [phone, setPhone] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
+  const [planSlug, setPlanSlug] = useState(
+    selectedSlug ?? plans.find((plan) => plan.highlight)?.slug ?? plans[0]?.slug ?? "",
+  );
 
   return (
     <form action={formAction} className="space-y-5">
       {state.error && <Alert tone="error">{state.error}</Alert>}
-      {planName && (
-        <Alert tone="info">
-          O plano <strong>{planName}</strong> será iniciado em período de teste. A cobrança
-          só acontece após confirmação com a equipe Agendix.
-        </Alert>
-      )}
+
+      <fieldset className="space-y-3">
+        <legend className="mb-1 text-sm font-semibold text-ink">Escolha seu plano</legend>
+        <p className="text-xs text-slate-500">
+          Todos os planos incluem 7 dias de teste. No cartão, a primeira cobrança automática
+          acontece no 8º dia. No Pix, o primeiro mês é pago agora.
+        </p>
+        <div className="grid gap-2.5 sm:grid-cols-2">
+          {plans.map((plan) => {
+            const active = plan.slug === planSlug;
+            return (
+              <label
+                key={plan.slug}
+                className={`relative flex cursor-pointer flex-col rounded-xl border p-3.5 transition ${
+                  active
+                    ? "border-brand bg-brand/5 ring-2 ring-brand/30"
+                    : "border-line bg-white hover:border-slate-300"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="planSlug"
+                  value={plan.slug}
+                  checked={active}
+                  onChange={() => setPlanSlug(plan.slug)}
+                  className="sr-only"
+                  required
+                />
+                <span className="flex items-center justify-between gap-2">
+                  <span className="text-sm font-semibold text-ink">{plan.name}</span>
+                  {plan.highlight && (
+                    <span className="rounded-full bg-brand/15 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-brand-hover">
+                      Mais escolhido
+                    </span>
+                  )}
+                  {active && !plan.highlight && (
+                    <Check className="h-4 w-4 text-brand" aria-hidden />
+                  )}
+                </span>
+                <span className="mt-1 text-lg font-semibold text-ink">
+                  {formatCurrency(plan.priceMonthly)}
+                  <span className="text-[11px] font-normal text-slate-500">/mês</span>
+                </span>
+                <span className="mt-0.5 text-[10px] leading-snug text-slate-500">
+                  {plan.description}
+                </span>
+              </label>
+            );
+          })}
+        </div>
+        {plans.length === 0 && (
+          <Alert tone="error">
+            Nenhum plano está disponível agora. Fale com o suporte para criar sua conta.
+          </Alert>
+        )}
+        <FieldError messages={state.fieldErrors?.planSlug} />
+      </fieldset>
+
+      <div className="flex items-start gap-2.5 rounded-lg border border-line bg-paper px-3.5 py-3 text-[11px] leading-relaxed text-slate-600">
+        <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
+        <span>
+          No próximo passo você paga com <strong>Pix</strong> ou <strong>cartão de crédito</strong>.
+          O painel é liberado assim que o pagamento é confirmado. No cartão, você testa 7 dias
+          grátis e a cobrança automática começa no 8º dia.
+        </span>
+      </div>
 
       <fieldset className="space-y-4">
         <legend className="mb-3 text-sm font-semibold text-ink">Sobre o negócio</legend>

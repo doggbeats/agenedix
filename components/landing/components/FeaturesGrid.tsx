@@ -68,7 +68,7 @@ export const FeaturesGrid: React.FC<FeaturesGridProps> = ({ onOpenBookingDemo })
             <div className="mt-8 bg-[#fbfaf8] border border-[#ede7de] rounded-2xl p-4 shadow-2xs">
               <div className="flex items-center justify-between pb-3 border-b border-[#ece6dd] text-xs">
                 <span className="font-mono text-[#8c827a] text-[11px] bg-white px-2 py-0.5 rounded border border-[#ede7de]">
-                  agendix.io/barbeariadon
+                  agendamentoon.app/barbeariadon
                 </span>
                 <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-medium text-[11px]">
                   ✓ Aberto para agendamentos
@@ -121,7 +121,7 @@ export const FeaturesGrid: React.FC<FeaturesGridProps> = ({ onOpenBookingDemo })
             <div className="bg-[#eef8f1] border border-[#d2edd9] rounded-2xl p-3.5 text-xs">
               <div className="flex items-center gap-2 mb-1.5 font-bold text-emerald-900">
                 <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                <span>WhatsApp Agendix</span>
+                <span>WhatsApp AgendamentoON</span>
               </div>
               <p className="text-emerald-950 text-[11px] leading-relaxed">
                 &ldquo;Olá Ana! Seu horário de <strong>Limpeza de Pele</strong> é amanhã às 14h com a Dra. Camila. Responda 1 para confirmar.&rdquo;
@@ -209,7 +209,7 @@ export const FeaturesGrid: React.FC<FeaturesGridProps> = ({ onOpenBookingDemo })
                 Sincronização com Google Calendar
               </h3>
               <p className="text-[#6b645c] text-sm leading-relaxed mb-6">
-                Marcou médico pessoal no seu Google Agenda? O Agendix bloqueia automaticamente o horário para clientes no mesmo segundo.
+                Marcou médico pessoal no seu Google Agenda? O AgendamentoON bloqueia automaticamente o horário para clientes no mesmo segundo.
               </p>
             </div>
 

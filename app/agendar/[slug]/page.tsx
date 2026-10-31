@@ -702,7 +702,7 @@ export default async function PublicBookingPage({
                   Site oficial
                 </a>
               ) : (
-                "Agendamento online com Agendix."
+                "Agendamento online com AgendamentoON."
               )}
             </p>
           </div>

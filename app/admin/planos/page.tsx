@@ -243,9 +243,9 @@ export default async function AdminPlansPage({
       <div className="mt-5 rounded-xl border border-line bg-white p-4 text-xs leading-relaxed text-slate-500">
         <p className="font-semibold text-slate-700">Sobre a cobrança</p>
         <p className="mt-1">
-          Nenhum pagamento é processado pela plataforma. A ativação de um plano pago é feita
-          em Estabelecimentos, após a equipe Agendix confirmar o pagamento pelos canais
-          oficiais.
+          As assinaturas são processadas pelo Pagar.me via Pix ou cartão de crédito. O webhook
+          do gateway atualiza o status automaticamente; o registro manual em Estabelecimentos
+          serve para casos excepcionais, como cortesia ou ajuste de suporte.
           Os limites de profissionais, serviços e agendamentos por mês são aplicados pelo
           servidor.
         </p>

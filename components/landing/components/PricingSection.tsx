@@ -31,7 +31,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ plans, onOpenSig
             Planos simples que crescem com você
           </h2>
           <p className="mt-4 text-[#6b645c] text-base sm:text-lg">
-            Teste gratuitamente por 7 dias. Não pedimos cartão de crédito antecipado. Cancele quando quiser.
+            Teste por 7 dias no cartão ou pague o primeiro período no Pix. Sem fidelidade e cancele quando quiser.
           </p>
 
           {/* Billing Toggle */}
@@ -63,7 +63,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ plans, onOpenSig
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 xl:gap-5 items-stretch">
           {catalog.map((plan) => {
             const annualPrice = plan.priceAnnual > 0 ? plan.priceAnnual : plan.priceMonthly;
             const price = isAnnual ? annualPrice : plan.priceMonthly;
@@ -155,7 +155,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ plans, onOpenSig
               Garantia Incondicional de Satisfação
             </h4>
             <p className="text-xs text-[#6b645c] mt-0.5">
-              Experimente o Agendix por 7 dias. Se você e sua equipe não sentirem a diferença na pontualidade e na redução de faltas, basta cancelar no painel com 1 clique.
+              Experimente o AgendamentoON por 7 dias. Se você e sua equipe não sentirem a diferença na pontualidade e na redução de faltas, basta cancelar no painel com 1 clique.
             </p>
           </div>
         </div>

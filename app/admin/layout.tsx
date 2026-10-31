@@ -67,7 +67,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
       <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:py-8">{children}</main>
 
       <footer className="border-t border-line bg-white px-4 py-4 text-center text-[10px] text-slate-500 sm:px-6">
-        Agendix · administração da plataforma ·{" "}
+        AgendamentoON · administração da plataforma ·{" "}
         {auth.user.email}
       </footer>
     </div>

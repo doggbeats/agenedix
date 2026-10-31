@@ -27,21 +27,6 @@ const optionalEmail = z
   .optional()
   .transform((value) => (value ? value : undefined));
 
-const imageUrl = z
-  .union([
-    z.literal(""),
-    z
-      .string()
-      .trim()
-      .max(500, "URL muito longa.")
-      .refine(
-        (value) => /^https?:\/\//i.test(value) || value.startsWith("/"),
-        "Use uma URL http(s) ou um caminho iniciado por /.",
-      ),
-  ])
-  .optional()
-  .transform((value) => (value === "" ? undefined : value));
-
 const dataImage = /^data:image\/(?:png|jpe?g|webp);base64,/i;
 
 // Imagens enviadas por anexo (data URL) ou URLs/caminhos antigos.
@@ -78,6 +63,7 @@ export const loginSchema = z.object({
 export const signupSchema = z
   .object({
     businessName: z.string().trim().min(2, "Informe o nome do estabelecimento.").max(120),
+    planSlug: z.string().trim().min(1, "Escolha um plano para continuar."),
     segment: z.string().trim().min(2, "Informe o segmento."),
     ownerName: z.string().trim().min(2, "Informe o nome do responsável.").max(120),
     email: email,
@@ -167,7 +153,7 @@ export const serviceSchema = z.object({
     .int()
     .min(0, "Intervalo inválido.")
     .max(240, "Intervalo máximo de 4 horas."),
-  imageUrl,
+  imageUrl: uploadedImage,
   onlineEnabled: z.boolean().default(true),
   active: z.boolean().default(true),
   professionalIds: z.array(z.string()).default([]),
@@ -415,6 +401,56 @@ export const customerAnonymizeSchema = z.object({
     message: "Digite EXCLUIR para confirmar.",
   }),
 });
+
+const taxDocument = z
+  .string()
+  .trim()
+  .transform((value) => value.replace(/\D/g, ""))
+  .refine(
+    (value) => value.length === 11 || value.length === 14,
+    "Informe um CPF ou CNPJ válido.",
+  );
+
+const postalCode = z
+  .string()
+  .trim()
+  .transform((value) => value.replace(/\D/g, ""))
+  .refine((value) => value.length === 8, "Informe um CEP com 8 dígitos.");
+
+const billingFields = {
+  document: taxDocument,
+  zipCode: postalCode,
+  addressNumber: z
+    .string()
+    .trim()
+    .min(1, "Informe o número do endereço.")
+    .max(20, "Número muito longo."),
+  city: z.string().trim().min(2, "Informe a cidade.").max(80),
+  state: z
+    .string()
+    .trim()
+    .transform((value) => value.toUpperCase())
+    .refine((value) => /^[A-Z]{2}$/.test(value), "Use a sigla do estado (ex.: SP)."),
+};
+
+export const checkoutSchema = z.object({
+  planSlug: z.string().trim().min(1, "Escolha um plano."),
+  cycle: z.enum(["MONTHLY", "YEARLY"]).default("MONTHLY"),
+  ...billingFields,
+});
+
+export const cardCheckoutSchema = checkoutSchema.extend({
+  cardToken: z.string().trim().min(5, "Token do cartão ausente. Tente novamente."),
+});
+
+export const pixCheckoutSchema = checkoutSchema;
+
+export const planChangeSchema = z.object({
+  planSlug: z.string().trim().min(1, "Escolha um plano."),
+  cycle: z.enum(["MONTHLY", "YEARLY"]).default("MONTHLY"),
+});
+
+export type CheckoutInput = z.infer<typeof checkoutSchema>;
 
 export type BookingInput = z.infer<typeof bookingSchema>;
 export type SignupInput = z.infer<typeof signupSchema>;

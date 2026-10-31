@@ -32,7 +32,12 @@ function daysUntil(date: Date): number {
   return Math.max(0, Math.ceil((date.getTime() - Date.now()) / 86_400_000));
 }
 
-export default async function PlanPage() {
+export default async function PlanPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ aviso?: string; ok?: string }>;
+}) {
+  const { aviso } = await searchParams;
   const auth = await requireOwner();
   const establishment = auth.establishment;
   const timezone = establishment.timezone;
@@ -68,8 +73,8 @@ export default async function PlanPage() {
     <div>
       <PageHeader
         eyebrow="Plano e cobrança"
-        title="Seu plano na Agendix"
-        description="Acompanhe o período de teste, os limites do plano e o histórico de pagamentos. A cobrança é combinada diretamente com a equipe Agendix."
+        title="Seu plano no AgendamentoON"
+        description="Acompanhe o período de teste, os limites do plano e o histórico de pagamentos. A cobrança é processada pelo Pagar.me via Pix ou cartão de crédito."
         actions={
           <>
             <Link href="/painel/equipe" className={buttonSecondary}>
@@ -82,6 +87,16 @@ export default async function PlanPage() {
         }
       />
 
+      {aviso === "cobranca-manual" && (
+        <div className="mb-5 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3.5">
+          <p className="text-sm font-semibold text-sky-900">Plano com cobrança manual</p>
+          <p className="mt-0.5 text-xs leading-relaxed text-sky-800">
+            Este estabelecimento ainda não usa o checkout automático do Pagar.me. Fale com o
+            suporte para migrar a cobrança e depois trocar de plano pelo painel.
+          </p>
+        </div>
+      )}
+
       {!usable && (
         <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3.5">
           <p className="text-sm font-semibold text-amber-900">
@@ -90,8 +105,7 @@ export default async function PlanPage() {
           <p className="mt-0.5 text-xs leading-relaxed text-amber-800">
             {subscription
               ? "O período de teste terminou ou a assinatura precisa de atenção. Regularize o pagamento para voltar a receber agendamentos online."
-              : "Nenhum plano está vinculado a este estabelecimento. Escolha um plano abaixo para liberar a página pública."}{" "}
-            O painel continua funcionando normalmente.
+              : "Nenhum plano está vinculado a este estabelecimento. Escolha um plano abaixo para liberar a página pública."}
           </p>
         </div>
       )}
@@ -102,7 +116,7 @@ export default async function PlanPage() {
           value={plan?.name ?? "Sem plano"}
           hint={
             subscription
-              ? `${subscription.billingCycle === "YEARLY" ? "Anual" : "Mensal"} · ${subscription.provider === "MANUAL" ? "cobrança manual" : subscription.provider}`
+              ? `${subscription.billingCycle === "YEARLY" ? "Anual" : "Mensal"} · ${subscription.provider === "PAGARME" ? "Pagar.me" : "cobrança manual"}`
               : "Escolha um plano para começar"
           }
           accent
@@ -178,7 +192,7 @@ export default async function PlanPage() {
                   label="Unidades"
                   used={1}
                   max={plan.maxUnits}
-                  hint="A gestão de unidades é feita com a equipe Agendix."
+                  hint="A gestão de unidades é feita com a equipe AgendamentoON."
                 />
               </div>
             </div>
@@ -247,8 +261,8 @@ export default async function PlanPage() {
           <div>
             <h2 className="text-sm font-semibold text-ink">Planos disponíveis</h2>
             <p className="text-[11px] text-slate-500">
-              Ao solicitar um plano, a equipe Agendix confirma o pagamento antes de ativar a
-              mudança. Nada é cobrado automaticamente.
+              A troca é imediata. O novo valor é ajustado na próxima renovação, sem cobrança
+              duplicada no mesmo ciclo.
             </p>
           </div>
           <span className="inline-flex items-center gap-1.5 rounded-md border border-line bg-white px-2.5 py-1.5 text-[10px] font-semibold text-slate-500">
@@ -303,7 +317,11 @@ export default async function PlanPage() {
                 </ul>
 
                 <div className="border-t border-line p-4">
-                  <PlanRequestForm planId={item.id} planName={item.name} current={current} />
+                  <PlanRequestForm
+                    planSlug={item.slug}
+                    planName={item.name}
+                    current={current}
+                  />
                   {!current && plan && (
                     <p className="mt-2 flex items-center gap-1 text-[10px] text-slate-500">
                       <ArrowRight className="h-3 w-3" /> Mudança de {plan.name} para {item.name}
@@ -321,8 +339,8 @@ export default async function PlanPage() {
           <div>
             <h2 className="text-sm font-semibold text-ink">Histórico de pagamentos</h2>
             <p className="text-[11px] text-slate-500">
-              Registros confirmados pela equipe Agendix. Nenhuma cobrança é feita pela
-              plataforma.
+              Cobranças processadas pelo Pagar.me. Estornos e falhas aparecem com o status do
+              gateway.
             </p>
           </div>
           <ReceiptText className="h-4 w-4 text-slate-400" />
@@ -409,7 +427,7 @@ export default async function PlanPage() {
         <div>
           <p className="font-semibold text-ink">Precisa de outro formato?</p>
           <p className="mt-0.5">
-            Fale com a equipe Agendix para condições especiais, mais unidades ou migração de
+            Fale com a equipe AgendamentoON para condições especiais, mais unidades ou migração de
             dados. Os limites de profissionais, serviços e acessos são aplicados pelo servidor.
           </p>
           <p className="mt-2 flex items-center gap-1.5 text-[10px] text-slate-500">

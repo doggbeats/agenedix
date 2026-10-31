@@ -4,7 +4,7 @@ export const SUPPORT_WHATSAPP = (process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP ?? "")
 );
 
 export function supportWhatsAppUrl(
-  message = "Olá! Preciso de ajuda com o Agendix.",
+  message = "Olá! Preciso de ajuda com o AgendamentoON.",
 ): string | null {
   if (!SUPPORT_WHATSAPP) return null;
   return `https://wa.me/${SUPPORT_WHATSAPP}?text=${encodeURIComponent(message)}`;

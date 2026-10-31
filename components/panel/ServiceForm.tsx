@@ -1,9 +1,17 @@
 "use client";
 
-import { useActionState } from "react";
-import { Alert, FieldError, inputClass, labelClass } from "@/components/ui";
+import { useActionState, useRef, useState } from "react";
+import { ImagePlus, Loader2, Upload, X } from "lucide-react";
+import {
+  Alert,
+  buttonSmall,
+  FieldError,
+  inputClass,
+  labelClass,
+} from "@/components/ui";
 import { SubmitButton } from "@/components/SubmitButton";
 import { initialActionState } from "@/lib/action-utils";
+import { prepareImageDataUrl } from "@/lib/image-file";
 import { createServiceAction, updateServiceAction } from "@/lib/actions/services";
 
 export type ServiceFormValues = {
@@ -31,6 +39,28 @@ export function ServiceForm({
 }) {
   const action = mode === "create" ? createServiceAction : updateServiceAction;
   const [state, formAction] = useActionState(action, initialActionState);
+
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const [imageUrl, setImageUrl] = useState(service?.imageUrl ?? "");
+  const [imageLoading, setImageLoading] = useState(false);
+  const [imageError, setImageError] = useState<string | null>(null);
+
+  async function handleImageChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setImageError(null);
+    setImageLoading(true);
+    try {
+      setImageUrl(await prepareImageDataUrl(file, 900));
+    } catch (error) {
+      setImageError(
+        error instanceof Error ? error.message : "Não foi possível processar a imagem.",
+      );
+    } finally {
+      setImageLoading(false);
+      if (imageInputRef.current) imageInputRef.current.value = "";
+    }
+  }
 
   return (
     <form action={formAction} className="space-y-4">
@@ -139,18 +169,70 @@ export function ServiceForm({
         </div>
 
         <div className="sm:col-span-2">
-          <label className={labelClass} htmlFor="service-image">
-            Imagem (URL opcional)
-          </label>
+          <span className={labelClass}>Imagem do serviço</span>
+          <input type="hidden" name="imageUrl" value={imageUrl} />
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <div className="relative aspect-[4/3] w-full shrink-0 overflow-hidden rounded-lg border border-line bg-paper sm:w-44">
+              {imageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={imageUrl}
+                  alt="Prévia da imagem do serviço"
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <span className="grid h-full w-full place-items-center text-slate-400">
+                  <ImagePlus className="h-6 w-6" aria-hidden />
+                </span>
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => imageInputRef.current?.click()}
+                  className={buttonSmall}
+                  disabled={imageLoading}
+                >
+                  {imageLoading ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Upload className="h-3.5 w-3.5" />
+                  )}
+                  {imageUrl ? "Trocar imagem" : "Anexar imagem"}
+                </button>
+                {imageUrl && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setImageUrl("");
+                      setImageError(null);
+                    }}
+                    className={`${buttonSmall} text-red-700 hover:border-red-300 hover:bg-red-50`}
+                  >
+                    <X className="h-3.5 w-3.5" /> Remover
+                  </button>
+                )}
+              </div>
+              <p className="mt-1.5 text-[11px] text-slate-500">
+                PNG, JPG ou WebP até 5 MB. A imagem é otimizada e pode ser exibida junto ao
+                serviço.
+              </p>
+              {imageError && (
+                <p className="mt-1 text-xs font-medium text-red-600">{imageError}</p>
+              )}
+              <FieldError messages={state.fieldErrors?.imageUrl} />
+            </div>
+          </div>
           <input
+            ref={imageInputRef}
             id="service-image"
-            name="imageUrl"
-            maxLength={500}
-            defaultValue={service?.imageUrl ?? ""}
-            placeholder="https://... ou /imagem.jpg"
-            className={inputClass}
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            className="sr-only"
+            onChange={handleImageChange}
+            aria-label="Anexar imagem do serviço"
           />
-          <FieldError messages={state.fieldErrors?.imageUrl} />
         </div>
       </div>
 

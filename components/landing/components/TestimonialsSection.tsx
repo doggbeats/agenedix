@@ -15,7 +15,7 @@ export const TestimonialsSection: React.FC = () => {
             <span>Casos de Sucesso Reais</span>
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-[42px] font-bold text-[#171513] tracking-tight">
-            Quem usa o Agendix não volta atrás
+            Quem usa o AgendamentoON não volta atrás
           </h2>
           <p className="mt-4 text-[#6b645c] text-base sm:text-lg">
             Veja o que profissionais autônomos e gestores de clínicas e barbearias relatam sobre a transformação no seu dia a dia.

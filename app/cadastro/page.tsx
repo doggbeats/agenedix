@@ -1,9 +1,10 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { ArrowLeft } from "lucide-react";
-import { SignupForm } from "@/components/auth/SignupForm";
+import { SignupForm, type SignupPlanOption } from "@/components/auth/SignupForm";
 import { Logo } from "@/components/ui";
 import { prisma } from "@/lib/prisma";
+import { toNumber } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Criar conta" };
 export const dynamic = "force-dynamic";
@@ -14,12 +15,31 @@ export default async function SignupPage({
   searchParams: Promise<{ plano?: string }>;
 }) {
   const { plano: planSlug } = await searchParams;
-  const plan = planSlug
-    ? await prisma.subscriptionPlan.findFirst({
-        where: { slug: planSlug, active: true, isDemo: false },
-        select: { name: true },
-      })
-    : null;
+  const rows = await prisma.subscriptionPlan.findMany({
+    where: { active: true, isDemo: false },
+    orderBy: [{ sortOrder: "asc" }, { priceMonthly: "asc" }],
+    select: {
+      slug: true,
+      name: true,
+      description: true,
+      priceMonthly: true,
+      trialDays: true,
+      highlight: true,
+    },
+  });
+
+  const plans: SignupPlanOption[] = rows.map((plan) => ({
+    slug: plan.slug,
+    name: plan.name,
+    description: plan.description ?? "",
+    priceMonthly: toNumber(plan.priceMonthly),
+    trialDays: plan.trialDays,
+    highlight: plan.highlight,
+  }));
+
+  const selectedSlug = planSlug && plans.some((plan) => plan.slug === planSlug)
+    ? planSlug
+    : plans.find((plan) => plan.highlight)?.slug ?? plans[0]?.slug;
 
   return (
     <main className="min-h-screen bg-paper px-4 py-8 text-ink sm:px-6 sm:py-12">
@@ -55,7 +75,7 @@ export default async function SignupPage({
               Cadastre seu estabelecimento e defina o e-mail e a senha que usará para entrar no sistema.
             </p>
           </div>
-          <SignupForm planName={plan?.name} />
+          <SignupForm plans={plans} selectedSlug={selectedSlug} />
         </section>
       </div>
     </main>

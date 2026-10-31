@@ -94,7 +94,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 
             {/* Subtitle */}
             <p className="text-lg sm:text-xl text-[#6b645c] leading-relaxed max-w-xl mb-8 font-normal">
-              O Agendix organiza horários, equipe e página pública em um só lugar. Seus clientes escolhem o melhor horário; você cuida do atendimento.
+              O AgendamentoON organiza horários, equipe e página pública em um só lugar. Seus clientes escolhem o melhor horário; você cuida do atendimento.
             </p>
 
             {/* Action Buttons */}
@@ -120,7 +120,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             <div className="flex flex-wrap items-center gap-y-2 gap-x-6 text-xs sm:text-sm text-[#44403c] font-medium pt-1">
               <div className="flex items-center gap-1.5">
                 <Check className="w-4 h-4 text-emerald-600 stroke-[2.5]" />
-                <span>Sem cartão no teste</span>
+                <span>Pix ou cartão no pagamento</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <Check className="w-4 h-4 text-emerald-600 stroke-[2.5]" />

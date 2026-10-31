@@ -23,14 +23,11 @@ export const Footer: React.FC<FooterProps> = ({
           <div className="lg:col-span-2">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-9 h-9 rounded-md bg-[#af7e56] text-white font-bold text-sm flex items-center justify-center tracking-wider">
-                AG
+                AO
               </div>
               <div className="flex items-center gap-2">
                 <span className="font-extrabold text-xl tracking-tight text-white">
-                  Agendix
-                </span>
-                <span className="text-[10px] tracking-widest text-[#8c827a] font-bold uppercase mt-0.5">
-                  AGENDA ONLINE
+                  Agendamento<span className="text-emerald-400">ON</span>
                 </span>
               </div>
             </div>
@@ -145,7 +142,7 @@ export const Footer: React.FC<FooterProps> = ({
               </li>
               <li>
                 <a
-                  href="https://wa.me/?text=Preciso%20de%20ajuda%20com%20o%20Agendix"
+                  href="https://wa.me/?text=Preciso%20de%20ajuda%20com%20o%20AgendamentoON"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-white transition-colors"
@@ -172,7 +169,7 @@ export const Footer: React.FC<FooterProps> = ({
           </div>
 
           <div>
-            © {new Date().getFullYear()} Agendix Tecnologia Ltda. Todos os direitos reservados.
+            © {new Date().getFullYear()} AgendamentoON Tecnologia Ltda. Todos os direitos reservados.
           </div>
         </div>
 

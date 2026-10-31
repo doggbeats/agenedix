@@ -109,7 +109,7 @@ export const LiveBookingSimulator: React.FC = () => {
               {/* Phone Status bar */}
               <div className="bg-white px-6 pt-3 pb-2 border-b border-[#eee8df] flex items-center justify-between text-[11px] text-[#78716c]">
                 <div className="flex items-center gap-1 font-mono font-semibold text-[#171513]">
-                  <span>agendix.io/{niche.id}</span>
+                  <span>agendamentoon.app/{niche.id}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
@@ -407,7 +407,7 @@ export const LiveBookingSimulator: React.FC = () => {
                         Perfeito, {clientName.split(' ')[0]}!
                       </h4>
                       <p className="text-xs text-[#6b645c] mt-1">
-                        Seu horário foi reservado com sucesso no Agendix.
+                        Seu horário foi reservado com sucesso no AgendamentoON.
                       </p>
                     </div>
 

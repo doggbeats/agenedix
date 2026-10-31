@@ -4,6 +4,7 @@ import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { isManagerRole } from "@/lib/permissions";
+import { isSubscriptionUsable } from "@/lib/subscription";
 
 export const SESSION_COOKIE = "agendix_session";
 export const ESTABLISHMENT_COOKIE = "agendix_establishment";
@@ -129,11 +130,31 @@ export async function requireUser() {
   return auth;
 }
 
+const getPanelSubscription = cache(async (establishmentId: string) =>
+  prisma.subscription.findUnique({
+    where: { establishmentId },
+    select: {
+      status: true,
+      trialEndsAt: true,
+      currentPeriodEnd: true,
+      toleranceDays: true,
+    },
+  }),
+);
+
 export async function requirePanel() {
   const auth = await requireUser();
   if (!auth.activeMembership || !auth.establishment) {
     redirect("/login?erro=sem-estabelecimento");
   }
+
+  // O painel só abre depois que o plano está pago ou em teste válido.
+  // Sem isso, qualquer conta recém-criada teria acesso mesmo sem pagar.
+  const subscription = await getPanelSubscription(auth.establishment.id);
+  if (!isSubscriptionUsable(subscription)) {
+    redirect("/checkout");
+  }
+
   return {
     ...auth,
     activeMembership: auth.activeMembership,

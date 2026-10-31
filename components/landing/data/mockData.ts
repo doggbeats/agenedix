@@ -225,60 +225,74 @@ export const BUSINESS_NICHES: BusinessNiche[] = [
 
 export const PRICING_PLANS: PricingPlan[] = [
   {
-    id: 'solo',
-    name: 'Solo Autônomo',
-    priceMonthly: 49,
-    priceAnnual: 39,
-    description: 'Para quem trabalha sozinho e quer parar de responder agendamentos fora do expediente.',
+    id: 'essencial',
+    slug: 'essencial',
+    name: 'Essencial',
+    priceMonthly: 79.9,
+    priceAnnual: 66.58,
+    description: 'Para quem está começando a organizar a agenda e quer parar de responder horários fora do expediente.',
     features: [
-      '1 Profissional / Agenda individual',
-      'Agendamentos ilimitados por mês',
-      'Página pública exclusiva (link na bio)',
-      'Lembretes via WhatsApp automáticos',
-      'Sincronização com Google Agenda',
-      'Cobrança de sinal via PIX integrada',
-      'Suporte via chat em horário comercial'
+      '1 profissional ativo',
+      '15 serviços cadastrados',
+      'Página pública com a sua marca',
+      'Até 300 agendamentos por mês',
+      'Bloqueios de agenda e horários de funcionamento'
     ],
-    ctaText: 'Testar Solo por 7 dias'
+    ctaText: 'Começar teste de 7 dias',
+    trialDays: 7
+  },
+  {
+    id: 'profissional',
+    slug: 'profissional',
+    name: 'Profissional',
+    badge: 'Mais Escolhido',
+    isPopular: true,
+    priceMonthly: 109.9,
+    priceAnnual: 91.58,
+    description: 'A escolha de salões e barbearias em crescimento, com equipe e relatórios.',
+    features: [
+      '5 profissionais ativos',
+      '60 serviços cadastrados',
+      'Agendamentos sem limite mensal',
+      'Relatórios de faturamento e ocupação',
+      'Mensagens de WhatsApp personalizadas'
+    ],
+    ctaText: 'Começar teste de 7 dias',
+    trialDays: 7
   },
   {
     id: 'equipe',
-    name: 'Equipe & Studio',
-    badge: 'Mais Escolhido',
-    isPopular: true,
-    priceMonthly: 99,
-    priceAnnual: 79,
-    description: 'Perfeito para barbearias, clínicas e salões com múltiplos profissionais e comissões.',
+    slug: 'equipe',
+    name: 'Equipe',
+    priceMonthly: 139.9,
+    priceAnnual: 116.58,
+    description: 'Para operações com várias equipes, mais unidades e alto volume de atendimentos.',
     features: [
-      'Até 6 Profissionais com agendas próprias',
-      'Cálculo automático de comissões por colaborador',
-      'Painel de controle com permissões personalizadas',
-      'Lembretes WhatsApp com nome do profissional',
-      'Relatório completo de faturamento & DRE básico',
-      'Fila de espera inteligente quando lotado',
-      'Cobrança de sinal e pagamento integral no agendamento',
-      'Suporte VIP via WhatsApp prioritário'
+      '15 profissionais ativos',
+      '200 serviços cadastrados',
+      'Até 3 unidades',
+      'Relatórios completos',
+      'Suporte prioritário AgendamentoON'
     ],
-    ctaText: 'Começar teste gratuito'
+    ctaText: 'Começar teste de 7 dias',
+    trialDays: 7
   },
   {
-    id: 'pro',
-    name: 'Pro & Franquias',
-    badge: 'Escala Total',
-    priceMonthly: 179,
-    priceAnnual: 149,
-    description: 'Para redes, múltiplos endereços e operações que exigem máxima flexibilidade e API.',
+    id: 'premium',
+    slug: 'premium',
+    name: 'Premium',
+    priceMonthly: 189.9,
+    priceAnnual: 158.25,
+    description: 'Para redes e operações que precisam de escala, identidade visual e personalização.',
     features: [
-      'Profissionais ilimitados',
-      'Multi-unidades / Múltiplos endereços',
-      'API aberta & Webhooks para CRM e ERP',
-      'Domínio próprio personalizado (suaempresa.com.br)',
-      'Relatórios avançados de retenção e LTV',
-      'Gerente de conta dedicado',
-      'Treinamento ao vivo para toda a equipe',
-      'SLA garantido de 99.9% de uptime'
+      '20 profissionais ativos',
+      '200 serviços cadastrados',
+      'Múltiplas cores e identidade visual',
+      'Relatórios completos',
+      'Suporte prioritário AgendamentoON'
     ],
-    ctaText: 'Falar com especialista'
+    ctaText: 'Começar teste de 7 dias',
+    trialDays: 7
   }
 ];
 
@@ -289,7 +303,7 @@ export const TESTIMONIALS: Testimonial[] = [
     role: 'Fundador da Barbearia Don Corleone (3 unidades)',
     company: 'São Paulo, SP',
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80',
-    content: 'Antes do Agendix, perdíamos pelo menos 3 horas por dia respondendo no WhatsApp e anotando no papel. Nosso índice de no-show caiu de 22% para menos de 3% no primeiro mês com o lembrete automático.',
+    content: 'Antes do AgendamentoON, perdíamos pelo menos 3 horas por dia respondendo no WhatsApp e anotando no papel. Nosso índice de no-show caiu de 22% para menos de 3% no primeiro mês com o lembrete automático.',
     highlightMetric: '-85% de faltas de clientes',
     rating: 5
   },
@@ -299,7 +313,7 @@ export const TESTIMONIALS: Testimonial[] = [
     role: 'Biomédica & Proprietária da Lumina Estética',
     company: 'Curitiba, PR',
     avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=200&q=80',
-    content: 'O design da página pública do Agendix passa um ar de sofisticação absurdo. Nossas pacientes elogiam a facilidade de agendar direto pelo Instagram e o pagamento do sinal pelo PIX eliminou o risco de cadeira vazia.',
+    content: 'O design da página pública do AgendamentoON passa um ar de sofisticação absurdo. Nossas pacientes elogiam a facilidade de agendar direto pelo Instagram e o pagamento do sinal pelo PIX eliminou o risco de cadeira vazia.',
     highlightMetric: '+42% de faturamento líquido',
     rating: 5
   },
@@ -309,7 +323,7 @@ export const TESTIMONIALS: Testimonial[] = [
     role: 'Head de Operações no Studio Flow Pilates',
     company: 'Belo Horizonte, MG',
     avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80',
-    content: 'A divisão de comissão entre nossos 8 instrutores era uma dor de cabeça todo final de mês. Com o Agendix, o extrato sai com um clique, transparente para nós e para a equipe. Simplesmente indispensável.',
+    content: 'A divisão de comissão entre nossos 8 instrutores era uma dor de cabeça todo final de mês. Com o AgendamentoON, o extrato sai com um clique, transparente para nós e para a equipe. Simplesmente indispensável.',
     highlightMetric: '15h poupadas por mês na gestão',
     rating: 5
   }
@@ -317,12 +331,12 @@ export const TESTIMONIALS: Testimonial[] = [
 
 export const FAQ_ITEMS = [
   {
-    q: 'Como funciona o teste grátis de 7 dias?',
-    a: 'Você cria sua conta em menos de 1 minuto sem precisar cadastrar cartão de crédito. Durante os 7 dias, você tem acesso irrestrito a todas as ferramentas, incluindo lembretes por WhatsApp e página pública para testar com clientes reais.'
+    q: 'Como funciona o teste de 7 dias?',
+    a: 'Escolha o plano e ative o teste no cartão de crédito: você usa o painel completo por 7 dias e a primeira cobrança automática acontece só no 8º dia. Se preferir Pix, paga o primeiro período na hora e o painel libera assim que o pagamento é confirmado.'
   },
   {
     q: 'Os lembretes por WhatsApp gastam meus créditos ou preciso de chip extra?',
-    a: 'Não! O Agendix já conta com infraestrutura de WhatsApp integrada de alta entrega. Você não precisa comprar chip adicional nem deixar nenhum celular ligado para disparar as mensagens.'
+    a: 'Não! O AgendamentoON já conta com infraestrutura de WhatsApp integrada de alta entrega. Você não precisa comprar chip adicional nem deixar nenhum celular ligado para disparar as mensagens.'
   },
   {
     q: 'Posso cobrar sinal de confirmação pelo PIX?',
@@ -330,11 +344,11 @@ export const FAQ_ITEMS = [
   },
   {
     q: 'Posso sincronizar com o Google Calendar / Outlook?',
-    a: 'Com certeza! A sincronização é bidirecional em tempo real: quando você marca um compromisso particular na sua agenda pessoal, o horário é bloqueado no Agendix para que nenhum cliente agende por cima.'
+    a: 'Com certeza! A sincronização é bidirecional em tempo real: quando você marca um compromisso particular na sua agenda pessoal, o horário é bloqueado no AgendamentoON para que nenhum cliente agende por cima.'
   },
   {
     q: 'Minha equipe consegue acessar pelo celular?',
-    a: 'Sim. O Agendix funciona perfeitamente em qualquer smartphone, tablet ou computador. Cada profissional pode ter seu próprio login para visualizar apenas seus horários e comissões, sem ver dados confidenciais do negócio.'
+    a: 'Sim. O AgendamentoON funciona perfeitamente em qualquer smartphone, tablet ou computador. Cada profissional pode ter seu próprio login para visualizar apenas seus horários e comissões, sem ver dados confidenciais do negócio.'
   },
   {
     q: 'Tem fidelidade ou multa de cancelamento?',

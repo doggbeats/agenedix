@@ -22,7 +22,7 @@ const LIVE_EVENTS = [
   },
   {
     icon: '💬',
-    title: 'WhatsApp Bot Agendix',
+    title: 'WhatsApp Bot AgendamentoON',
     description: 'Lembrete de confirmação enviado para 14 clientes',
     time: 'agora mesmo'
   }

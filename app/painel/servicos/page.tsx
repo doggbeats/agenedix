@@ -183,9 +183,18 @@ export default async function ServicesPage({
               <article key={service.id} className={`${cardClass} p-4`}>
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-start gap-3">
-                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand/20 text-ink">
-                      <Scissors className="h-4 w-4" />
-                    </span>
+                    {service.imageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={service.imageUrl}
+                        alt=""
+                        className="h-10 w-10 shrink-0 rounded-xl object-cover"
+                      />
+                    ) : (
+                      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand/20 text-ink">
+                        <Scissors className="h-4 w-4" />
+                      </span>
+                    )}
                     <div>
                       <div className="flex flex-wrap items-center gap-1.5">
                         <h2 className="text-sm font-semibold text-ink">{service.name}</h2>

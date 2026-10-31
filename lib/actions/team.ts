@@ -136,7 +136,7 @@ export async function inviteTeamMemberAction(
       ? [
           `Olá, ${existingUser.name}!`,
           "",
-          `Você recebeu acesso ao painel de ${auth.establishment.name} na Agendix.`,
+          `Você recebeu acesso ao painel de ${auth.establishment.name} no AgendamentoON.`,
           "",
           `Perfil: ${ROLE_LABELS[input.role]}`,
           `E-mail: ${input.email}`,
@@ -148,7 +148,7 @@ export async function inviteTeamMemberAction(
       : [
           `Olá, ${input.name}!`,
           "",
-          `Você recebeu acesso ao painel de ${auth.establishment.name} na Agendix.`,
+          `Você recebeu acesso ao painel de ${auth.establishment.name} no AgendamentoON.`,
           "",
           `Perfil: ${ROLE_LABELS[input.role]}`,
           `E-mail: ${input.email}`,

@@ -20,12 +20,12 @@ export const CtaBanner: React.FC<CtaBannerProps> = ({ onOpenSignup, onOpenBookin
             
             <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/10 text-[#e8cbb5] text-xs font-semibold tracking-wider uppercase mb-6 backdrop-blur-md">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Experimente grátis por 7 dias</span>
+              <span>Teste por 7 dias</span>
             </div>
 
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-tight mb-6">
               A sua agenda merece a <br className="hidden sm:inline" />
-              praticidade do Agendix.
+              praticidade do AgendamentoON.
             </h2>
 
             <p className="text-[#d8cebe] text-base sm:text-lg leading-relaxed max-w-2xl mx-auto mb-8 font-normal">
@@ -53,7 +53,7 @@ export const CtaBanner: React.FC<CtaBannerProps> = ({ onOpenSignup, onOpenBookin
             <div className="flex flex-wrap items-center justify-center gap-y-2 gap-x-6 text-xs text-[#c4b9aa]">
               <div className="flex items-center gap-1.5">
                 <Check className="w-4 h-4 text-emerald-400 stroke-[3]" />
-                <span>Sem necessidade de cartão de crédito</span>
+                <span>Pix ou cartão de crédito</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <Check className="w-4 h-4 text-emerald-400 stroke-[3]" />

@@ -52,6 +52,7 @@ describe("validation", () => {
   it("valida cadastro e confirmação de senha", () => {
     const base = {
       businessName: "Barbearia Teste",
+      planSlug: "essencial",
       segment: "Barbearia",
       ownerName: "Ana Souza",
       email: "ana@example.com",

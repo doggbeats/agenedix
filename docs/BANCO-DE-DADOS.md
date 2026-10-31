@@ -38,9 +38,9 @@ O projeto usa PostgreSQL com Prisma. O schema está em `prisma/schema.prisma` e 
 | Modelo | Função |
 | --- | --- |
 | `TenantBranding` | Identidade visual do tenant: cores, fonte, estilo de botão, capa, galeria, redes e seções visíveis |
-| `SubscriptionPlan` | Planos comerciais com preço, limites de profissionais, serviços, unidades, usuários, agendamentos e dias de teste |
-| `Subscription` | Assinatura do estabelecimento: plano, status, ciclo, teste, período atual, tolerância e provedor |
-| `Payment` | Pagamento manual ou de provedor externo, com idempotência por `providerPaymentId` e `providerEventId` |
+| `SubscriptionPlan` | Planos comerciais com preço, limites de profissionais, serviços, unidades, usuários, agendamentos, dias de teste e IDs de plano no Pagar.me |
+| `Subscription` | Assinatura do estabelecimento: plano, status, ciclo, teste, período atual, tolerância, cliente e assinatura no provedor |
+| `Payment` | Pagamento manual ou do Pagar.me, com idempotência por `providerPaymentId` e `providerEventId` |
 | `Notification` | Registro de e-mails transacionais e lembretes, com status, erro e chave de deduplicação |
 
 ### Papéis
@@ -84,6 +84,7 @@ npx dotenv -e .env.local -- prisma migrate deploy
 | `20261027120000_brand_default` | Correção de registros criados com a cor antiga do protótipo |
 | `20261027130000_brown_brand_palette` | Paleta marrom anterior aplicada à Barbearia Nobre |
 | `20261030120000_saas_core` | Papel `ADMIN`, branding, unidades, exceções, pagamentos, notificações e tokens de autenticação |
+| `20261031120000_pagarme_plans` | Cache dos IDs de plano mensal e anual criados no Pagar.me |
 
 A migração `20261030120000_saas_core` é **aditiva**: usa `ADD VALUE IF NOT EXISTS`, `ADD COLUMN IF NOT EXISTS` e cria apenas tabelas/índices novos. Ela preserva os dados existentes.
 
@@ -97,7 +98,7 @@ A constraint `Appointment_professional_no_overlap` impede que dois agendamentos 
 
 O seed padrão cria:
 
-- os três planos (`Essencial`, `Profissional`, `Equipe`) com os valores e limites atuais;
+- os quatro planos (`Essencial`, `Profissional`, `Equipe`, `Premium`) com os valores e limites atuais;
 - a **Barbearia Nobre** com branding, unidade padrão, assinatura ativa, serviços, profissionais e agendamentos de exemplo;
 - os acessos de `OWNER`, `ADMIN` e `PROFESSIONAL` da Barbearia Nobre.
 
@@ -107,16 +108,16 @@ Credenciais e senhas são configuráveis por `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PAS
 
 ## PostgreSQL local
 
-Exemplo com um banco chamado `agendix`:
+Exemplo com um banco chamado `agendamentoon`:
 
 ```sql
-CREATE DATABASE agendix;
+CREATE DATABASE agendamentoon;
 ```
 
 Depois configure:
 
 ```env
-DATABASE_URL="postgresql://postgres:senha@localhost:5432/agendix?schema=public"
+DATABASE_URL="postgresql://postgres:senha@localhost:5432/agendamentoon?schema=public"
 ```
 
 Se o usuário da aplicação não puder criar extensões, execute como administrador:
@@ -132,7 +133,7 @@ CREATE EXTENSION IF NOT EXISTS btree_gist;
 3. Execute `npx prisma migrate deploy` em um passo controlado de deploy.
 4. Não execute `db:seed` em produção, a menos que queira criar ou atualizar contas e dados de demonstração.
 5. Confirme que o usuário do banco tem permissão para usar a extensão e a constraint de exclusão.
-6. Confirme que os planos comerciais existem. O cadastro público cria uma assinatura de teste e depende de um plano ativo.
+6. Confirme que os planos comerciais existem. O cadastro público cria uma assinatura `PENDING_PAYMENT` e o painel só libera após o checkout no Pagar.me ou a ativação manual pelo superadmin.
 
 O comando `npm run build` executa `prisma generate`, mas não aplica migrações. Isso evita alterações de schema durante o build da Vercel. Veja [DEPLOY.md](DEPLOY.md).
 
@@ -148,8 +149,8 @@ O comando `npm run build` executa `prisma generate`, mas não aplica migrações
 Use os recursos do provedor PostgreSQL. Para uma cópia manual:
 
 ```bash
-pg_dump "$DATABASE_URL" --format=custom --file=agendix.dump
-pg_restore --dbname="$DATABASE_URL" --clean --if-exists agendix.dump
+pg_dump "$DATABASE_URL" --format=custom --file=agendamentoon.dump
+pg_restore --dbname="$DATABASE_URL" --clean --if-exists agendamentoon.dump
 ```
 
 Teste a restauração em um banco separado antes de usar o procedimento em produção.

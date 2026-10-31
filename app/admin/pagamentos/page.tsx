@@ -184,7 +184,7 @@ export default async function AdminPaymentsPage({
           <div>
             <h2 className="text-sm font-semibold text-ink">Registrar pagamento manual</h2>
             <p className="text-[11px] text-slate-500">
-              O valor é confirmado pela equipe Agendix. A plataforma não processa cobranças.
+              O valor é confirmado pela equipe AgendamentoON. A plataforma não processa cobranças.
             </p>
           </div>
         </div>

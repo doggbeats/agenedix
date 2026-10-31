@@ -51,7 +51,7 @@ export async function GET(
   const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//Agendix//Agenda online//PT-BR",
+    "PRODID:-//AgendamentoON//Agenda online//PT-BR",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
     "BEGIN:VEVENT",

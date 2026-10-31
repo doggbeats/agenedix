@@ -46,8 +46,8 @@ describe("format", () => {
   it("gera iniciais e trunca textos", () => {
     expect(initials("Ana Paula Souza")).toBe("AP");
     expect(initials("  ")).toBe("");
-    expect(truncate("Agendix", 4)).toBe("Age…");
-    expect(truncate("Agendix", 20)).toBe("Agendix");
+    expect(truncate("AgendamentoON", 4)).toBe("Age…");
+    expect(truncate("AgendamentoON", 20)).toBe("AgendamentoON");
   });
 
   it("descreve tempo relativo", () => {

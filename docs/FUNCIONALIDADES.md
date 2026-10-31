@@ -1,6 +1,6 @@
 # Funcionalidades implementadas
 
-O Agendix é um SaaS multiestabelecimento. Cada negócio opera com isolamento total de dados e uma página pública própria. A plataforma central gerencia planos, assinaturas, pagamentos e auditoria.
+O AgendamentoON é um SaaS multiestabelecimento. Cada negócio opera com isolamento total de dados e uma página pública própria. A plataforma central gerencia planos, assinaturas, pagamentos e auditoria.
 
 ## Site público
 
@@ -107,8 +107,13 @@ O Agendix é um SaaS multiestabelecimento. Cada negócio opera com isolamento to
 - Plano atual, status, período de teste e limites.
 - Comparação entre planos ativos.
 - Histórico de pagamentos.
-- Solicitação de mudança de plano para a equipe Agendix.
+- Checkout em `/checkout` com Pix ou cartão de crédito via Pagar.me.
+- Tokenização do cartão no navegador; o servidor recebe apenas o token.
+- Teste de 7 dias no cartão com primeira cobrança automática no 8º dia.
+- Pix com pagamento imediato do primeiro período e liberação após o webhook.
+- Troca de plano imediata para assinaturas ativas no cartão.
 - Aviso quando a assinatura não está liberando a página pública.
+- Bloqueio do painel enquanto a assinatura não está paga ou em teste válido.
 
 ### Personalização
 
@@ -135,8 +140,9 @@ O Agendix é um SaaS multiestabelecimento. Cada negócio opera com isolamento to
 - Visão geral com totais reais de estabelecimentos, assinaturas, pagamentos e pendências.
 - Estabelecimentos: busca, filtro, suspensão/reativação, assinatura e acesso à página pública.
 - Planos: criação, edição, ativação, limites, preços e destaque.
-- Pagamentos: registro manual, ativação de assinatura, extensão de período, filtros e histórico.
-- Webhook de pagamentos com HMAC, idempotência e ativação automática.
+- Pagamentos: registro manual para exceções, ativação de assinatura, extensão de período, filtros e histórico.
+- Webhook do Pagar.me com HMAC, idempotência e ativação automática.
+- Webhook genérico de pagamentos com HMAC, idempotência e ativação automática.
 - Auditoria: filtros por ação e estabelecimento, paginação e metadados.
 - Nenhum indicador é fictício: todos vêm do banco.
 

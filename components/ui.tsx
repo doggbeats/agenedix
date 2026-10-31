@@ -29,31 +29,26 @@ export const cardClass = "rounded-xl border border-line bg-white shadow-sm";
 
 type LogoSize = "sm" | "md" | "lg";
 
-const logoSizeClasses: Record<LogoSize, { mark: string; text: string; tag: string }> = {
+const logoSizeClasses: Record<LogoSize, { mark: string; text: string }> = {
   sm: {
     mark: "h-8 w-8 rounded-lg text-[10px]",
     text: "text-[17px]",
-    tag: "text-[10px]",
   },
   md: {
     mark: "h-9 w-9 rounded-lg text-[11px]",
     text: "text-lg",
-    tag: "text-[10px]",
   },
   lg: {
     mark: "h-11 w-11 rounded-xl text-xs",
     text: "text-2xl",
-    tag: "text-[11px]",
   },
 };
 
 export function Logo({
   dark = false,
-  compact = false,
   size = "sm",
 }: {
   dark?: boolean;
-  compact?: boolean;
   size?: LogoSize;
 }) {
   const classes = logoSizeClasses[size];
@@ -63,21 +58,15 @@ export function Logo({
         aria-hidden
         className={`grid place-items-center bg-ink font-bold tracking-[0.08em] text-white ${classes.mark}`}
       >
-        AG
+        AO
       </span>
       <span
         className={`font-display font-semibold tracking-tight ${classes.text} ${
           dark ? "text-white" : "text-ink"
         }`}
       >
-        {APP_NAME}
-        {!compact && (
-          <span
-            className={`ml-2 hidden font-sans font-semibold uppercase tracking-[0.16em] opacity-55 sm:inline ${classes.tag}`}
-          >
-            Agenda online
-          </span>
-        )}
+        {APP_NAME.slice(0, -2)}
+        <span className={dark ? "text-emerald-400" : "text-emerald-600"}>ON</span>
       </span>
     </span>
   );

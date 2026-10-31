@@ -93,6 +93,7 @@ export async function signupAction(
 ): Promise<ActionState> {
   const parsed = parseForm(signupSchema, {
     businessName: formData.get("businessName"),
+    planSlug: formData.get("planSlug"),
     segment: formData.get("segment"),
     ownerName: formData.get("ownerName"),
     email: formData.get("email"),
@@ -125,19 +126,18 @@ export async function signupAction(
   }
 
   const plan = await prisma.subscriptionPlan.findFirst({
-    where: { active: true, isDemo: false },
-    orderBy: [{ sortOrder: "asc" }, { priceMonthly: "asc" }],
+    where: { slug: input.planSlug, active: true, isDemo: false },
   });
   if (!plan) {
     return failure(
-      "Nenhum plano está disponível no momento. Fale com o suporte pelo WhatsApp.",
+      "O plano escolhido não está disponível. Volte e selecione outro plano.",
+      { planSlug: ["Plano indisponível."] },
     );
   }
 
   const phone = normalizePhone(input.phone);
   const whatsapp = input.whatsapp ? normalizePhone(input.whatsapp) : phone;
   const passwordHash = await hashPassword(input.password);
-  const now = new Date();
 
   let result: { user: { id: string }; establishment: { id: string } };
   try {
@@ -219,19 +219,14 @@ export async function signupAction(
         },
       });
 
-      const trialEndsAt = new Date(
-        now.getTime() + Math.max(1, plan.trialDays) * 86400000,
-      );
       await tx.subscription.create({
         data: {
           establishmentId: establishment.id,
           planId: plan.id,
-          status: "TRIALING",
+          status: "PENDING_PAYMENT",
           billingCycle: "MONTHLY",
-          trialEndsAt,
-          currentPeriodStart: now,
-          currentPeriodEnd: trialEndsAt,
-          provider: "MANUAL",
+          provider: "PAGARME",
+          notes: "Aguardando escolha da forma de pagamento no checkout.",
         },
       });
 
@@ -242,7 +237,7 @@ export async function signupAction(
           action: "establishment.created",
           entityType: "Establishment",
           entityId: establishment.id,
-          metadata: { plan: plan.slug, trial: true },
+          metadata: { plan: plan.slug, paymentPending: true },
           ip,
         },
       });
@@ -262,11 +257,11 @@ export async function signupAction(
     const verifyUrl = `${getAppUrl()}/verificar-email?token=${encodeURIComponent(verificationToken)}`;
     await sendEmail({
       to: input.email,
-      subject: "Confirme seu e-mail na Agendix",
+      subject: "Confirme seu e-mail no AgendamentoON",
       text: [
         `Olá, ${input.ownerName}!`,
         "",
-        `Sua conta em ${input.businessName} foi criada na Agendix.`,
+        `Sua conta em ${input.businessName} foi criada no AgendamentoON.`,
         "",
         "Confirme seu e-mail para garantir o acesso e o recebimento de avisos:",
         verifyUrl,
@@ -279,7 +274,7 @@ export async function signupAction(
   }
 
   revalidatePath("/", "layout");
-  redirect("/painel/onboarding?boas-vindas=1");
+  redirect("/checkout?plano=" + encodeURIComponent(plan.slug));
 }
 
 export async function logoutAction(): Promise<void> {
@@ -307,33 +302,6 @@ export async function switchEstablishmentAction(formData: FormData): Promise<voi
   await setActiveEstablishment(membership.establishmentId);
   revalidatePath("/painel", "layout");
   redirect("/painel");
-}
-
-export async function requestPlanChangeAction(
-  _prevState: ActionState,
-  formData: FormData,
-): Promise<ActionState> {
-  const auth = await getAuthContext();
-  if (!auth?.establishment) return failure("Sessão expirada.");
-
-  const planId = String(formData.get("planId") ?? "");
-  const plan = await prisma.subscriptionPlan.findFirst({
-    where: { id: planId, active: true },
-  });
-  if (!plan) return failure("Plano indisponível.");
-
-  await recordAudit({
-    actorUserId: auth.user.id,
-    establishmentId: auth.establishment.id,
-    action: "subscription.change_requested",
-    entityType: "SubscriptionPlan",
-    entityId: plan.id,
-    metadata: { plan: plan.slug },
-  });
-
-  return success(
-    `Solicitação do plano ${plan.name} registrada. A equipe Agendix entrará em contato para confirmar o pagamento antes de qualquer ativação.`,
-  );
 }
 
 export async function requestPasswordResetAction(
@@ -366,11 +334,11 @@ export async function requestPasswordResetAction(
     const resetUrl = `${getAppUrl()}/redefinir-senha?token=${encodeURIComponent(token)}`;
     await sendEmail({
       to: user.email,
-      subject: "Redefinição de senha na Agendix",
+      subject: "Redefinição de senha no AgendamentoON",
       text: [
         `Olá, ${user.name}!`,
         "",
-        "Recebemos uma solicitação para redefinir sua senha na Agendix.",
+        "Recebemos uma solicitação para redefinir sua senha no AgendamentoON.",
         "",
         `Crie uma nova senha por este link: ${resetUrl}`,
         "",

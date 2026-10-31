@@ -1,4 +1,4 @@
-// Agendix — modelo multiempresa
+// AgendamentoON — modelo multiempresa
 // Regras: todo dado operacional carrega establishmentId e as consultas são
 // sempre filtradas pelo vínculo do usuário autenticado.
 
@@ -415,6 +415,8 @@ model SubscriptionPlan {
   maxUsers             Int      @default(2)
   maxAppointmentsMonth Int?
   trialDays            Int      @default(7)
+  providerPlanIdMonthly String?
+  providerPlanIdYearly  String?
   features             Json?
   active               Boolean  @default(true)
   isDemo               Boolean  @default(false)

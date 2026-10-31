@@ -31,7 +31,7 @@ function textToHtml(text: string): string {
  */
 export async function sendEmail(input: EmailInput): Promise<EmailResult> {
   const apiKey = process.env.RESEND_API_KEY?.trim();
-  const from = process.env.EMAIL_FROM?.trim() || "Agendix <nao-responda@agendix.app>";
+  const from = process.env.EMAIL_FROM?.trim() || "AgendamentoON <nao-responda@agendix.app>";
 
   if (!apiKey) {
     console.info("[email:log]", {

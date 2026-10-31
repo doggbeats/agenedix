@@ -1,6 +1,6 @@
-export const APP_NAME = "Agendix";
+export const APP_NAME = "AgendamentoON";
 export const APP_TAGLINE = "Agendamento online para negócios que atendem com hora marcada";
-export const COMPANY_NAME = "Agendix";
+export const COMPANY_NAME = "AgendamentoON";
 export const BRAND_COLOR = "#B08D68";
 
 export const BRAND_PALETTE = {
@@ -118,6 +118,7 @@ export const RESERVED_SLUGS = new Set([
   "www",
   "suporte",
   "agendix",
+  "agendamentoon",
   "plataforma",
   "code-ph",
 ]);

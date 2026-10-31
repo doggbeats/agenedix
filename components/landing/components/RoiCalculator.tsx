@@ -11,7 +11,7 @@ export const RoiCalculator: React.FC<RoiCalculatorProps> = ({ onOpenSignup }) =>
 
   // Calculations
   const monthlyAppointments = appointmentsPerWeek * 4.2;
-  // Without auto reminders, approx 15% no-show rate. With Agendix, no-shows drop to ~3% (saving ~12% of appointments)
+  // Without auto reminders, approx 15% no-show rate. With AgendamentoON, no-shows drop to ~3% (saving ~12% of appointments)
   const recoveredAppointments = Math.round(monthlyAppointments * 0.12);
   const recoveredMoney = recoveredAppointments * averageTicket;
   
@@ -28,7 +28,7 @@ export const RoiCalculator: React.FC<RoiCalculatorProps> = ({ onOpenSignup }) =>
             <span>Calculadora de Retorno</span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-bold text-[#171513] tracking-tight">
-            Descubra quanto dinheiro o Agendix <br className="hidden sm:inline" />
+            Descubra quanto dinheiro o AgendamentoON <br className="hidden sm:inline" />
             coloca de volta no seu bolso.
           </h2>
           <p className="mt-3 text-[#6b645c] text-sm sm:text-base">

@@ -109,7 +109,7 @@ export const NicheShowcase: React.FC<NicheShowcaseProps> = ({ onOpenSignup }) =>
             Projetado para negócios com atendimento agendado
           </h2>
           <p className="mt-4 text-[#6b645c] text-base sm:text-lg">
-            Descubra como o Agendix se adapta às particularidades e regras específicas do seu modelo de negócio.
+            Descubra como o AgendamentoON se adapta às particularidades e regras específicas do seu modelo de negócio.
           </p>
         </div>
 

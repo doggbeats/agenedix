@@ -80,7 +80,7 @@ export const FaqSection: React.FC = () => {
           </div>
 
           <a
-            href="https://wa.me/?text=Olá!%20Gostaria%20de%20saber%20mais%20sobre%20o%20Agendix"
+            href="https://wa.me/?text=Olá!%20Gostaria%20de%20saber%20mais%20sobre%20o%20AgendamentoON"
             target="_blank"
             rel="noopener noreferrer"
             className="bg-[#241f1c] hover:bg-[#38332d] text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-colors shrink-0 inline-flex items-center gap-2"
