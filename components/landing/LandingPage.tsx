@@ -54,7 +54,7 @@ export function LandingPage({ plans }: { plans?: PricingPlan[] }) {
 
         <RoiCalculator onOpenSignup={openSignup} />
 
-        <PricingSection plans={plans} onOpenSignup={openSignup} />
+        <PricingSection plans={plans} />
 
         <TestimonialsSection />
 
