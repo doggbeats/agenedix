@@ -220,10 +220,10 @@ export function BookingWizard({
   }
 
   const steps = [
-    { id: "etapa-servico", number: "1", label: "Serviço", done: Boolean(serviceId) },
+    { id: "etapa-servico", number: "1", label: "Servicos", done: Boolean(serviceId) },
     { id: "etapa-profissional", number: "2", label: "Profissional", done: true },
-    { id: "etapa-horario", number: "3", label: "Horário", done: Boolean(selectedTime) },
-    { id: "etapa-dados", number: "4", label: "Seus dados", done: false },
+    { id: "etapa-horario", number: "3", label: "Data e hora", done: Boolean(selectedTime) },
+    { id: "etapa-dados", number: "4", label: "Confirmar", done: false },
   ];
   const currentStep = selectedTime ? 4 : 3;
 
@@ -246,7 +246,7 @@ export function BookingWizard({
                   }`}
                 >
                   <span
-                    className={`grid h-5 w-5 shrink-0 place-items-center rounded-md text-[10px] font-semibold ${
+                    className={`grid h-5 w-5 shrink-0 place-items-center rounded-full text-[10px] font-semibold ${
                       step.done
                         ? "bg-brand text-white"
                         : active
