@@ -83,7 +83,7 @@ Esses fluxos devem ser validados manualmente antes de cada publicação. Para um
 4. Confirme os dados e conclua a reserva.
 5. Abra o link de confirmação com protocolo e token.
 6. Baixe o `.ics`, abra o Google Agenda e cancele dentro do prazo.
-7. Entre no painel com `dono@barbearianobre.com.br` / `Demo@2026`.
+7. Entre no painel com `dono@barbearianobre.com.br` (senha definida por `SEED_OWNER_PASSWORD`).
 8. Verifique o agendamento em `/painel/agendamentos` e exporte o CSV em `/painel/relatorios`.
 9. Crie um serviço, um profissional e um bloqueio em `/painel/configuracoes`.
 10. Ajuste cores em `/painel/personalizar` e confira a página pública.

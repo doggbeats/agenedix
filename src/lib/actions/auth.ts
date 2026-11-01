@@ -62,7 +62,7 @@ export async function loginAction(
     return failure("E-mail ou senha inválidos.");
   }
 
-  if (user.memberships.length === 0) {
+  if (!user.isPlatformAdmin && user.memberships.length === 0) {
     return failure(
       "Esta conta não está vinculada a nenhum estabelecimento. Fale com o responsável pelo negócio.",
     );
@@ -84,6 +84,9 @@ export async function loginAction(
     ip,
   });
 
+  if (user.isPlatformAdmin && user.memberships.length === 0) {
+    redirect("/admin");
+  }
   redirect("/painel");
 }
 

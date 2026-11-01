@@ -19,10 +19,20 @@ function env(name: string, fallback: string): string {
   return value && value.trim().length >= 4 ? value.trim() : fallback;
 }
 
+function secret(name: string): string {
+  const value = process.env[name]?.trim();
+  if (!value || value.length < 8) {
+    throw new Error(
+      `Defina ${name} no .env.local com uma senha de pelo menos 8 caracteres antes de rodar o seed.`,
+    );
+  }
+  return value;
+}
+
 const ADMIN_EMAIL = env("SEED_ADMIN_EMAIL", "admin@agendix.app");
-const ADMIN_PASSWORD = env("SEED_ADMIN_PASSWORD", "Admin@2026");
-const OWNER_PASSWORD = env("SEED_OWNER_PASSWORD", "Demo@2026");
-const PROFESSIONAL_PASSWORD = env("SEED_PROFESSIONAL_PASSWORD", "Demo@2026");
+const ADMIN_PASSWORD = secret("SEED_ADMIN_PASSWORD");
+const OWNER_PASSWORD = secret("SEED_OWNER_PASSWORD");
+const PROFESSIONAL_PASSWORD = secret("SEED_PROFESSIONAL_PASSWORD");
 
 type PlanSeed = {
   id: string;

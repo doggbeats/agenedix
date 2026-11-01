@@ -179,22 +179,22 @@ CREATE EXTENSION IF NOT EXISTS btree_gist;
 
 O seed padrão cria os planos e a **Barbearia Nobre**:
 
-| Perfil | E-mail | Senha |
-| --- | --- | --- |
-| Proprietário — Barbearia Nobre | `dono@barbearianobre.com.br` | `Demo@2026` |
-| Administrador — Barbearia Nobre | `admin@barbearianobre.com.br` | `Demo@2026` |
-| Profissional — Barbearia Nobre | `bruno@barbearianobre.com.br` | `Demo@2026` |
+| Perfil | E-mail |
+| --- | --- |
+| Proprietário — Barbearia Nobre | `dono@barbearianobre.com.br` |
+| Administrador — Barbearia Nobre | `admin@barbearianobre.com.br` |
+| Profissional — Barbearia Nobre | `bruno@barbearianobre.com.br` |
 
 Página pública: `/agendar/barbearia-nobre`.
 
 Com `SEED_EXTRA_DEMO=true`, o seed também cria:
 
-| Perfil | E-mail | Senha |
-| --- | --- | --- |
-| Superadmin da plataforma | `admin@agendix.app` | `Admin@2026` |
-| Proprietária — Studio Aurora (teste) | `dono@studioaurora.com.br` | `Demo@2026` |
+| Perfil | E-mail |
+| --- | --- |
+| Superadmin da plataforma | `admin@agendix.app` |
+| Proprietária — Studio Aurora (teste) | `dono@studioaurora.com.br` |
 
-As senhas podem ser trocadas por `SEED_ADMIN_PASSWORD`, `SEED_OWNER_PASSWORD` e `SEED_PROFESSIONAL_PASSWORD`. Troque-as antes de usar o projeto em um ambiente compartilhado.
+As senhas não são mais versionadas. Defina `SEED_ADMIN_PASSWORD`, `SEED_OWNER_PASSWORD` e `SEED_PROFESSIONAL_PASSWORD` no `.env.local` (mínimo 8 caracteres) antes de rodar o seed.
 
 ## E-mail, webhook e cron
 
