@@ -1,256 +1,201 @@
-import React from 'react';
-import { 
-  Smartphone, 
-  MessageSquare, 
-  Users, 
-  QrCode, 
-  CalendarSync, 
-  BarChart3, 
-  Sparkles,
-  ArrowUpRight,
-  ShieldCheck,
-  Zap
-} from 'lucide-react';
+import React from "react";
+import {
+  ArrowRight,
+  BarChart3,
+  CalendarClock,
+  Globe2,
+  Palette,
+  Scissors,
+  Users,
+} from "lucide-react";
 
 interface FeaturesGridProps {
   onOpenBookingDemo: () => void;
 }
 
+const features = [
+  {
+    icon: Globe2,
+    title: "Página pública com a sua marca",
+    description:
+      "Link próprio, logo, capa, cores e seções que você escolhe. O cliente agenda sem criar conta.",
+  },
+  {
+    icon: CalendarClock,
+    title: "Disponibilidade calculada de verdade",
+    description:
+      "Funcionamento, jornada, pausas, bloqueios, exceções e duração dos serviços entram na conta.",
+  },
+  {
+    icon: Scissors,
+    title: "Serviços ligados à equipe",
+    description:
+      "Defina preço, duração, intervalo e quais profissionais executam cada serviço.",
+  },
+  {
+    icon: Users,
+    title: "Acesso por papel",
+    description:
+      "Proprietário, administrador e profissional enxergam apenas o que precisam para trabalhar.",
+  },
+  {
+    icon: BarChart3,
+    title: "Relatórios do período",
+    description:
+      "Receita, volume, distribuição por serviço e exportação em CSV para fechar o mês.",
+  },
+  {
+    icon: Palette,
+    title: "Personalização com prévia",
+    description:
+      "Ajuste a aparência da página pública e veja o resultado antes de aplicar.",
+  },
+];
+
 export const FeaturesGrid: React.FC<FeaturesGridProps> = ({ onOpenBookingDemo }) => {
   return (
-    <section id="recursos" className="py-20 md:py-28 relative">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Section Header */}
-        <div className="text-center max-w-2xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-[#e4ded5] bg-[#f5efe6] text-[#8f5e3b] text-xs font-semibold tracking-wider uppercase mb-4">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Recursos pensados para o seu dia a dia</span>
+    <section id="recursos" className="border-b border-line py-20 sm:py-28">
+      <div className="container-page">
+        <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
+          <div className="max-w-2xl">
+            <p className="eyebrow">Recursos</p>
+            <h2 className="display-title mt-4 text-3xl text-ink sm:text-4xl lg:text-[44px]">
+              O essencial para a agenda funcionar.
+            </h2>
+            <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-muted">
+              Sem recurso de vitrine. O AgendamentoON cobre a operação de quem atende com
+              hora marcada: agenda, equipe, serviços, página pública e relatórios.
+            </p>
           </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-[42px] font-bold text-[#171513] tracking-tight leading-tight">
-            Tudo o que você precisa para <br className="hidden sm:inline" />
-            <span className="text-[#af7e56]">lotar a sua agenda</span> com zero estresse.
-          </h2>
-          <p className="mt-4 text-base sm:text-lg text-[#6b645c]">
-            Elimine conversas intermináveis de agendamento e foque 100% na excelência do seu atendimento presencial ou online.
-          </p>
+          <button
+            type="button"
+            onClick={onOpenBookingDemo}
+            className="inline-flex items-center gap-1.5 self-start text-sm font-semibold text-brand transition hover:text-brand-hover lg:self-end"
+          >
+            Ver uma agenda de exemplo <ArrowRight className="h-4 w-4" />
+          </button>
         </div>
 
-        {/* Bento Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-          
-          {/* Card 1: Página Pública (Featured Large) */}
-          <div className="md:col-span-2 bg-white rounded-3xl p-6 sm:p-8 border border-[#e7e1d8] shadow-soft hover:shadow-elevated transition-all group flex flex-col justify-between overflow-hidden relative">
-            <div className="relative z-10">
-              <div className="w-12 h-12 rounded-2xl bg-[#f7efe8] text-[#af7e56] flex items-center justify-center mb-6 group-hover:scale-105 transition-transform">
-                <Smartphone className="w-6 h-6" />
-              </div>
-              <div className="inline-block text-xs font-semibold uppercase tracking-wider text-[#af7e56] mb-1">
-                Sua vitrine 24 horas por dia
-              </div>
-              <h3 className="text-2xl font-bold text-[#171513] mb-3">
-                Página pública exclusiva no seu link da bio
+        <div className="mt-12 grid gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-3">
+          {features.map((feature) => (
+            <div key={feature.title} className="group bg-white p-6 transition-colors hover:bg-surface sm:p-7">
+              <span className="grid h-10 w-10 place-items-center rounded-lg border border-line bg-white text-ink transition-colors group-hover:border-brand/30 group-hover:text-brand">
+                <feature.icon className="h-[18px] w-[18px]" aria-hidden />
+              </span>
+              <h3 className="mt-5 text-[15px] font-semibold tracking-tight text-ink">
+                {feature.title}
               </h3>
-              <p className="text-[#6b645c] text-sm sm:text-base max-w-md leading-relaxed mb-6">
-                Seu cliente clica no link do Instagram, escolhe o serviço, profissional, dia e horário disponível em menos de 40 segundos — sem baixar nenhum aplicativo.
-              </p>
-              
-              <button 
-                onClick={onOpenBookingDemo}
-                className="inline-flex items-center gap-1.5 text-sm font-bold text-[#af7e56] hover:text-[#8f5e3b] group/btn cursor-pointer"
-              >
-                <span>Experimentar página de agendamento do cliente</span>
-                <ArrowUpRight className="w-4 h-4 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
-              </button>
+              <p className="mt-2 text-[13px] leading-relaxed text-muted">{feature.description}</p>
             </div>
+          ))}
+        </div>
 
-            {/* Visual representation of public page */}
-            <div className="mt-8 bg-[#fbfaf8] border border-[#ede7de] rounded-2xl p-4 shadow-2xs">
-              <div className="flex items-center justify-between pb-3 border-b border-[#ece6dd] text-xs">
-                <span className="font-mono text-[#8c827a] text-[11px] bg-white px-2 py-0.5 rounded border border-[#ede7de]">
-                  agendamentoon.app/barbeariadon
-                </span>
-                <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-medium text-[11px]">
-                  ✓ Aberto para agendamentos
-                </span>
-              </div>
-              <div className="pt-3 grid grid-cols-1 sm:grid-cols-3 gap-2">
-                <div className="bg-white p-2.5 rounded-xl border border-[#ede8e1] flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-[#f5ede4] text-[#af7e56] flex items-center justify-center font-bold text-xs">1</div>
-                  <div className="text-left">
-                    <p className="text-[11px] font-bold text-[#1c1917]">Corte Degradê</p>
-                    <p className="text-[10px] text-[#8c827a]">R$ 60 • 40 min</p>
-                  </div>
-                </div>
-                <div className="bg-white p-2.5 rounded-xl border border-[#ede8e1] flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-[#f5ede4] text-[#af7e56] flex items-center justify-center font-bold text-xs">2</div>
-                  <div className="text-left">
-                    <p className="text-[11px] font-bold text-[#1c1917]">Rafael (Barbeiro)</p>
-                    <p className="text-[10px] text-emerald-600 font-medium">3 horários livres</p>
-                  </div>
-                </div>
-                <div className="bg-[#171513] text-white p-2.5 rounded-xl flex items-center justify-between">
-                  <div>
-                    <p className="text-[10px] text-[#c7beaf]">Confirmar para</p>
-                    <p className="text-[11px] font-bold text-white">Hoje, 15:00</p>
-                  </div>
-                  <Zap className="w-4 h-4 text-amber-400" />
-                </div>
-              </div>
-            </div>
+        <div className="mt-16 grid items-center gap-10 rounded-2xl border border-line bg-surface p-6 sm:p-10 lg:grid-cols-[0.9fr_1.1fr] lg:gap-14">
+          <div>
+            <p className="eyebrow">Página pública</p>
+            <h3 className="display-title mt-4 text-2xl text-ink sm:text-3xl">
+              Uma página, não um formulário.
+            </h3>
+            <p className="mt-3 text-sm leading-relaxed text-muted">
+              O cliente chega pelo link da bio, escolhe o serviço e vê apenas os horários
+              que realmente estão livres. A confirmação traz protocolo e um link para
+              consultar ou cancelar.
+            </p>
+            <ul className="mt-6 space-y-3 text-[13px] text-slate-700">
+              {[
+                "Serviços, equipe, horários, endereço e política de cancelamento",
+                "Reserva em etapas com disponibilidade validada no servidor",
+                "Seções condicionais: você mostra só o que faz sentido",
+              ].map((item) => (
+                <li key={item} className="flex items-start gap-2.5">
+                  <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-brand" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+            <button
+              type="button"
+              onClick={onOpenBookingDemo}
+              className="mt-7 inline-flex items-center gap-2 rounded-[10px] border border-line bg-white px-4 py-2.5 text-sm font-semibold text-ink transition hover:border-slate-300"
+            >
+              Explorar a página de exemplo <ArrowRight className="h-4 w-4" />
+            </button>
           </div>
 
-          {/* Card 2: Lembretes WhatsApp */}
-          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#e7e1d8] shadow-soft hover:shadow-elevated transition-all group flex flex-col justify-between">
-            <div>
-              <div className="w-12 h-12 rounded-2xl bg-[#e8f7ee] text-emerald-600 flex items-center justify-center mb-6 group-hover:scale-105 transition-transform">
-                <MessageSquare className="w-6 h-6" />
-              </div>
-              <div className="inline-block text-xs font-semibold uppercase tracking-wider text-emerald-700 mb-1">
-                Adeus Faltas
-              </div>
-              <h3 className="text-2xl font-bold text-[#171513] mb-3">
-                Lembretes no WhatsApp com 1 clique
-              </h3>
-              <p className="text-[#6b645c] text-sm leading-relaxed mb-6">
-                Envio automático 24h e 2h antes com botão de confirmação. Se o cliente desmarcar, a vaga é liberada automaticamente.
-              </p>
-            </div>
-
-            {/* Chat bubble preview */}
-            <div className="bg-[#eef8f1] border border-[#d2edd9] rounded-2xl p-3.5 text-xs">
-              <div className="flex items-center gap-2 mb-1.5 font-bold text-emerald-900">
-                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                <span>WhatsApp AgendamentoON</span>
-              </div>
-              <p className="text-emerald-950 text-[11px] leading-relaxed">
-                &ldquo;Olá Ana! Seu horário de <strong>Limpeza de Pele</strong> é amanhã às 14h com a Dra. Camila. Responda 1 para confirmar.&rdquo;
-              </p>
-              <div className="mt-2 pt-2 border-t border-[#c6e7d0] flex justify-end">
-                <span className="text-[10px] text-emerald-700 font-bold bg-white/70 px-2 py-0.5 rounded">
-                  ✓ Confirmado pelo cliente
+          <div className="overflow-hidden rounded-xl border border-line bg-white shadow-[0_24px_60px_-45px_rgba(11,18,32,0.35)]">
+            <div className="flex items-center justify-between border-b border-line px-4 py-3">
+              <div className="flex items-center gap-2.5">
+                <span className="grid h-7 w-7 place-items-center rounded-md bg-ink text-[9px] font-bold text-white">
+                  BN
                 </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Card 3: Cobrança de Sinal via PIX */}
-          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#e7e1d8] shadow-soft hover:shadow-elevated transition-all group flex flex-col justify-between">
-            <div>
-              <div className="w-12 h-12 rounded-2xl bg-[#fdf2e9] text-[#b45309] flex items-center justify-center mb-6 group-hover:scale-105 transition-transform">
-                <QrCode className="w-6 h-6" />
-              </div>
-              <div className="inline-block text-xs font-semibold uppercase tracking-wider text-[#b45309] mb-1">
-                Zero calote
-              </div>
-              <h3 className="text-2xl font-bold text-[#171513] mb-3">
-                Cobrança de Sinal via PIX Integrado
-              </h3>
-              <p className="text-[#6b645c] text-sm leading-relaxed mb-6">
-                Exija uma taxa de 30% ou o valor total no momento do agendamento para blindar sua agenda contra clientes fantasmas.
-              </p>
-            </div>
-
-            <div className="bg-[#fcfbf9] border border-[#eee7dd] rounded-2xl p-3 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center font-bold text-xs">
-                  PIX
-                </div>
                 <div>
-                  <p className="text-xs font-bold text-[#171513]">Sinal de Reserva</p>
-                  <p className="text-[10px] text-[#78716c]">Creditado na sua conta</p>
+                  <p className="text-[11px] font-semibold text-ink">Barbearia Nobre</p>
+                  <p className="text-[9px] uppercase tracking-wide text-slate-400">
+                    Barbearia · São Paulo
+                  </p>
                 </div>
               </div>
-              <span className="text-xs font-extrabold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">
-                + R$ 50,00
+              <span className="rounded-md border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[9px] font-semibold text-emerald-700">
+                Aberto
               </span>
             </div>
-          </div>
-
-          {/* Card 4: Gestão de Múltiplos Profissionais */}
-          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#e7e1d8] shadow-soft hover:shadow-elevated transition-all group flex flex-col justify-between">
-            <div>
-              <div className="w-12 h-12 rounded-2xl bg-[#ede9fe] text-[#7c3aed] flex items-center justify-center mb-6 group-hover:scale-105 transition-transform">
-                <Users className="w-6 h-6" />
+            <div className="grid gap-4 p-4 sm:grid-cols-[1.1fr_0.9fr]">
+              <div className="space-y-2">
+                <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-muted">
+                  1. Escolha o serviço
+                </p>
+                {[
+                  { name: "Corte masculino", meta: "40 min · R$ 60" },
+                  { name: "Corte + barba", meta: "70 min · R$ 95" },
+                  { name: "Barba completa", meta: "30 min · R$ 45" },
+                ].map((service, index) => (
+                  <div
+                    key={service.name}
+                    className={`flex items-center justify-between rounded-lg border px-3 py-2.5 ${
+                      index === 0 ? "border-brand bg-brand/5" : "border-line bg-white"
+                    }`}
+                  >
+                    <div>
+                      <p className="text-[11px] font-semibold text-ink">{service.name}</p>
+                      <p className="text-[9px] text-muted">{service.meta}</p>
+                    </div>
+                    <span
+                      className={`h-3.5 w-3.5 rounded-full border ${
+                        index === 0 ? "border-brand bg-brand" : "border-slate-300"
+                      }`}
+                    />
+                  </div>
+                ))}
               </div>
-              <div className="inline-block text-xs font-semibold uppercase tracking-wider text-[#7c3aed] mb-1">
-                Equipe Organizada
-              </div>
-              <h3 className="text-2xl font-bold text-[#171513] mb-3">
-                Agendas individuais & Comissões
-              </h3>
-              <p className="text-[#6b645c] text-sm leading-relaxed mb-6">
-                Cada colaborador acessa apenas sua própria agenda pelo smartphone e acompanha suas comissões em tempo real.
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-xs p-2 rounded-xl bg-[#faf8f5] border border-[#ede8e1]">
-                <span className="font-medium text-[#1c1917]">Rafael (Barbeiro)</span>
-                <span className="text-emerald-700 font-bold">50% comissão (R$ 1.840)</span>
-              </div>
-              <div className="flex items-center justify-between text-xs p-2 rounded-xl bg-[#faf8f5] border border-[#ede8e1]">
-                <span className="font-medium text-[#1c1917]">Bruno (Barba & Corte)</span>
-                <span className="text-emerald-700 font-bold">45% comissão (R$ 1.520)</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Card 5: Google Agenda e Calendars */}
-          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#e7e1d8] shadow-soft hover:shadow-elevated transition-all group flex flex-col justify-between">
-            <div>
-              <div className="w-12 h-12 rounded-2xl bg-[#e0f2fe] text-[#0284c7] flex items-center justify-center mb-6 group-hover:scale-105 transition-transform">
-                <CalendarSync className="w-6 h-6" />
-              </div>
-              <div className="inline-block text-xs font-semibold uppercase tracking-wider text-[#0284c7] mb-1">
-                Sincronia 100%
-              </div>
-              <h3 className="text-2xl font-bold text-[#171513] mb-3">
-                Sincronização com Google Calendar
-              </h3>
-              <p className="text-[#6b645c] text-sm leading-relaxed mb-6">
-                Marcou médico pessoal no seu Google Agenda? O AgendamentoON bloqueia automaticamente o horário para clientes no mesmo segundo.
-              </p>
-            </div>
-
-            <div className="bg-[#f0f9ff] border border-[#bae6fd] rounded-2xl p-3 flex items-center gap-3 text-xs text-[#0369a1]">
-              <ShieldCheck className="w-5 h-5 shrink-0 text-[#0284c7]" />
-              <span>Proteção anti-choque de horários ativa em tempo real.</span>
-            </div>
-          </div>
-
-          {/* Card 6: Relatórios Financeiros */}
-          <div className="md:col-span-3 bg-gradient-to-r from-[#1e1b18] to-[#2c2621] text-white rounded-3xl p-6 sm:p-8 shadow-elevated flex flex-col md:flex-row items-center justify-between gap-8">
-            <div className="max-w-xl">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-[#d7ad89] text-xs font-semibold uppercase tracking-wider mb-4">
-                <BarChart3 className="w-3.5 h-3.5" />
-                <span>Gestão Financeira Descomplicada</span>
-              </div>
-              <h3 className="text-2xl sm:text-3xl font-bold tracking-tight mb-3">
-                Saiba exatamente quanto seu negócio faturou hoje, nesta semana e no mês.
-              </h3>
-              <p className="text-[#c5beaf] text-sm sm:text-base leading-relaxed">
-                Tenha um raio-x claro de quais serviços mais vendem, os horários mais procurados e a taxa de retorno dos seus clientes fiéis.
-              </p>
-            </div>
-
-            <div className="w-full md:w-auto shrink-0 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-              <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl p-4 text-center">
-                <div className="text-xs text-[#b8afa3] font-medium uppercase tracking-wider">Faturamento Médio</div>
-                <div className="text-2xl font-extrabold text-emerald-400 mt-0.5">+38%</div>
-                <div className="text-[10px] text-[#a89f93]">após 60 dias de uso</div>
-              </div>
-
-              <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl p-4 text-center">
-                <div className="text-xs text-[#b8afa3] font-medium uppercase tracking-wider">Tempo Economizado</div>
-                <div className="text-2xl font-extrabold text-amber-300 mt-0.5">60h/mês</div>
-                <div className="text-[10px] text-[#a89f93]">em média por estabelecimento</div>
+              <div className="space-y-2">
+                <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-muted">
+                  2. Escolha o horário
+                </p>
+                <div className="grid grid-cols-3 gap-1.5">
+                  {["09:00", "09:40", "10:20", "11:00", "13:30", "15:00"].map((time, index) => (
+                    <span
+                      key={time}
+                      className={`rounded-md border py-1.5 text-center font-mono text-[10px] ${
+                        index === 3
+                          ? "border-ink bg-ink text-white"
+                          : "border-line bg-white text-slate-600"
+                      }`}
+                    >
+                      {time}
+                    </span>
+                  ))}
+                </div>
+                <div className="mt-3 rounded-lg border border-line bg-surface p-2.5">
+                  <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-muted">
+                    Resumo
+                  </p>
+                  <p className="mt-1 text-[11px] font-semibold text-ink">Corte masculino</p>
+                  <p className="text-[10px] text-muted">Hoje, 11:00 · com Rafael</p>
+                </div>
               </div>
             </div>
           </div>
-
         </div>
-
       </div>
     </section>
   );

@@ -1,9 +1,5 @@
 import type { Metadata } from "next";
-import {
-  Plus_Jakarta_Sans,
-  Lekton,
-  Space_Grotesk,
-} from "next/font/google";
+import { JetBrains_Mono, Manrope, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { APP_NAME, APP_TAGLINE } from "@/lib/constants";
 
@@ -14,18 +10,17 @@ const jakartaSans = Plus_Jakarta_Sans({
   display: "swap",
 });
 
-const lekton = Lekton({
-  variable: "--font-lekton",
+const manrope = Manrope({
+  variable: "--font-manrope",
   subsets: ["latin"],
-  weight: ["400", "700"],
-  style: ["normal", "italic"],
+  weight: ["400", "500", "600", "700", "800"],
   display: "swap",
 });
 
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-space-grotesk",
+const jetBrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600"],
   display: "swap",
 });
 
@@ -50,7 +45,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="pt-BR"
-      className={`${jakartaSans.variable} ${lekton.variable} ${spaceGrotesk.variable} h-full antialiased`}
+      className={`${jakartaSans.variable} ${manrope.variable} ${jetBrainsMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">{children}</body>
     </html>

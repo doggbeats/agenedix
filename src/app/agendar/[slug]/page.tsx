@@ -12,12 +12,11 @@ import {
   Phone,
   Scissors,
   ShieldCheck,
-  UserRound,
   Users,
 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { buildWhatsAppLink, customerContactMessage } from "@/lib/whatsapp";
-import { formatPhone, minutesToTime, toNumber } from "@/lib/format";
+import { formatCurrency, formatDuration, formatPhone, minutesToTime, toNumber } from "@/lib/format";
 import { addDaysToDate, getWeekday, todayInZone } from "@/lib/timezone";
 import { WEEKDAYS } from "@/lib/constants";
 import {
@@ -36,6 +35,7 @@ import {
   type PublicProfessional,
   type PublicService,
 } from "@/components/public/BookingWizard";
+import { PublicPageMenu } from "@/components/public/PublicPageMenu";
 
 export const dynamic = "force-dynamic";
 
@@ -120,20 +120,25 @@ function UnavailablePage({
   return (
     <div
       className="flex min-h-screen flex-col bg-[var(--brand-bg)] text-[var(--brand-text)]"
-      style={brandingCssVars(branding) as React.CSSProperties}
+      style={
+        {
+          ...brandingCssVars(branding),
+          fontFamily: "var(--brand-font)",
+        } as React.CSSProperties
+      }
     >
       <header className="border-b border-[var(--brand-line)]">
-        <div className="mx-auto flex w-full max-w-4xl items-center justify-between px-5 py-4">
-          <Link href={`/agendar/${establishment.slug}`} className="flex items-center gap-2.5">
+        <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-5 sm:px-6">
+          <Link href={`/agendar/${establishment.slug}`} className="flex items-center gap-3">
             {establishment.logoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={establishment.logoUrl}
                 alt=""
-                className="h-9 w-9 rounded-lg object-cover"
+                className="h-10 w-10 rounded-[var(--brand-radius)] border border-[var(--brand-line)] object-cover"
               />
             ) : (
-              <span className="grid h-9 w-9 place-items-center rounded-lg bg-[var(--brand)] text-xs font-bold text-white">
+              <span className="grid h-10 w-10 place-items-center rounded-[var(--brand-radius)] bg-[var(--brand-button)] text-xs font-bold text-[var(--brand-button-text)]">
                 {establishment.name.slice(0, 2).toUpperCase()}
               </span>
             )}
@@ -142,10 +147,10 @@ function UnavailablePage({
         </div>
       </header>
       <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col items-center justify-center px-5 py-16 text-center">
-        <span className="grid h-14 w-14 place-items-center rounded-xl border border-[var(--brand-line)] bg-[var(--brand-surface)]">
+        <span className="grid h-14 w-14 place-items-center rounded-[calc(var(--brand-radius)*1.5)] border border-[var(--brand-line)] bg-[var(--brand-surface)]">
           <CalendarDays className="h-6 w-6 text-[var(--brand)]" />
         </span>
-        <h1 className="mt-6 font-display text-3xl font-semibold tracking-tight">
+        <h1 className="mt-6 font-display text-3xl font-semibold tracking-[-0.03em]">
           Agenda temporariamente indisponível
         </h1>
         <p className="mt-3 max-w-md text-sm leading-relaxed text-[var(--muted)]">
@@ -241,6 +246,7 @@ export default async function PublicBookingPage({
       price: toNumber(service.price),
       durationMin: service.durationMin,
       bufferMin: service.bufferMin,
+      imageUrl: service.imageUrl,
       professionalIds: service.professionals.map((item) => item.professionalId),
     }))
     .filter((service) => service.professionalIds.length > 0);
@@ -283,15 +289,15 @@ export default async function PublicBookingPage({
 
   const openHours = establishment.businessHours
     .filter((hours) => hours.isOpen)
-    .map((hours) => {
-      const label = WEEKDAYS[hours.weekday].short;
-      const base = `${label} ${minutesToTime(hours.openMinute)}–${minutesToTime(hours.closeMinute)}`;
-      const breakLabel =
+    .map((hours) => ({
+      weekday: hours.weekday,
+      day: WEEKDAYS[hours.weekday].short,
+      time: `${minutesToTime(hours.openMinute)}–${minutesToTime(hours.closeMinute)}`,
+      breakTime:
         hours.breakStartMinute != null && hours.breakEndMinute != null
-          ? ` (pausa ${minutesToTime(hours.breakStartMinute)}–${minutesToTime(hours.breakEndMinute)})`
-          : "";
-      return { weekday: hours.weekday, label: `${base}${breakLabel}` };
-    });
+          ? `${minutesToTime(hours.breakStartMinute)}–${minutesToTime(hours.breakEndMinute)}`
+          : null,
+    }));
 
   const address = establishment.address?.trim() || null;
   const showServices = branding.showServices && services.length > 0;
@@ -302,7 +308,7 @@ export default async function PublicBookingPage({
   const showInfo = showHours || showAddress || Boolean(establishment.cancellationPolicy);
 
   const navItems = [
-    { href: "#", label: "Início", show: true },
+    { href: "#inicio", label: "Início", show: true },
     { href: "#agendar", label: "Agendar", show: true },
     { href: "#servicos", label: "Serviços", show: showServices },
     { href: "#equipe", label: "Equipe", show: showTeam },
@@ -313,39 +319,47 @@ export default async function PublicBookingPage({
   return (
     <div
       className="min-h-screen bg-[var(--brand-bg)] text-[var(--brand-text)]"
-      style={brandingCssVars(branding) as React.CSSProperties}
+      style={
+        {
+          ...brandingCssVars(branding),
+          fontFamily: "var(--brand-font)",
+        } as React.CSSProperties
+      }
     >
-      <header className="sticky top-0 z-40 border-b border-[var(--brand-line)] bg-[var(--brand-bg)]/80 shadow-sm backdrop-blur-xl">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
-          <Link href={`/agendar/${establishment.slug}`} className="flex min-w-0 items-center gap-2.5">
+      <header className="sticky top-0 z-40 border-b border-[var(--brand-line)] bg-[var(--brand-bg)]/90 backdrop-blur-md">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
+          <Link
+            href={`/agendar/${establishment.slug}`}
+            className="flex min-w-0 items-center gap-3"
+          >
             {establishment.logoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={establishment.logoUrl}
                 alt=""
-                className="h-9 w-9 shrink-0 rounded-lg object-cover"
+                className="h-10 w-10 shrink-0 rounded-[var(--brand-radius)] border border-[var(--brand-line)] object-cover"
               />
             ) : (
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-[var(--brand)] text-xs font-bold text-white">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[var(--brand-radius)] bg-[var(--brand-button)] text-xs font-bold text-[var(--brand-button-text)]">
                 {establishment.name.slice(0, 2).toUpperCase()}
               </span>
             )}
             <span className="min-w-0">
-              <span className="block truncate font-display text-sm font-semibold">
+              <span className="block truncate font-display text-[15px] font-semibold leading-tight">
                 {establishment.name}
               </span>
-              <span className="block truncate text-[10px] uppercase tracking-wide text-[var(--muted)]">
+              <span className="mt-0.5 block truncate text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">
                 {establishment.segment}
               </span>
             </span>
           </Link>
 
-          <nav aria-label="Seções da página" className="hidden items-center gap-1 lg:flex">
+          <nav aria-label="Seções da página" className="hidden items-center gap-7 lg:flex">
             {navItems.map((item) => (
               <a
                 key={item.href}
                 href={item.href}
-                className="rounded-full px-4 py-2 text-xs font-semibold text-[var(--muted)] transition-all duration-200 hover:bg-[var(--brand-surface)] hover:text-[var(--brand-text)]"
+                className="border-b border-transparent py-1.5 text-[13px] font-medium text-[var(--muted)] transition-colors hover:border-[var(--brand)] hover:text-[var(--brand-text)]"
               >
                 {item.label}
               </a>
@@ -353,180 +367,277 @@ export default async function PublicBookingPage({
           </nav>
 
           <div className="flex shrink-0 items-center gap-2">
-            {whatsappUrl && (
-              <a
-                href={whatsappUrl}
-                target="_blank"
-                rel="noreferrer"
-                aria-label={`Falar com ${establishment.name} no WhatsApp`}
-                className={`${buttonTenantOutline} px-3 py-2 text-xs`}
-              >
-                <MessageCircle className="h-4 w-4" />
-                <span className="hidden sm:inline">WhatsApp</span>
-              </a>
-            )}
-            <a href="#agendar" className={`${buttonTenant} px-3.5 py-2 text-xs`}>
+            <a
+              href="#agendar"
+              className={`${buttonTenant} hidden h-10 px-4 text-[13px] sm:inline-flex`}
+            >
               Agendar <ArrowRight className="h-3.5 w-3.5" />
             </a>
+            <PublicPageMenu
+              items={navItems}
+              establishmentName={establishment.name}
+              brandingStyle={brandingCssVars(branding) as React.CSSProperties}
+            />
           </div>
         </div>
       </header>
 
       <main>
-        <section className="relative overflow-hidden border-b border-[var(--brand-line)] bg-gradient-to-br from-[var(--brand-surface)] via-[var(--brand-bg)] to-[var(--brand-surface)]">
-          <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
-            <div>
-              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--brand)]">
-                {branding.tagline ?? "Agendamento online"}
-              </p>
-              <h1 className="mt-3 font-display text-4xl font-bold leading-[1.02] tracking-tight sm:text-5xl lg:text-6xl">
-                {establishment.name}
-              </h1>
-              <p className="mt-4 max-w-2xl text-sm leading-relaxed text-[var(--muted)] sm:text-base">
-                {establishment.description ??
-                  "Escolha o serviço, o profissional e o melhor horário para você."}
-              </p>
-
-              <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-xs text-[var(--muted)]">
-                {address && (
-                  <span className="inline-flex items-center gap-1.5">
-                    <MapPin className="h-3.5 w-3.5 text-[var(--brand)]" />
-                    {address}
+        <section
+          id="inicio"
+          className="border-b border-[var(--brand-line)] bg-[var(--brand-bg)]"
+        >
+          <figure className="border-b border-[var(--brand-line)] bg-[var(--brand-surface)]">
+            {branding.coverUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={branding.coverUrl}
+                alt={`Ambiente de ${establishment.name}`}
+                className="h-[220px] w-full object-cover object-center sm:h-[340px] lg:h-[420px]"
+              />
+            ) : (
+              <div className="flex h-[220px] w-full flex-col items-center justify-center gap-4 px-6 text-center sm:h-[300px]">
+                {establishment.logoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={establishment.logoUrl}
+                    alt=""
+                    className="h-20 w-20 rounded-[calc(var(--brand-radius)*2)] border border-[var(--brand-line)] object-cover"
+                  />
+                ) : (
+                  <span className="grid h-20 w-20 place-items-center rounded-full bg-[var(--brand)] text-2xl font-bold text-[var(--brand-button-text)]">
+                    {establishment.name.slice(0, 2).toUpperCase()}
                   </span>
                 )}
+                <p className="max-w-[26ch] text-sm font-medium leading-relaxed text-[var(--muted)]">
+                  {branding.tagline ?? establishment.segment}
+                </p>
+              </div>
+            )}
+            <figcaption className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-5 gap-y-2 border-t border-[var(--brand-line)] bg-[var(--brand-bg)] px-4 py-3 text-[11px] text-[var(--muted)] sm:px-6">
+              <span className="inline-flex items-center gap-2">
+                <CalendarDays className="h-3.5 w-3.5 text-[var(--brand)]" />
+                {services.length} serviço(s) · {professionals.length} profissional(is)
+              </span>
+              {showAddress ? (
                 <span className="inline-flex items-center gap-1.5">
-                  <UserRound className="h-3.5 w-3.5 text-[var(--brand)]" />
-                  {professionals.length} profissional(is)
+                  <MapPin className="h-3.5 w-3.5 text-[var(--brand)]" />
+                  {address}
                 </span>
-                <span className="inline-flex items-center gap-1.5">
-                  <Scissors className="h-3.5 w-3.5 text-[var(--brand)]" />
-                  {services.length} serviço(s) online
+              ) : (
+                openHours[0] && (
+                  <span className="inline-flex items-center gap-1.5">
+                    <Clock3 className="h-3.5 w-3.5 text-[var(--brand)]" />
+                    {openHours[0].day} · {openHours[0].time}
+                  </span>
+                )
+              )}
+            </figcaption>
+          </figure>
+
+          <div className="mx-auto grid max-w-6xl gap-10 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,0.65fr)] lg:items-start lg:gap-14">
+            <div>
+              <div className="flex items-center gap-3">
+                <span className="h-px w-8 bg-[var(--brand)]" aria-hidden />
+                <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[var(--muted)]">
+                  {branding.tagline ?? establishment.segment}
                 </span>
               </div>
 
-              <div className="mt-7 flex flex-wrap gap-2">
+              <h1 className="mt-5 max-w-[15ch] font-display text-[clamp(2.6rem,7vw,4.5rem)] font-semibold leading-[0.98] tracking-[-0.045em]">
+                {establishment.name}
+              </h1>
+
+              <p className="mt-5 max-w-lg text-[15px] leading-relaxed text-[var(--muted)]">
+                {establishment.description ??
+                  "Escolha o serviço, o profissional e o melhor horário para você. A confirmação é feita pelo estabelecimento."}
+              </p>
+
+              <div className="mt-7 flex flex-col gap-2.5 sm:flex-row sm:flex-wrap">
                 <a href="#agendar" className={buttonTenant}>
-                  <CalendarDays className="h-4 w-4" /> Agendar horário
+                  <CalendarDays className="h-4 w-4" />
+                  Agendar horário
                 </a>
-                {whatsappUrl && (
-                  <a
-                    href={whatsappUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className={buttonTenantOutline}
-                  >
-                    <MessageCircle className="h-4 w-4" /> Falar no WhatsApp
-                  </a>
-                )}
               </div>
 
-              <div className="mt-5">
+              <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-2 text-[11px] font-medium text-[var(--muted)]">
+                <span className="inline-flex items-center gap-1.5">
+                  <ShieldCheck className="h-3.5 w-3.5 text-[var(--brand)]" />
+                  Horários confirmados pelo estabelecimento
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <CalendarDays className="h-3.5 w-3.5 text-[var(--brand)]" />
+                  Reserva online
+                </span>
+              </div>
+
+              <div className="mt-6">
                 <SocialLinks branding={branding} />
               </div>
             </div>
 
-            <div className="relative">
-              <div className="overflow-hidden rounded-2xl border border-[var(--brand-line)] bg-[var(--brand-bg)] shadow-sm">
-                {branding.coverUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={branding.coverUrl}
-                    alt={`Ambiente de ${establishment.name}`}
-                    className="aspect-[4/3] w-full object-cover"
-                  />
-                ) : (
-                  <div className="flex aspect-[4/3] w-full flex-col items-center justify-center gap-3 bg-[var(--brand-surface)] p-6 text-center">
-                    <span className="grid h-16 w-16 place-items-center rounded-2xl bg-[var(--brand)] text-xl font-bold text-white">
-                      {establishment.name.slice(0, 2).toUpperCase()}
-                    </span>
-                    <p className="max-w-[220px] text-xs leading-relaxed text-[var(--muted)]">
-                      {branding.tagline ?? establishment.segment}
-                    </p>
+            {services[0] && (
+              <aside className="rounded-[calc(var(--brand-radius)*1.4)] border border-[var(--brand-line)] bg-[var(--brand-bg)] lg:mt-2">
+                <div className="border-b border-[var(--brand-line)] bg-[var(--brand-surface)]/60 px-5 py-3">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">
+                    Serviço em destaque
+                  </p>
+                </div>
+                <div className="p-5">
+                  <div className="flex items-center gap-3">
+                    {services[0].imageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={services[0].imageUrl}
+                        alt=""
+                        className="h-16 w-16 shrink-0 rounded-[var(--brand-radius)] border border-[var(--brand-line)] object-cover"
+                      />
+                    ) : (
+                      <span className="grid h-16 w-16 shrink-0 place-items-center rounded-[var(--brand-radius)] bg-[var(--brand-surface)] text-[var(--brand)]">
+                        <Scissors className="h-6 w-6" />
+                      </span>
+                    )}
+                    <div className="min-w-0">
+                      <p className="truncate text-[15px] font-semibold">{services[0].name}</p>
+                      <p className="mt-0.5 text-[11px] text-[var(--muted)]">
+                        {services[0].category ? `${services[0].category} · ` : ""}
+                        {formatDuration(services[0].durationMin)}
+                      </p>
+                      <p className="mt-1 font-mono text-base font-semibold">
+                        {formatCurrency(services[0].price)}
+                      </p>
+                    </div>
                   </div>
-                )}
-              </div>
-              <div className="mt-3 flex items-center gap-2 rounded-lg border border-[var(--brand-line)] bg-[var(--brand-bg)] px-3 py-2.5 text-[11px] text-[var(--muted)]">
-                <ShieldCheck className="h-4 w-4 shrink-0 text-[var(--brand)]" />
-                Horários validados em tempo real. Confirmação pelo estabelecimento.
-              </div>
-            </div>
+                  <a href="#agendar" className={`${buttonTenant} mt-5 w-full justify-center`}>
+                    Reservar <ArrowRight className="h-3.5 w-3.5" />
+                  </a>
+                  <p className="mt-3 text-center text-[10px] leading-relaxed text-[var(--muted)]">
+                    Pagamento no estabelecimento.
+                  </p>
+                </div>
+              </aside>
+            )}
           </div>
         </section>
 
         <section
-          className="mx-auto max-w-6xl scroll-mt-20 px-4 py-8 sm:px-6 sm:py-10"
+          className="scroll-mt-20 border-b border-[var(--brand-line)] bg-[var(--brand-bg)]"
           id="agendar"
         >
-          <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--brand)]">
-                Reserva online
+          <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
+            <div className="flex flex-wrap items-end justify-between gap-4 border-b border-[var(--brand-line)] pb-6">
+              <div>
+                <div className="flex items-center gap-3">
+                  <span className="h-px w-6 bg-[var(--brand)]" aria-hidden />
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
+                    Reserva online
+                  </span>
+                </div>
+                <h2 className="mt-2 font-display text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">
+                  Escolha seu horário
+                </h2>
+              </div>
+              <p className="text-[11px] text-[var(--muted)]">
+                Fuso horário: {timezone.replace("_", " ")}
               </p>
-              <h2 className="mt-1 font-display text-2xl font-semibold tracking-tight sm:text-3xl">
-                Escolha seu horário
-              </h2>
             </div>
-            <p className="text-xs text-[var(--muted)]">
-              Fuso horário: {timezone.replace("_", " ")}
-            </p>
-          </div>
 
-          {dates.length === 0 ? (
-            <div className="rounded-xl border border-[var(--brand-line)] bg-[var(--brand-bg)] p-8 text-center">
-              <CalendarDays className="mx-auto h-6 w-6 text-[var(--brand)]" />
-              <p className="mt-3 font-semibold">Nenhum dia aberto para agendamento.</p>
-              <p className="mt-1 text-sm text-[var(--muted)]">
-                Fale com o estabelecimento para verificar os horários disponíveis.
-              </p>
+            <div className="mt-6">
+              {dates.length === 0 ? (
+                <div className="rounded-[calc(var(--brand-radius)*1.4)] border border-[var(--brand-line)] bg-[var(--brand-bg)] p-10 text-center">
+                  <CalendarDays className="mx-auto h-6 w-6 text-[var(--brand)]" />
+                  <p className="mt-3 font-semibold">Nenhum dia aberto para agendamento.</p>
+                  <p className="mt-1 text-sm text-[var(--muted)]">
+                    Fale com o estabelecimento para verificar os horários disponíveis.
+                  </p>
+                </div>
+              ) : (
+                <BookingWizard
+                  slug={establishment.slug}
+                  timezone={timezone}
+                  services={services}
+                  professionals={professionals}
+                  dates={dates}
+                  whatsappUrl={whatsappUrl}
+                />
+              )}
             </div>
-          ) : (
-            <BookingWizard
-              slug={establishment.slug}
-              establishmentName={establishment.name}
-              timezone={timezone}
-              services={services}
-              professionals={professionals}
-              dates={dates}
-              whatsappUrl={whatsappUrl}
-            />
-          )}
+          </div>
         </section>
 
         {showServices && (
           <section
             id="servicos"
-            className="scroll-mt-20 border-y border-[var(--brand-line)] bg-[var(--brand-surface)]"
+            className="scroll-mt-20 border-b border-[var(--brand-line)] bg-[var(--brand-surface)]"
           >
-            <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-12">
-              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--brand)]">
-                Serviços
-              </p>
-              <h2 className="mt-2 font-display text-2xl font-semibold tracking-tight sm:text-3xl">
-                O que você pode agendar
-              </h2>
-              <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
+              <div className="flex flex-wrap items-end justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-3">
+                    <span className="h-px w-6 bg-[var(--brand)]" aria-hidden />
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
+                      Serviços
+                    </span>
+                  </div>
+                  <h2 className="mt-2 font-display text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">
+                    O que você pode agendar
+                  </h2>
+                </div>
+                <p className="text-[11px] font-medium text-[var(--muted)]">
+                  {services.length} serviço(s) disponível(is)
+                </p>
+              </div>
+
+              <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {services.map((service) => (
-                  <div
+                  <article
                     key={service.id}
-                    className="rounded-2xl border border-[var(--brand-line)] bg-[var(--brand-bg)] p-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
+                    className="group flex flex-col overflow-hidden rounded-[calc(var(--brand-radius)*1.4)] border border-[var(--brand-line)] bg-[var(--brand-bg)] transition duration-200 hover:border-[var(--brand)]/50 hover:shadow-[0_18px_40px_-32px_rgba(11,11,11,0.35)]"
                   >
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="text-sm font-semibold">{service.name}</p>
-                        <p className="mt-0.5 text-[11px] text-[var(--muted)]">
-                          {service.category ?? "Serviço"} · {service.durationMin} min
+                    {service.imageUrl && (
+                      <div className="overflow-hidden border-b border-[var(--brand-line)] bg-[var(--brand-surface)]">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={service.imageUrl}
+                          alt=""
+                          loading="lazy"
+                          className="aspect-[16/10] w-full object-cover transition duration-500 group-hover:scale-[1.02]"
+                        />
+                      </div>
+                    )}
+                    <div className="flex flex-1 flex-col p-5">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--brand)]">
+                            {service.category ?? "Serviço"}
+                          </p>
+                          <h3 className="mt-1 text-[15px] font-semibold leading-snug">
+                            {service.name}
+                          </h3>
+                        </div>
+                        <p className="shrink-0 font-mono text-[15px] font-semibold">
+                          {formatCurrency(service.price)}
                         </p>
                       </div>
-                      <span className="shrink-0 text-sm font-semibold text-[var(--brand)]">
-                        R$ {service.price.toFixed(2).replace(".", ",")}
-                      </span>
+                      {service.description && (
+                        <p className="mt-2 line-clamp-3 text-xs leading-relaxed text-[var(--muted)]">
+                          {service.description}
+                        </p>
+                      )}
+                      <div className="mt-auto flex items-center justify-between gap-3 border-t border-[var(--brand-line)] pt-3">
+                        <span className="inline-flex items-center gap-1.5 text-[11px] text-[var(--muted)]">
+                          <Clock3 className="h-3.5 w-3.5" />
+                          {formatDuration(service.durationMin)}
+                        </span>
+                        <a
+                          href="#agendar"
+                          className="inline-flex items-center gap-1 text-[11px] font-semibold text-[var(--brand-text)] transition hover:text-[var(--brand)]"
+                        >
+                          Reservar <ArrowRight className="h-3 w-3" />
+                        </a>
+                      </div>
                     </div>
-                    {service.description && (
-                      <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-[var(--muted)]">
-                        {service.description}
-                      </p>
-                    )}
-                  </div>
+                  </article>
                 ))}
               </div>
             </div>
@@ -534,44 +645,50 @@ export default async function PublicBookingPage({
         )}
 
         {showTeam && (
-          <section id="equipe" className="scroll-mt-20">
-            <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-12">
-              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--brand)]">
-                Equipe
-              </p>
-              <h2 className="mt-2 font-display text-2xl font-semibold tracking-tight sm:text-3xl">
+          <section id="equipe" className="scroll-mt-20 border-b border-[var(--brand-line)]">
+            <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
+              <div className="flex items-center gap-3">
+                <span className="h-px w-6 bg-[var(--brand)]" aria-hidden />
+                <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
+                  Equipe
+                </span>
+              </div>
+              <h2 className="mt-2 font-display text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">
                 Quem atende você
               </h2>
-              <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+
+              <div className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {professionals.map((professional) => (
-                  <div
+                  <article
                     key={professional.id}
-                    className="flex items-start gap-3 rounded-2xl border border-[var(--brand-line)] bg-[var(--brand-bg)] p-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
+                    className="flex items-start gap-4 rounded-[calc(var(--brand-radius)*1.4)] border border-[var(--brand-line)] bg-[var(--brand-bg)] p-5"
                   >
                     {professional.photoUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={professional.photoUrl}
                         alt=""
-                        className="h-11 w-11 shrink-0 rounded-full object-cover"
+                        className="h-14 w-14 shrink-0 rounded-full border border-[var(--brand-line)] object-cover"
                       />
                     ) : (
-                      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[var(--brand-surface)] text-xs font-semibold text-[var(--brand)]">
+                      <span className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-[var(--brand-surface)] text-sm font-semibold text-[var(--brand)]">
                         {professional.name.slice(0, 2).toUpperCase()}
                       </span>
                     )}
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold">{professional.name}</p>
-                      <p className="truncate text-[11px] text-[var(--muted)]">
+                      <h3 className="text-[15px] font-semibold leading-snug">
+                        {professional.name}
+                      </h3>
+                      <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--brand)]">
                         {professional.specialties ?? "Profissional"}
                       </p>
                       {professional.bio && (
-                        <p className="mt-1.5 line-clamp-2 text-[11px] leading-relaxed text-[var(--muted)]">
+                        <p className="mt-2 line-clamp-3 text-xs leading-relaxed text-[var(--muted)]">
                           {professional.bio}
                         </p>
                       )}
                     </div>
-                  </div>
+                  </article>
                 ))}
               </div>
             </div>
@@ -581,20 +698,23 @@ export default async function PublicBookingPage({
         {showGallery && (
           <section
             id="galeria"
-            className="scroll-mt-20 border-y border-[var(--brand-line)] bg-[var(--brand-surface)]"
+            className="scroll-mt-20 border-b border-[var(--brand-line)] bg-[var(--brand-surface)]"
           >
-            <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-12">
-              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--brand)]">
-                Galeria
-              </p>
-              <h2 className="mt-2 font-display text-2xl font-semibold tracking-tight sm:text-3xl">
+            <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
+              <div className="flex items-center gap-3">
+                <span className="h-px w-6 bg-[var(--brand)]" aria-hidden />
+                <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
+                  Galeria
+                </span>
+              </div>
+              <h2 className="mt-2 font-display text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">
                 Um pouco do nosso espaço
               </h2>
-              <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
+              <div className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-3">
                 {branding.gallery.map((url, index) => (
                   <div
                     key={`${url}-${index}`}
-                    className="overflow-hidden rounded-xl border border-[var(--brand-line)] bg-[var(--brand-bg)]"
+                    className="overflow-hidden rounded-[calc(var(--brand-radius)*1.2)] border border-[var(--brand-line)] bg-[var(--brand-bg)]"
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
@@ -612,69 +732,67 @@ export default async function PublicBookingPage({
 
         {showInfo && (
           <section id="informacoes" className="scroll-mt-20">
-            <div className="mx-auto grid max-w-6xl gap-5 px-4 py-10 sm:px-6 sm:py-12 lg:grid-cols-2">
-              {showHours && (
-                <div className="rounded-xl border border-[var(--brand-line)] bg-[var(--brand-bg)] p-5">
-                  <div className="flex items-center gap-2">
-                    <Clock3 className="h-4 w-4 text-[var(--brand)]" />
-                    <h2 className="text-sm font-semibold">Horários de funcionamento</h2>
-                  </div>
-                  <div className="mt-3 space-y-1 text-xs leading-relaxed text-[var(--muted)]">
-                    {openHours.map((item) => (
-                      <p key={item.weekday}>{item.label}</p>
-                    ))}
-                  </div>
-                </div>
-              )}
+            <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
+              <div className="flex items-center gap-3">
+                <span className="h-px w-6 bg-[var(--brand)]" aria-hidden />
+                <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
+                  Informações
+                </span>
+              </div>
+              <h2 className="mt-2 font-display text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">
+                Antes de sua visita
+              </h2>
 
-              <div className="space-y-3">
-                {showAddress && (
-                  <div className="rounded-xl border border-[var(--brand-line)] bg-[var(--brand-bg)] p-5">
-                    <div className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4 text-[var(--brand)]" />
-                      <h2 className="text-sm font-semibold">Onde estamos</h2>
-                    </div>
-                    <p className="mt-2 text-xs leading-relaxed text-[var(--muted)]">
-                      {address}
-                    </p>
-                  </div>
+              <div className="mt-7 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {showHours && (
+                  <InfoCard
+                    icon={<Clock3 className="h-4 w-4" />}
+                    title="Horários de funcionamento"
+                  >
+                    <dl className="divide-y divide-[var(--brand-line)]">
+                      {openHours.map((item) => (
+                        <div
+                          key={item.weekday}
+                          className="flex items-baseline justify-between gap-4 py-2 first:pt-0 last:pb-0"
+                        >
+                          <dt className="font-semibold text-[var(--brand-text)]">{item.day}</dt>
+                          <dd className="text-right">
+                            <span className="font-mono text-[11px]">{item.time}</span>
+                            {item.breakTime && (
+                              <span className="block text-[10px] text-[var(--muted)]">
+                                Pausa {item.breakTime}
+                              </span>
+                            )}
+                          </dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </InfoCard>
                 )}
 
-                <div className="rounded-xl border border-[var(--brand-line)] bg-[var(--brand-bg)] p-5">
-                  <div className="flex items-center gap-2">
-                    <Phone className="h-4 w-4 text-[var(--brand)]" />
-                    <h2 className="text-sm font-semibold">Contato</h2>
-                  </div>
-                  <div className="mt-2 flex flex-wrap gap-2 text-xs">
-                    <a
-                      href={`tel:${establishment.phone}`}
-                      className="inline-flex items-center gap-1.5 text-[var(--muted)] transition hover:text-[var(--brand)]"
-                    >
-                      <Phone className="h-3.5 w-3.5" /> {formatPhone(establishment.phone)}
-                    </a>
-                    {whatsappUrl && (
-                      <a
-                        href={whatsappUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-1.5 text-[var(--muted)] transition hover:text-[var(--brand)]"
-                      >
-                        <MessageCircle className="h-3.5 w-3.5" /> WhatsApp
-                      </a>
-                    )}
-                  </div>
-                </div>
+                {showAddress && (
+                  <InfoCard icon={<MapPin className="h-4 w-4" />} title="Onde estamos">
+                    <p>{address}</p>
+                  </InfoCard>
+                )}
+
+                <InfoCard icon={<Phone className="h-4 w-4" />} title="Contato">
+                  <a
+                    href={`tel:${establishment.phone}`}
+                    className="flex items-center justify-between gap-3 rounded-[var(--brand-radius)] border border-[var(--brand-line)] px-3 py-2 font-medium text-[var(--brand-text)] transition hover:border-[var(--brand)]"
+                  >
+                    <span className="inline-flex items-center gap-2">
+                      <Phone className="h-3.5 w-3.5 text-[var(--brand)]" />
+                      {formatPhone(establishment.phone)}
+                    </span>
+                    <ArrowRight className="h-3 w-3 text-[var(--muted)]" />
+                  </a>
+                </InfoCard>
 
                 {establishment.cancellationPolicy && (
-                  <div className="rounded-xl border border-[var(--brand-line)] bg-[var(--brand-bg)] p-5">
-                    <div className="flex items-center gap-2">
-                      <ShieldCheck className="h-4 w-4 text-[var(--brand)]" />
-                      <h2 className="text-sm font-semibold">Política de cancelamento</h2>
-                    </div>
-                    <p className="mt-2 text-xs leading-relaxed text-[var(--muted)]">
-                      {establishment.cancellationPolicy}
-                    </p>
-                  </div>
+                  <InfoCard icon={<ShieldCheck className="h-4 w-4" />} title="Política de cancelamento">
+                    <p>{establishment.cancellationPolicy}</p>
+                  </InfoCard>
                 )}
               </div>
             </div>
@@ -683,43 +801,95 @@ export default async function PublicBookingPage({
       </main>
 
       <footer className="border-t border-[var(--brand-line)] bg-[var(--brand-surface)]">
-        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-7 text-[11px] text-[var(--muted)] sm:flex-row sm:items-center sm:justify-between sm:px-6">
-          <div>
-            <p>
-              Agenda operada por{" "}
-              <strong className="font-semibold text-[var(--brand-text)]">
-                {establishment.name}
-              </strong>
-              . Agendamentos sujeitos à confirmação do estabelecimento.
-            </p>
-            <p className="mt-1">
-              {branding.website ? (
+        <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+          <div className="flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
+            <div className="max-w-sm">
+              <Link
+                href={`/agendar/${establishment.slug}`}
+                className="inline-flex items-center gap-2.5"
+              >
+                {establishment.logoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={establishment.logoUrl}
+                    alt=""
+                    className="h-8 w-8 rounded-[var(--brand-radius)] border border-[var(--brand-line)] object-cover"
+                  />
+                ) : (
+                  <span className="grid h-8 w-8 place-items-center rounded-[var(--brand-radius)] bg-[var(--brand-button)] text-[10px] font-bold text-[var(--brand-button-text)]">
+                    {establishment.name.slice(0, 2).toUpperCase()}
+                  </span>
+                )}
+                <span className="font-display text-sm font-semibold">{establishment.name}</span>
+              </Link>
+              <p className="mt-3 text-[11px] leading-relaxed text-[var(--muted)]">
+                Agenda operada pelo estabelecimento. Os agendamentos estão sujeitos à
+                confirmação da equipe.
+              </p>
+              <div className="mt-4">
+                <SocialLinks branding={branding} />
+              </div>
+            </div>
+
+            <nav
+              aria-label="Links da página"
+              className="grid grid-cols-2 gap-x-10 gap-y-2.5 text-[11px]"
+            >
+              {navItems.map((item) => (
                 <a
-                  href={branding.website}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="hover:text-[var(--brand)]"
+                  key={item.href}
+                  href={item.href}
+                  className="text-[var(--muted)] transition hover:text-[var(--brand)]"
                 >
-                  Site oficial
+                  {item.label}
                 </a>
-              ) : (
-                "Agendamento online com AgendamentoON."
-              )}
-            </p>
+              ))}
+            </nav>
           </div>
-          <div className="flex flex-wrap gap-4">
-            <Link href="/privacidade" className="hover:text-[var(--brand)]">
-              Privacidade
-            </Link>
-            <Link href="/termos" className="hover:text-[var(--brand)]">
-              Termos
-            </Link>
-            <Link href="/agendar" className="hover:text-[var(--brand)]">
-              Outras agendas
-            </Link>
+
+          <div className="mt-8 flex flex-col gap-3 border-t border-[var(--brand-line)] pt-5 text-[10px] text-[var(--muted)] sm:flex-row sm:items-center sm:justify-between">
+            <p>
+              Agendamento online com{" "}
+              <Link href="/" className="font-semibold text-[var(--brand-text)] hover:text-[var(--brand)]">
+                AgendamentoON
+              </Link>
+            </p>
+            <div className="flex flex-wrap gap-4">
+              <Link href="/privacidade" className="hover:text-[var(--brand)]">
+                Privacidade
+              </Link>
+              <Link href="/termos" className="hover:text-[var(--brand)]">
+                Termos
+              </Link>
+              <Link href="/agendar" className="hover:text-[var(--brand)]">
+                Outras agendas
+              </Link>
+            </div>
           </div>
         </div>
       </footer>
+    </div>
+  );
+}
+
+function InfoCard({
+  icon,
+  title,
+  children,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-[calc(var(--brand-radius)*1.4)] border border-[var(--brand-line)] bg-[var(--brand-bg)] p-5 sm:p-6">
+      <div className="flex items-center gap-2.5">
+        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-[var(--brand-radius)] bg-[var(--brand-surface)] text-[var(--brand)]">
+          {icon}
+        </span>
+        <h3 className="text-sm font-semibold">{title}</h3>
+      </div>
+      <div className="mt-3 text-xs leading-relaxed text-[var(--muted)]">{children}</div>
     </div>
   );
 }

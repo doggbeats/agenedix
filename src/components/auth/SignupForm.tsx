@@ -39,8 +39,11 @@ export function SignupForm({
       {state.error && <Alert tone="error">{state.error}</Alert>}
 
       <fieldset className="space-y-3">
-        <legend className="mb-1 text-sm font-semibold text-ink">Escolha seu plano</legend>
-        <p className="text-xs text-slate-500">
+        <legend className="mb-1 flex items-center gap-2.5 text-sm font-semibold text-ink">
+          <span className="font-mono text-[10px] font-medium text-brand">01</span>
+          Escolha o plano
+        </legend>
+        <p className="text-xs leading-relaxed text-slate-500">
           Todos os planos incluem 7 dias de teste. No cartão, a primeira cobrança automática
           acontece no 8º dia. No Pix, o primeiro mês é pago agora.
         </p>
@@ -52,7 +55,7 @@ export function SignupForm({
                 key={plan.slug}
                 className={`relative flex cursor-pointer flex-col rounded-xl border p-3.5 transition ${
                   active
-                    ? "border-brand bg-brand/5 ring-2 ring-brand/30"
+                    ? "border-brand bg-brand/5"
                     : "border-line bg-white hover:border-slate-300"
                 }`}
               >
@@ -68,7 +71,7 @@ export function SignupForm({
                 <span className="flex items-center justify-between gap-2">
                   <span className="text-sm font-semibold text-ink">{plan.name}</span>
                   {plan.highlight && (
-                    <span className="rounded-full bg-brand/15 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-brand-hover">
+                    <span className="rounded-md bg-brand/10 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-brand-hover">
                       Mais escolhido
                     </span>
                   )}
@@ -104,8 +107,11 @@ export function SignupForm({
         </span>
       </div>
 
-      <fieldset className="space-y-4">
-        <legend className="mb-3 text-sm font-semibold text-ink">Sobre o negócio</legend>
+      <fieldset className="space-y-4 border-t border-line pt-6">
+        <legend className="mb-3 flex items-center gap-2.5 text-sm font-semibold text-ink">
+          <span className="font-mono text-[10px] font-medium text-brand">02</span>
+          Sobre o negócio
+        </legend>
         <div>
           <label className={labelClass} htmlFor="businessName">
             Nome do estabelecimento
@@ -164,8 +170,11 @@ export function SignupForm({
         </div>
       </fieldset>
 
-      <fieldset className="space-y-4">
-        <legend className="mb-3 text-sm font-semibold text-ink">Contato</legend>
+      <fieldset className="space-y-4 border-t border-line pt-6">
+        <legend className="mb-3 flex items-center gap-2.5 text-sm font-semibold text-ink">
+          <span className="font-mono text-[10px] font-medium text-brand">03</span>
+          Contato
+        </legend>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label className={labelClass} htmlFor="phone">
@@ -216,8 +225,11 @@ export function SignupForm({
         </div>
       </fieldset>
 
-      <fieldset className="space-y-4">
-        <legend className="mb-3 text-sm font-semibold text-ink">Acesso</legend>
+      <fieldset className="space-y-4 border-t border-line pt-6">
+        <legend className="mb-3 flex items-center gap-2.5 text-sm font-semibold text-ink">
+          <span className="font-mono text-[10px] font-medium text-brand">04</span>
+          Acesso
+        </legend>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label className={labelClass} htmlFor="password">
@@ -254,7 +266,7 @@ export function SignupForm({
         </p>
       </fieldset>
 
-      <div>
+      <div className="border-t border-line pt-6">
         <label className="flex items-start gap-2.5 text-xs text-slate-600">
           <input
             type="checkbox"

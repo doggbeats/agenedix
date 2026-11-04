@@ -1,317 +1,167 @@
-import React, { useState } from 'react';
-import { 
-  ArrowRight, 
-  Globe, 
-  Check, 
-  Clock, 
-  Sparkles, 
-  Plus, 
-  CheckCircle2, 
-  MessageCircle, 
-  Scissors, 
-  Heart, 
-  Smile, 
-  Dumbbell
-} from 'lucide-react';
-import { BUSINESS_NICHES } from '../data/mockData';
-import { AppointmentItem } from '../types';
+import React from "react";
+import { ArrowRight, CalendarCheck, Check, LockKeyhole, MessageCircle } from "lucide-react";
+import { BUSINESS_NICHES } from "../data/mockData";
 
 interface HeroSectionProps {
   onOpenSignup: () => void;
   onOpenBookingModal: (preselectedService?: string) => void;
 }
 
+const statusStyles: Record<string, string> = {
+  Confirmado: "bg-emerald-50 text-emerald-700 ring-emerald-200",
+  Pendente: "bg-amber-50 text-amber-700 ring-amber-200",
+  Atendimento: "bg-brand/10 text-brand-hover ring-brand/20",
+  Concluído: "bg-slate-100 text-slate-600 ring-slate-200",
+};
+
 export const HeroSection: React.FC<HeroSectionProps> = ({
   onOpenSignup,
-  onOpenBookingModal
+  onOpenBookingModal,
 }) => {
-  const [selectedNicheIndex, setSelectedNicheIndex] = useState(0);
-  const currentNiche = BUSINESS_NICHES[selectedNicheIndex];
-  const [appointments, setAppointments] = useState<AppointmentItem[]>(currentNiche.sampleAppointments);
-  const [showNotification, setShowNotification] = useState(true);
-
-  // When changing niche, update appointments list
-  const handleNicheChange = (index: number) => {
-    setSelectedNicheIndex(index);
-    setAppointments(BUSINESS_NICHES[index].sampleAppointments);
-  };
-
-  const handleToggleStatus = (id: string) => {
-    setAppointments((prev) =>
-      prev.map((app) => {
-        if (app.id === id) {
-          const nextStatus =
-            app.status === 'Pendente'
-              ? 'Confirmado'
-              : app.status === 'Confirmado'
-              ? 'Concluído'
-              : 'Pendente';
-          return { ...app, status: nextStatus };
-        }
-        return app;
-      })
-    );
-  };
-
-  const getNicheIcon = (id: string) => {
-    switch (id) {
-      case 'barbearia': return <Scissors className="w-3.5 h-3.5" />;
-      case 'estetica': return <Sparkles className="w-3.5 h-3.5" />;
-      case 'psicologia': return <Smile className="w-3.5 h-3.5" />;
-      case 'studio': return <Dumbbell className="w-3.5 h-3.5" />;
-      default: return <Heart className="w-3.5 h-3.5" />;
-    }
-  };
+  const appointments = BUSINESS_NICHES[0].sampleAppointments.slice(0, 3);
 
   return (
-    <section className="relative overflow-hidden pt-8 sm:pt-14 pb-20 md:pb-28">
-      {/* Background ambient subtle gradients */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[520px] pointer-events-none opacity-40">
-        <div className="absolute top-10 left-1/4 w-96 h-96 bg-[#eedccf] rounded-full blur-3xl"></div>
-        <div className="absolute top-28 right-1/4 w-80 h-80 bg-[#e7dfd5] rounded-full blur-3xl"></div>
-      </div>
+    <section className="relative overflow-hidden border-b border-line">
+      <div aria-hidden className="pointer-events-none absolute inset-0 grid-fade opacity-70" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
-          
-          {/* Left Column: Headline and Pitch */}
-          <div className="lg:col-span-7 flex flex-col items-start text-left">
-            
-            {/* Pill Badge exactly styled as screenshot */}
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#ebd8cb] bg-[#fbf5ee] text-[#8f5e3b] text-xs font-semibold tracking-wider uppercase mb-7 shadow-2xs hover:border-[#dfc4b2] transition-colors">
-              <Sparkles className="w-3.5 h-3.5 text-[#af7e56]" />
-              <span>AGENDAMENTO ONLINE PARA NEGÓCIOS QUE ATENDEM COM HORA MARCADA</span>
-            </div>
+      <div className="container-page relative grid gap-14 pb-20 pt-14 sm:pt-20 lg:grid-cols-[1.02fr_0.98fr] lg:items-center lg:gap-16 lg:pb-28">
+        <div className="animate-rise">
+          <p className="eyebrow">Agenda online para negócios de serviço</p>
 
-            {/* Main Headline */}
-            <h1 className="text-4xl sm:text-5xl lg:text-[62px] xl:text-[66px] font-bold text-[#171513] tracking-tight leading-[1.08] mb-6">
-              A sua agenda, no <br className="hidden sm:inline" />
-              <span className="relative inline-block">
-                ritmo certo.
-                <span className="absolute -bottom-1 left-0 w-full h-[6px] bg-[#d7ad89]/30 rounded-full"></span>
-              </span>
-            </h1>
+          <h1 className="display-title mt-5 max-w-[16ch] text-[42px] text-ink sm:text-[56px] lg:text-[64px]">
+            Menos mensagens. Mais horários ocupados.
+          </h1>
 
-            {/* Subtitle */}
-            <p className="text-lg sm:text-xl text-[#6b645c] leading-relaxed max-w-xl mb-8 font-normal">
-              O AgendamentoON organiza horários, equipe e página pública em um só lugar. Seus clientes escolhem o melhor horário; você cuida do atendimento.
-            </p>
+          <p className="mt-6 max-w-xl text-[15px] leading-relaxed text-muted sm:text-base">
+            Seus clientes escolhem serviço, profissional e horário em uma página com a sua
+            marca. Sua equipe acompanha tudo em um painel único, sem planilha e sem
+            overbooking.
+          </p>
 
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 w-full sm:w-auto mb-8">
-              <button
-                onClick={onOpenSignup}
-                className="group bg-[#af7e56] hover:bg-[#9d6d48] text-white px-7 py-3.5 rounded-xl font-semibold text-base shadow-warm active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2.5 cursor-pointer"
-              >
-                <span>Começar teste de 7 dias</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-              </button>
-
-              <button
-                onClick={() => onOpenBookingModal()}
-                className="bg-white hover:bg-[#f6f2ec] border border-[#ded7cc] text-[#1f1d1b] px-6 py-3.5 rounded-xl font-semibold text-base active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer shadow-xs hover:border-[#cdbfae]"
-              >
-                <Globe className="w-4 h-4 text-[#78716c]" />
-                <span>Ver agendas online</span>
-              </button>
-            </div>
-
-            {/* Trust Micro-bullets with green check icons */}
-            <div className="flex flex-wrap items-center gap-y-2 gap-x-6 text-xs sm:text-sm text-[#44403c] font-medium pt-1">
-              <div className="flex items-center gap-1.5">
-                <Check className="w-4 h-4 text-emerald-600 stroke-[2.5]" />
-                <span>Pix ou cartão no pagamento</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Check className="w-4 h-4 text-emerald-600 stroke-[2.5]" />
-                <span>Cancele quando quiser</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Check className="w-4 h-4 text-emerald-600 stroke-[2.5]" />
-                <span>Dados isolados por negócio</span>
-              </div>
-            </div>
-
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <button
+              type="button"
+              onClick={onOpenSignup}
+              className="group inline-flex items-center justify-center gap-2 rounded-[10px] bg-brand px-6 py-3.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-hover"
+            >
+              Começar teste de 7 dias
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => onOpenBookingModal()}
+              className="inline-flex items-center justify-center gap-2 rounded-[10px] border border-line bg-white px-6 py-3.5 text-sm font-semibold text-ink transition-colors hover:border-slate-300 hover:bg-surface"
+            >
+              Ver agenda de exemplo
+            </button>
           </div>
 
-          {/* Right Column: The Iconic Interactive Agenda Card matching the screenshot */}
-          <div className="lg:col-span-5 relative">
+          <p className="mt-4 text-xs text-muted">
+            7 dias de teste no cartão · Pix à vista · sem fidelidade
+          </p>
 
-            {/* Segment Selector above the card */}
-            <div className="flex items-center gap-1.5 mb-3 overflow-x-auto pb-1 max-w-full scrollbar-none">
-              <span className="text-[11px] font-semibold text-[#8c827a] uppercase tracking-wider mr-1 hidden sm:inline">
-                Ver nicho:
+          <dl className="mt-10 grid max-w-xl gap-x-6 gap-y-4 border-t border-line pt-6 sm:grid-cols-2">
+            {[
+              { icon: CalendarCheck, label: "Horários validados no servidor" },
+              { icon: LockKeyhole, label: "Dados isolados por estabelecimento" },
+              { icon: Check, label: "Página com a identidade do negócio" },
+              { icon: MessageCircle, label: "Contato por WhatsApp em um clique" },
+            ].map((item) => (
+              <div key={item.label} className="flex items-start gap-2.5 text-[13px] text-slate-700">
+                <item.icon className="mt-0.5 h-4 w-4 shrink-0 text-brand" aria-hidden />
+                <span>{item.label}</span>
+              </div>
+            ))}
+          </dl>
+        </div>
+
+        <div className="relative animate-rise [animation-delay:120ms]">
+          <div className="overflow-hidden rounded-2xl border border-line bg-white shadow-[0_30px_80px_-50px_rgba(11,18,32,0.45)]">
+            <div className="flex items-center gap-2 border-b border-line bg-surface px-4 py-2.5">
+              <span className="h-2.5 w-2.5 rounded-full bg-slate-300" />
+              <span className="h-2.5 w-2.5 rounded-full bg-slate-300" />
+              <span className="h-2.5 w-2.5 rounded-full bg-slate-300" />
+              <span className="ml-2 flex-1 truncate rounded-md border border-line bg-white px-2.5 py-1 font-mono text-[10px] text-slate-500">
+                agendamentoon.com.br/barbearia-nobre
               </span>
-              {BUSINESS_NICHES.map((niche, idx) => (
-                <button
-                  key={niche.id}
-                  onClick={() => handleNicheChange(idx)}
-                  className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
-                    selectedNicheIndex === idx
-                      ? 'bg-[#171513] text-white shadow-xs'
-                      : 'bg-white/80 hover:bg-white text-[#57534e] border border-[#e8e2d8]'
-                  }`}
-                >
-                  {getNicheIcon(niche.id)}
-                  <span>{niche.label}</span>
-                </button>
-              ))}
             </div>
 
-            {/* The Main Agenda Card (Screenshot replica with interactive flair) */}
-            <div className="relative bg-white rounded-3xl border border-[#eae5de] shadow-elevated p-5 sm:p-6 transition-all duration-300">
-              
-              {/* Card Header */}
-              <div className="flex items-start justify-between pb-4 border-b border-[#f2eee9]">
+            <div className="p-5 sm:p-6">
+              <div className="flex items-start justify-between gap-3">
                 <div>
-                  <span className="text-[11px] font-bold text-[#8c827a] uppercase tracking-wider block">
-                    EXEMPLO DE AGENDA
-                  </span>
-                  <div className="text-xl font-bold text-[#171513] mt-0.5 flex items-center gap-2">
-                    <span>Hoje · quinta-feira</span>
-                    <span className="text-xs font-normal text-[#78716c] hidden sm:inline">
-                      ({currentNiche.label})
-                    </span>
-                  </div>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted">
+                    Painel · agenda
+                  </p>
+                  <h2 className="mt-1 font-display text-lg font-semibold tracking-tight text-ink">
+                    Hoje, terça-feira
+                  </h2>
                 </div>
-
-                {/* Status Pill: Online */}
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#e8f7ee] text-[#15803d] border border-[#c6ecd5] text-xs font-semibold">
-                  <span className="w-2 h-2 rounded-full bg-[#16a34a] animate-pulse"></span>
-                  <span>Online</span>
-                </div>
+                <span className="rounded-md border border-line bg-surface px-2.5 py-1 text-[11px] font-semibold text-slate-600">
+                  3 horários livres
+                </span>
               </div>
 
-              {/* Card Body: Appointment items */}
-              <div className="py-4 space-y-3">
-                {appointments.slice(0, 3).map((item) => (
-                  <div
-                    key={item.id}
-                    onClick={() => handleToggleStatus(item.id)}
-                    className="group relative flex items-center justify-between p-3.5 rounded-2xl border border-[#ede9e2] hover:border-[#d9cfc2] bg-[#fcfbf9] hover:bg-[#faf7f2] transition-all duration-200 cursor-pointer"
-                    title="Clique para alternar status"
-                  >
-                    <div className="flex items-center gap-4">
-                      {/* Time & Duration */}
-                      <div className="w-16">
-                        <div className="text-base font-bold text-[#171513] leading-none">
-                          {item.time}
-                        </div>
-                        <div className="text-[10px] font-semibold text-[#8c827a] tracking-wider uppercase mt-1">
-                          {item.duration}
-                        </div>
-                      </div>
-
-                      {/* Divider */}
-                      <div className="h-8 w-[1px] bg-[#e7e1d8]"></div>
-
-                      {/* Service & Staff */}
-                      <div>
-                        <div className="text-sm font-semibold text-[#1f1d1b] group-hover:text-[#af7e56] transition-colors">
-                          {item.service}
-                        </div>
-                        <div className="text-xs text-[#78716c] flex items-center gap-1.5 mt-0.5">
-                          <span>com {item.professional}</span>
-                          {item.client && (
-                            <>
-                              <span className="text-[#c4bcaf]">•</span>
-                              <span className="text-[#8c827a]">{item.client}</span>
-                            </>
-                          )}
-                        </div>
-                      </div>
+              <div className="mt-5 space-y-1">
+                {appointments.map((item) => (
+                  <div key={item.id} className="group flex gap-3 rounded-lg p-2 transition-colors hover:bg-surface">
+                    <div className="w-12 shrink-0 pt-0.5 text-right">
+                      <p className="font-mono text-[11px] font-medium text-ink">{item.time}</p>
+                      <p className="text-[9px] uppercase tracking-wide text-slate-400">
+                        {item.duration}
+                      </p>
                     </div>
-
-                    {/* Status Badge */}
-                    <div>
-                      {item.status === 'Confirmado' && (
-                        <span className="px-2.5 py-1 rounded-lg text-xs font-medium bg-[#e8f7ee] text-[#15803d] border border-[#c6ecd5] inline-flex items-center gap-1">
-                          <CheckCircle2 className="w-3 h-3" />
-                          Confirmado
+                    <div className="relative flex w-px justify-center bg-line">
+                      <span className="absolute top-2 h-1.5 w-1.5 rounded-full bg-brand" />
+                    </div>
+                    <div className="min-w-0 flex-1 pb-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <p className="truncate text-[13px] font-semibold text-ink">
+                          {item.service}
+                        </p>
+                        <span
+                          className={`rounded-md px-2 py-0.5 text-[10px] font-semibold ring-1 ring-inset ${
+                            statusStyles[item.status] ?? statusStyles.Confirmado
+                          }`}
+                        >
+                          {item.status}
                         </span>
-                      )}
-                      {item.status === 'Pendente' && (
-                        <span className="px-2.5 py-1 rounded-lg text-xs font-medium bg-[#fef3c7] text-[#b45309] border border-[#fde68a] inline-flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          Pendente
-                        </span>
-                      )}
-                      {item.status === 'Em atendimento' && (
-                        <span className="px-2.5 py-1 rounded-lg text-xs font-medium bg-[#ede9fe] text-[#6d28d9] border border-[#ddd6fe] inline-flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#7c3aed] animate-ping"></span>
-                          Em atendimento
-                        </span>
-                      )}
-                      {item.status === 'Concluído' && (
-                        <span className="px-2.5 py-1 rounded-lg text-xs font-medium bg-[#f3f4f6] text-[#4b5563] border border-[#e5e7eb]">
-                          Concluído
-                        </span>
-                      )}
+                      </div>
+                      <p className="mt-0.5 truncate text-[11px] text-muted">
+                        {item.client} · com {item.professional}
+                      </p>
                     </div>
                   </div>
                 ))}
               </div>
 
-              {/* Card Footer: Next free slot & CTA */}
-              <div className="pt-3 border-t border-[#f2eee9] flex items-center justify-between text-xs text-[#78716c]">
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-[#8c827a]" />
-                  <span className="font-medium">Próximo horário livre:</span>
+              <div className="mt-2 flex items-center justify-between border-t border-line pt-3">
+                <div className="text-[11px] text-muted">
+                  Próximo horário livre{" "}
+                  <span className="font-mono font-semibold text-ink">15:00</span>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="font-bold text-base text-[#171513]">15:00</span>
-                  <button
-                    onClick={() => onOpenBookingModal()}
-                    className="px-3 py-1.5 rounded-lg bg-[#f4eee6] hover:bg-[#ebdfd2] text-[#8f5e3b] font-semibold text-xs flex items-center gap-1 transition-colors cursor-pointer"
-                  >
-                    <Plus className="w-3 h-3" />
-                    <span>Novo agendamento</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Floating WhatsApp Reminder Simulator Pill */}
-              {showNotification && (
-                <div className="absolute -bottom-6 -left-4 sm:-left-8 max-w-[320px] bg-[#1c1917] text-white p-3.5 rounded-2xl shadow-xl border border-[#38332d] animate-float flex items-start gap-3 text-xs">
-                  <div className="w-7 h-7 rounded-full bg-[#25d366] text-white flex items-center justify-center shrink-0 mt-0.5">
-                    <MessageCircle className="w-4 h-4 fill-white" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-[#f5efe6]">WhatsApp automático</span>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setShowNotification(false);
-                        }}
-                        className="text-[#999086] hover:text-white ml-2 text-xs"
-                      >
-                        ×
-                      </button>
-                    </div>
-                    <p className="text-[#c4bcaf] mt-1 text-[11px] leading-tight">
-                      &ldquo;Olá Carlos! Lembrete do seu horário hoje às 14:00 com Diego. Clique aqui para confirmar.&rdquo;
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* Floating Metric Badge on Top-Right */}
-              <div className="hidden sm:flex absolute -top-4 -right-4 bg-white/95 backdrop-blur-md px-3.5 py-2 rounded-xl border border-[#e4ded5] shadow-md items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></div>
-                <span className="text-xs font-semibold text-[#171513]">
-                  +85% de comparecimento
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-brand">
+                  Abrir agenda <ArrowRight className="h-3 w-3" />
                 </span>
               </div>
-
             </div>
-
-            {/* Quick interactive note below card */}
-            <p className="text-center text-[11px] text-[#8c827a] mt-3">
-              💡 <span className="font-medium">Dica interativa:</span> Clique nos cards acima para alternar o status do atendimento em tempo real.
-            </p>
           </div>
 
+          <div className="mt-3 grid grid-cols-2 gap-3">
+            <div className="rounded-xl border border-line bg-white p-3.5">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
+                Hoje
+              </p>
+              <p className="mt-1 font-display text-xl font-semibold text-ink">7 atendimentos</p>
+              <p className="mt-0.5 text-[11px] text-muted">3 confirmados · 1 pendente</p>
+            </div>
+            <div className="rounded-xl border border-line bg-white p-3.5">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted">
+                Página pública
+              </p>
+              <p className="mt-1 font-display text-xl font-semibold text-ink">Online</p>
+              <p className="mt-0.5 text-[11px] text-muted">Compartilhada no Instagram</p>
+            </div>
+          </div>
         </div>
       </div>
     </section>

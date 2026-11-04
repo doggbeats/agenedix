@@ -18,6 +18,15 @@ export const metadata: Metadata = {
   title: { default: "Painel", template: `%s | ${APP_NAME}` },
 };
 
+function initials(name: string) {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("");
+}
+
 export default async function PanelLayout({ children }: { children: ReactNode }) {
   const auth = await requirePanel();
   const isManager = isManagerRole(auth.role);
@@ -55,36 +64,44 @@ export default async function PanelLayout({ children }: { children: ReactNode })
   return (
     <div className="min-h-screen bg-paper text-ink">
       <div className="flex min-h-screen">
-        <aside className="hidden w-64 shrink-0 flex-col border-r border-line bg-white px-4 py-5 lg:flex">
-          <Link href="/painel" className="px-1">
+        <aside className="sticky top-0 hidden h-screen w-[268px] shrink-0 flex-col border-r border-line bg-white px-4 py-5 lg:flex">
+          <Link href="/painel" className="px-1" aria-label="AgendamentoON — painel">
             <Logo />
           </Link>
 
-          <div className="mt-6 rounded-lg border border-line bg-paper p-3">
-            <p className="truncate text-sm font-semibold text-ink">{auth.establishment.name}</p>
-            <p className="mt-0.5 text-[11px] text-slate-500">
-              {ROLE_LABELS[auth.role]}
-              {auth.professionalId ? ` · ${auth.user.name}` : ""}
-            </p>
-            <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">
-              Painel do estabelecimento
-            </p>
+          <div className="mt-6 flex items-center gap-3 border-y border-line py-4">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-line bg-paper text-[11px] font-semibold text-ink">
+              {initials(auth.establishment.name)}
+            </span>
+            <div className="min-w-0">
+              <p className="truncate text-[13px] font-semibold text-ink">
+                {auth.establishment.name}
+              </p>
+              <p className="mt-0.5 truncate text-[11px] text-muted">
+                {ROLE_LABELS[auth.role]}
+                {auth.professionalId ? ` · ${auth.user.name}` : ""}
+              </p>
+            </div>
           </div>
 
-          <div className="mt-5 flex-1">
-            <PanelNav items={mainItems} footerItems={footerItems} />
+          <div className="mt-5 flex flex-1 flex-col">
+            <PanelNav
+              items={mainItems}
+              footerItems={footerItems}
+              mainLabel={isManager ? "Operação" : "Sua rotina"}
+            />
           </div>
 
           <div className="mt-4 space-y-2 border-t border-line pt-4">
             <Link
               href={`/agendar/${auth.establishment.slug}`}
               target="_blank"
-              className="flex items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold text-slate-500 transition hover:bg-slate-100 hover:text-ink"
+              className="flex items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold text-slate-500 transition hover:bg-paper hover:text-ink"
             >
               Ver página pública
-              <ExternalLink className="h-3.5 w-3.5" />
+              <ExternalLink className="h-3.5 w-3.5" aria-hidden />
             </Link>
-            <div className="px-3 text-[10px] text-slate-500">
+            <div className="px-3 text-[10px] leading-relaxed text-slate-400">
               {auth.user.name}
               <br />
               {auth.user.email}
@@ -100,12 +117,13 @@ export default async function PanelLayout({ children }: { children: ReactNode })
                   items={mainItems}
                   footerItems={footerItems}
                   establishmentName={auth.establishment.name}
+                  mainLabel={isManager ? "Operação" : "Sua rotina"}
                 />
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-ink">
                     {auth.establishment.name}
                   </p>
-                  <p className="truncate text-[11px] text-slate-500">
+                  <p className="truncate text-[11px] text-muted">
                     {ROLE_LABELS[auth.role]} · {auth.user.name}
                   </p>
                 </div>
@@ -117,7 +135,7 @@ export default async function PanelLayout({ children }: { children: ReactNode })
                   target="_blank"
                   className="hidden items-center gap-1.5 rounded-lg border border-line bg-white px-3 py-2 text-xs font-semibold text-slate-600 transition hover:border-slate-300 hover:text-ink sm:inline-flex"
                 >
-                  <ExternalLink className="h-3.5 w-3.5" /> Página pública
+                  <ExternalLink className="h-3.5 w-3.5" aria-hidden /> Página pública
                 </Link>
                 <form action={logoutAction}>
                   <button
@@ -125,7 +143,7 @@ export default async function PanelLayout({ children }: { children: ReactNode })
                     aria-label="Sair"
                     className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-white px-3 py-2 text-xs font-semibold text-slate-600 transition hover:border-slate-300 hover:text-ink"
                   >
-                    <LogOut className="h-3.5 w-3.5" />
+                    <LogOut className="h-3.5 w-3.5" aria-hidden />
                     <span className="hidden sm:inline">Sair</span>
                   </button>
                 </form>
@@ -134,7 +152,7 @@ export default async function PanelLayout({ children }: { children: ReactNode })
           </header>
 
           <main className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8">{children}</main>
-          <footer className="border-t border-line px-4 py-4 text-[10px] text-slate-600 sm:px-6">
+          <footer className="border-t border-line px-4 py-4 text-[10px] text-slate-400 sm:px-6">
             {auth.establishment.name} · agenda e atendimento · operado por {APP_NAME}
           </footer>
         </div>

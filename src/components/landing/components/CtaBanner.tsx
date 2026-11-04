@@ -1,74 +1,82 @@
-import React from 'react';
-import { ArrowRight, Sparkles, Check } from 'lucide-react';
+import React from "react";
+import { ArrowRight } from "lucide-react";
 
 interface CtaBannerProps {
   onOpenSignup: () => void;
   onOpenBookingDemo: () => void;
 }
 
-export const CtaBanner: React.FC<CtaBannerProps> = ({ onOpenSignup, onOpenBookingDemo }) => {
+const facts = [
+  { label: "Teste", value: "7 dias no cartão" },
+  { label: "Pagamento", value: "Pix à vista ou cartão" },
+  { label: "Contrato", value: "Mensal, sem fidelidade" },
+];
+
+export const CtaBanner: React.FC<CtaBannerProps> = ({
+  onOpenSignup,
+  onOpenBookingDemo,
+}) => {
   return (
-    <section className="py-16 md:py-24 relative overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        <div className="bg-gradient-to-br from-[#241f1c] via-[#2f2824] to-[#1c1917] rounded-[36px] p-8 sm:p-14 lg:p-16 text-white relative overflow-hidden shadow-2xl border border-[#453c35]">
-          
-          {/* Ambient glow */}
-          <div className="absolute top-0 right-0 w-96 h-96 bg-[#af7e56]/20 rounded-full blur-3xl pointer-events-none"></div>
+    <section className="py-16 sm:py-24">
+      <div className="container-page">
+        <div className="relative overflow-hidden rounded-2xl bg-ink">
+          <div
+            aria-hidden
+            className="paper-grid pointer-events-none absolute inset-0 opacity-[0.07]"
+          />
 
-          <div className="relative z-10 max-w-3xl mx-auto text-center">
-            
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/10 text-[#e8cbb5] text-xs font-semibold tracking-wider uppercase mb-6 backdrop-blur-md">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Teste por 7 dias</span>
-            </div>
+          <div className="relative grid gap-10 p-8 sm:p-12 lg:grid-cols-[1.25fr_0.75fr] lg:gap-16 lg:p-14">
+            <div>
+              <p className="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-white/55">
+                AgendamentoON
+              </p>
+              <h2 className="display-title mt-4 max-w-[18ch] text-3xl text-white sm:text-4xl lg:text-[44px]">
+                Coloque a agenda no ar ainda hoje.
+              </h2>
+              <p className="mt-5 max-w-lg text-[15px] leading-relaxed text-white/65">
+                Crie a conta, cadastre serviços e profissionais e compartilhe o link da
+                sua página. O primeiro horário pode entrar antes do fim do dia.
+              </p>
 
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-tight mb-6">
-              A sua agenda merece a <br className="hidden sm:inline" />
-              praticidade do AgendamentoON.
-            </h2>
-
-            <p className="text-[#d8cebe] text-base sm:text-lg leading-relaxed max-w-2xl mx-auto mb-8 font-normal">
-              Cadastre seu negócio em 2 minutos. Envie seu link exclusivo para seus clientes hoje mesmo e sinta o alívio de ter sua rotina organizada.
-            </p>
-
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
-              <button
-                onClick={onOpenSignup}
-                className="w-full sm:w-auto bg-[#af7e56] hover:bg-[#9d6d48] text-white px-8 py-4 rounded-xl font-bold text-base shadow-warm active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <span>Criar minha conta gratuita</span>
-                <ArrowRight className="w-5 h-5" />
-              </button>
-
-              <button
-                onClick={onOpenBookingDemo}
-                className="w-full sm:w-auto bg-white/10 hover:bg-white/15 text-white border border-white/20 px-6 py-4 rounded-xl font-semibold text-base transition-colors flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <span>Ver demonstração interativa</span>
-              </button>
-            </div>
-
-            {/* Checkmarks */}
-            <div className="flex flex-wrap items-center justify-center gap-y-2 gap-x-6 text-xs text-[#c4b9aa]">
-              <div className="flex items-center gap-1.5">
-                <Check className="w-4 h-4 text-emerald-400 stroke-[3]" />
-                <span>Pix ou cartão de crédito</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Check className="w-4 h-4 text-emerald-400 stroke-[3]" />
-                <span>Configuração em menos de 5 minutos</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Check className="w-4 h-4 text-emerald-400 stroke-[3]" />
-                <span>Cancele a qualquer momento</span>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+                <button
+                  type="button"
+                  onClick={onOpenSignup}
+                  className="group inline-flex items-center justify-center gap-2 rounded-[10px] bg-brand px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-brand-hover"
+                >
+                  Começar teste de 7 dias
+                  <ArrowRight
+                    className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
+                    aria-hidden
+                  />
+                </button>
+                <button
+                  type="button"
+                  onClick={onOpenBookingDemo}
+                  className="inline-flex items-center justify-center rounded-[10px] border border-white/20 px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:border-white/35 hover:bg-white/5"
+                >
+                  Ver agenda de exemplo
+                </button>
               </div>
             </div>
 
+            <dl className="grid content-center gap-0 border-t border-white/10 lg:border-l lg:border-t-0 lg:pl-10">
+              {facts.map((fact) => (
+                <div
+                  key={fact.label}
+                  className="flex items-baseline justify-between gap-4 border-b border-white/10 py-4 last:border-0"
+                >
+                  <dt className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white/45">
+                    {fact.label}
+                  </dt>
+                  <dd className="text-right text-[13px] font-medium text-white/85">
+                    {fact.value}
+                  </dd>
+                </div>
+              ))}
+            </dl>
           </div>
-
         </div>
-
       </div>
     </section>
   );

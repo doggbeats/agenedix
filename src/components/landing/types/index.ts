@@ -4,9 +4,24 @@ export interface AppointmentItem {
   duration: string;
   service: string;
   professional: string;
-  status: 'Confirmado' | 'Pendente' | 'Em atendimento' | 'Concluído';
+  status: "Confirmado" | "Pendente" | "Atendimento" | "Concluído";
   price?: string;
   client?: string;
+}
+
+export interface NicheService {
+  id: string;
+  title: string;
+  duration: string;
+  price: string;
+  description: string;
+}
+
+export interface NicheProfessional {
+  id: string;
+  name: string;
+  role: string;
+  initials: string;
 }
 
 export interface BusinessNiche {
@@ -17,20 +32,8 @@ export interface BusinessNiche {
   tagline: string;
   description: string;
   sampleAppointments: AppointmentItem[];
-  services: {
-    id: string;
-    title: string;
-    duration: string;
-    price: string;
-    description: string;
-  }[];
-  professionals: {
-    id: string;
-    name: string;
-    role: string;
-    avatar: string;
-    rating: string;
-  }[];
+  services: NicheService[];
+  professionals: NicheProfessional[];
 }
 
 export interface PricingPlan {
@@ -48,13 +51,10 @@ export interface PricingPlan {
   trialDays?: number;
 }
 
-export interface Testimonial {
+export interface Scenario {
   id: string;
-  name: string;
-  role: string;
-  company: string;
-  avatar: string;
-  content: string;
-  highlightMetric: string;
-  rating: number;
+  segment: string;
+  title: string;
+  description: string;
+  bullets: string[];
 }

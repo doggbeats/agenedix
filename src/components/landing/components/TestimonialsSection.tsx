@@ -1,74 +1,60 @@
-import React from 'react';
-import Image from 'next/image';
-import { Star, Quote } from 'lucide-react';
-import { TESTIMONIALS } from '../data/mockData';
+import React from "react";
+import { Check } from "lucide-react";
+import { SCENARIOS } from "../data/mockData";
 
 export const TestimonialsSection: React.FC = () => {
   return (
-    <section id="depoimentos" className="py-20 md:py-28 bg-[#faf7f2] border-t border-[#ede8e1]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Section Header */}
-        <div className="text-center max-w-2xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-[#e4ded5] bg-white text-[#8f5e3b] text-xs font-semibold uppercase tracking-wider mb-4">
-            <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-500" />
-            <span>Casos de Sucesso Reais</span>
+    <section id="cenarios" className="border-b border-line py-20 sm:py-28">
+      <div className="container-page">
+        <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
+          <div className="max-w-2xl">
+            <p className="eyebrow">Em operação</p>
+            <h2 className="display-title mt-4 text-3xl text-ink sm:text-4xl lg:text-[44px]">
+              Rotinas diferentes, a mesma lógica.
+            </h2>
+            <p className="mt-4 text-[15px] leading-relaxed text-muted">
+              Estes são cenários de configuração, não depoimentos. Cada negócio ajusta
+              serviços, jornada e regras de acordo com o próprio atendimento.
+            </p>
           </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-[42px] font-bold text-[#171513] tracking-tight">
-            Quem usa o AgendamentoON não volta atrás
-          </h2>
-          <p className="mt-4 text-[#6b645c] text-base sm:text-lg">
-            Veja o que profissionais autônomos e gestores de clínicas e barbearias relatam sobre a transformação no seu dia a dia.
+          <p className="max-w-xs text-[11px] leading-relaxed text-muted lg:text-right">
+            Exemplos ilustrativos montados a partir dos recursos disponíveis no painel.
           </p>
         </div>
 
-        {/* Testimonial Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {TESTIMONIALS.map((item) => (
-            <div
-              key={item.id}
-              className="bg-white rounded-3xl p-7 sm:p-8 border border-[#e5dfd4] shadow-soft hover:shadow-elevated transition-all flex flex-col justify-between"
+        <div className="mt-12 grid gap-4 md:grid-cols-3">
+          {SCENARIOS.map((scenario, index) => (
+            <article
+              key={scenario.id}
+              className="flex flex-col rounded-xl border border-line bg-white p-6 transition-colors hover:border-slate-300"
             >
-              <div>
-                {/* Metric pill */}
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#f4eee6] text-[#8f5e3b] text-xs font-bold mb-6">
-                  <span>{item.highlightMetric}</span>
-                </div>
-
-                {/* Stars */}
-                <div className="flex items-center gap-1 mb-4 text-amber-400">
-                  {[...Array(item.rating)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
-                  ))}
-                </div>
-
-                <div className="relative mb-6">
-                  <Quote className="w-6 h-6 text-[#e8dfd2] absolute -top-2 -left-1 -z-0 opacity-50" />
-                  <p className="text-sm text-[#44403c] leading-relaxed relative z-10 italic">
-                    &ldquo;{item.content}&rdquo;
-                  </p>
-                </div>
+              <div className="flex items-center gap-3 border-b border-line pb-4">
+                <span className="font-mono text-[11px] font-medium text-brand">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <span className="text-[11px] font-semibold uppercase tracking-[0.1em] text-muted">
+                  {scenario.segment}
+                </span>
               </div>
 
-              {/* Author info */}
-              <div className="pt-4 border-t border-[#f0ece5] flex items-center gap-3">
-                <Image
-                  src={item.avatar}
-                  alt={item.name}
-                  width={44}
-                  height={44}
-                  className="w-11 h-11 rounded-full object-cover border border-[#e0d7cb]"
-                />
-                <div>
-                  <h4 className="text-xs font-bold text-[#171513]">{item.name}</h4>
-                  <p className="text-[11px] text-[#78716c]">{item.role}</p>
-                  <p className="text-[10px] text-[#8c827a] font-medium">{item.company}</p>
-                </div>
-              </div>
-            </div>
+              <h3 className="mt-5 font-display text-lg font-semibold leading-snug tracking-tight text-ink">
+                {scenario.title}
+              </h3>
+              <p className="mt-3 flex-1 text-[13px] leading-relaxed text-muted">
+                {scenario.description}
+              </p>
+
+              <ul className="mt-5 space-y-2.5 border-t border-line pt-5">
+                {scenario.bullets.map((bullet) => (
+                  <li key={bullet} className="flex items-start gap-2 text-[12.5px] text-slate-700">
+                    <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand" aria-hidden />
+                    <span className="leading-snug">{bullet}</span>
+                  </li>
+                ))}
+              </ul>
+            </article>
           ))}
         </div>
-
       </div>
     </section>
   );

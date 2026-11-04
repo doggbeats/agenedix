@@ -39,11 +39,9 @@ export function PasswordRecoveryForm() {
         Enviar instruções
       </SubmitButton>
 
-      <p className="text-center text-xs text-slate-500">
-        Lembrou a senha?{" "}
-        <Link href="/login" className="font-semibold text-ink underline underline-offset-2">
-          Voltar para o login
-        </Link>
+      <p className="text-center text-[11px] leading-relaxed text-muted">
+        Por segurança, não informamos se o e-mail está cadastrado. O link enviado expira em
+        1 hora.
       </p>
     </form>
   );

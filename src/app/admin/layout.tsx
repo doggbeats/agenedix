@@ -17,48 +17,46 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     <div className="min-h-screen bg-paper text-ink">
       <header className="sticky top-0 z-40 border-b border-line bg-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <div className="flex items-center justify-between gap-4 py-3">
-            <div className="flex min-w-0 items-center gap-6">
-              <Link href="/admin" className="shrink-0">
+          <div className="flex h-16 items-center justify-between gap-4">
+            <div className="flex min-w-0 items-center gap-4">
+              <Link href="/admin" className="shrink-0" aria-label="Administração — início">
                 <Logo />
               </Link>
-              <div className="hidden md:block">
-                <AdminNav />
-              </div>
+              <span className="hidden items-center gap-1.5 rounded-md border border-brand/20 bg-brand/5 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-brand-hover sm:inline-flex">
+                <ShieldCheck className="h-3.5 w-3.5" aria-hidden /> Admin da plataforma
+              </span>
             </div>
 
             <div className="flex shrink-0 items-center gap-2">
-              <span className="hidden items-center gap-1.5 rounded-md border border-brand/25 bg-brand/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-brand-hover sm:inline-flex">
-                <ShieldCheck className="h-3.5 w-3.5" /> Admin da plataforma
-              </span>
               {auth.memberships.length > 0 && (
                 <Link
                   href="/painel"
-                  className="hidden items-center gap-1.5 rounded-md border border-line bg-white px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-paper sm:inline-flex"
+                  className="hidden items-center gap-1.5 rounded-lg border border-line bg-white px-3 py-2 text-xs font-semibold text-slate-600 transition hover:border-slate-300 hover:text-ink sm:inline-flex"
                 >
-                  <ArrowLeft className="h-3.5 w-3.5" /> Painel
+                  <ArrowLeft className="h-3.5 w-3.5" aria-hidden /> Painel
                 </Link>
               )}
               <Link
                 href="/"
                 target="_blank"
-                className="hidden items-center gap-1.5 rounded-md border border-line bg-white px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-paper lg:inline-flex"
+                className="hidden items-center gap-1.5 rounded-lg border border-line bg-white px-3 py-2 text-xs font-semibold text-slate-600 transition hover:border-slate-300 hover:text-ink lg:inline-flex"
               >
-                Site <ExternalLink className="h-3.5 w-3.5" />
+                Site <ExternalLink className="h-3.5 w-3.5" aria-hidden />
               </Link>
               <form action={logoutAction}>
                 <button
                   type="submit"
                   aria-label="Sair"
-                  className="inline-flex items-center gap-1.5 rounded-md border border-line bg-white px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-paper"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-white px-3 py-2 text-xs font-semibold text-slate-600 transition hover:border-slate-300 hover:text-ink"
                 >
-                  <LogOut className="h-3.5 w-3.5" />
+                  <LogOut className="h-3.5 w-3.5" aria-hidden />
                   <span className="hidden sm:inline">Sair</span>
                 </button>
               </form>
             </div>
           </div>
-          <div className="pb-2 md:hidden">
+
+          <div className="border-t border-line/70">
             <AdminNav />
           </div>
         </div>
@@ -66,9 +64,8 @@ export default async function AdminLayout({ children }: { children: ReactNode })
 
       <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:py-8">{children}</main>
 
-      <footer className="border-t border-line bg-white px-4 py-4 text-center text-[10px] text-slate-500 sm:px-6">
-        AgendamentoON · administração da plataforma ·{" "}
-        {auth.user.email}
+      <footer className="border-t border-line bg-white px-4 py-4 text-center text-[10px] text-slate-400 sm:px-6">
+        AgendamentoON · administração da plataforma · {auth.user.email}
       </footer>
     </div>
   );

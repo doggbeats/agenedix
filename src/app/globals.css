@@ -1,20 +1,21 @@
 @import "tailwindcss";
 
 :root {
---background: #FFFFFF;
---foreground: #0B0B0B;
+  --background: #ffffff;
+  --foreground: #0b1220;
 
---brand: #B08D68;
---brand-hover: #977452;
---brand-soft: #C4A484;
+  --brand: #2e5bff;
+  --brand-hover: #1e46d6;
+  --brand-soft: #dfe7ff;
 
---ink: #0B0B0B;
---paper: #F3F3F3;
---muted: #6B6259;
---line: #E7E1D9;
+  --ink: #0b1220;
+  --paper: #f5f6f8;
+  --surface: #fafbfc;
+  --muted: #5b6577;
+  --line: #e4e7ee;
 
---success: #16A34A;
---danger: #DC2626;
+  --success: #0f7a53;
+  --danger: #b9382f;
 }
 
 @theme inline {
@@ -25,13 +26,14 @@
   --color-brand-soft: var(--brand-soft);
   --color-ink: var(--ink);
   --color-paper: var(--paper);
+  --color-surface: var(--surface);
   --color-muted: var(--muted);
   --color-line: var(--line);
   --color-success: var(--success);
   --color-danger: var(--danger);
   --font-sans: var(--font-jakarta-sans);
-  --font-mono: var(--font-lekton);
-  --font-display: var(--font-lekton);
+  --font-mono: var(--font-jetbrains-mono);
+  --font-display: var(--font-manrope);
 }
 
 * {
@@ -45,13 +47,22 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-jakarta-sans), "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font-jakarta-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   text-rendering: optimizeLegibility;
 }
 
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-manrope), var(--font-jakarta-sans), ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.028em;
+}
+
 ::selection {
-  background: color-mix(in srgb, var(--brand) 18%, transparent);
+  background: color-mix(in srgb, var(--brand) 16%, transparent);
   color: var(--ink);
 }
 
@@ -77,13 +88,8 @@ a {
 }
 
 button:not(:disabled) {
-  transition: filter 150ms ease, transform 150ms ease;
-}
-
-@media (hover: hover) {
-  button:not(:disabled):hover {
-    filter: brightness(0.94);
-  }
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease,
+    box-shadow 150ms ease, transform 150ms ease;
 }
 
 summary::-webkit-details-marker {
@@ -93,7 +99,7 @@ summary::-webkit-details-marker {
 @media (min-width: 768px) {
   * {
     scrollbar-width: thin;
-    scrollbar-color: #d8ccc1 transparent;
+    scrollbar-color: #cdd3de transparent;
   }
 
   *::-webkit-scrollbar {
@@ -105,57 +111,113 @@ summary::-webkit-details-marker {
     border: 2px solid transparent;
     border-radius: 999px;
     background-clip: content-box;
-    background-color: #d8ccc1;
+    background-color: #cdd3de;
   }
 
   *::-webkit-scrollbar-thumb:hover {
-    background-color: #b9a696;
+    background-color: #aab2c1;
   }
 }
 
-.dark-surface {
-  color-scheme: light;
+/* ------------------------------------------------------------------ */
+/* Utilities                                                          */
+/* ------------------------------------------------------------------ */
+
+.container-page {
+  width: 100%;
+  max-width: 76rem;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
 }
 
-.brand-shadow {
-  box-shadow:
-    0 1px 2px rgb(23 19 16 / 0.04),
-    0 20px 48px -32px rgb(23 19 16 / 0.16);
+@media (min-width: 640px) {
+  .container-page {
+    padding-inline: 2rem;
+  }
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--brand);
+}
+
+.eyebrow::before {
+  content: "";
+  display: block;
+  width: 1.5rem;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.55;
+}
+
+.display-title {
+  font-family: var(--font-manrope), var(--font-jakarta-sans), ui-sans-serif, system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.04;
 }
 
 .surface-hover {
-  transition:
-    border-color 160ms ease,
-    box-shadow 160ms ease,
-    transform 160ms ease;
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
 }
 
 .surface-hover:hover {
-  border-color: #d8ccc1;
-  box-shadow:
-    0 1px 2px rgb(23 19 16 / 0.04),
-    0 16px 36px -28px rgb(23 19 16 / 0.2);
+  border-color: #d3d9e4;
+  box-shadow: 0 1px 2px rgb(11 18 32 / 0.04), 0 18px 40px -30px rgb(11 18 32 / 0.22);
   transform: translateY(-1px);
+}
+
+.brand-shadow {
+  box-shadow: 0 1px 2px rgb(11 18 32 / 0.04), 0 24px 60px -38px rgb(11 18 32 / 0.28);
 }
 
 .paper-grid {
   background-image: linear-gradient(
       to right,
-      color-mix(in srgb, var(--line) 70%, transparent) 1px,
+      color-mix(in srgb, var(--line) 82%, transparent) 1px,
       transparent 1px
     ),
     linear-gradient(
       to bottom,
-      color-mix(in srgb, var(--line) 70%, transparent) 1px,
+      color-mix(in srgb, var(--line) 82%, transparent) 1px,
       transparent 1px
     );
   background-size: 32px 32px;
 }
 
+.grid-fade {
+  background-image: linear-gradient(
+      to right,
+      color-mix(in srgb, var(--line) 90%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--line) 90%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, #000 35%, transparent 78%);
+}
+
+.dark-surface {
+  color-scheme: dark;
+}
+
+/* ------------------------------------------------------------------ */
+/* Motion                                                             */
+/* ------------------------------------------------------------------ */
+
 @keyframes rise {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -184,11 +246,11 @@ summary::-webkit-details-marker {
 }
 
 .animate-rise {
-  animation: rise 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: rise 0.36s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .animate-fade {
-  animation: fade 0.2s ease-out both;
+  animation: fade 0.22s ease-out both;
 }
 
 .animate-slide-in {
@@ -212,42 +274,21 @@ summary::-webkit-details-marker {
   }
 }
 
-
 /* ------------------------------------------------------------------ */
-/* Landing page (components/landing)                                   */
-/* Estilos que vieram do projeto Vite e ficam escopados nesta área.    */
+/* Landing page (components/landing)                                  */
 /* ------------------------------------------------------------------ */
 
 .landing-scope {
-  --font-heading: var(--font-space-grotesk), "Space Grotesk", var(--font-jakarta-sans), ui-sans-serif, system-ui, sans-serif;
-  background-color: #fbfaf8;
-  color: #1c1917;
+  background-color: #ffffff;
+  color: var(--ink);
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 }
 
 .landing-scope h1,
 .landing-scope h2,
 .landing-scope h3,
 .landing-scope .font-heading {
-  font-family: var(--font-heading);
-  letter-spacing: -0.02em;
-}
-
-.landing-scope .shadow-soft {
-  box-shadow:
-    0 1px 2px rgb(28 25 23 / 0.04),
-    0 12px 32px -20px rgb(28 25 23 / 0.18);
-}
-
-.landing-scope .shadow-elevated {
-  box-shadow:
-    0 1px 2px rgb(28 25 23 / 0.05),
-    0 24px 48px -28px rgb(28 25 23 / 0.28);
-}
-
-.landing-scope .shadow-warm {
-  box-shadow:
-    0 1px 2px rgb(89 56 30 / 0.18),
-    0 14px 30px -14px rgb(175 126 86 / 0.55);
+  font-family: var(--font-manrope), var(--font-jakarta-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
 .landing-scope .scrollbar-none {
@@ -257,34 +298,6 @@ summary::-webkit-details-marker {
 
 .landing-scope .scrollbar-none::-webkit-scrollbar {
   display: none;
-}
-
-@keyframes landing-float-subtle {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-6px);
-  }
-}
-
-@keyframes landing-pulse-subtle {
-  0%,
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.85;
-    transform: scale(0.98);
-  }
-}
-
-@keyframes landing-shimmer {
-  100% {
-    transform: translateX(100%);
-  }
 }
 
 @keyframes landing-fade-in {
@@ -299,7 +312,7 @@ summary::-webkit-details-marker {
 @keyframes landing-zoom-in {
   from {
     opacity: 0;
-    transform: scale(0.95);
+    transform: scale(0.985);
   }
   to {
     opacity: 1;
@@ -318,15 +331,6 @@ summary::-webkit-details-marker {
   }
 }
 
-.landing-scope .animate-float {
-  animation: landing-float-subtle 4s ease-in-out infinite;
-}
-
-.landing-scope .animate-pulse-subtle {
-  animation: landing-pulse-subtle 2.5s ease-in-out infinite;
-}
-
-/* Equivalente mínimo do tailwindcss-animate usado pelo layout original. */
 .landing-scope .animate-in {
   animation-duration: 200ms;
   animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
@@ -347,15 +351,13 @@ summary::-webkit-details-marker {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .landing-scope .animate-float,
-  .landing-scope .animate-pulse-subtle,
   .landing-scope .animate-in {
     animation: none;
   }
 }
 
-/* Tipografia de destaque usada na landing e na tela de login. */
+/* Tipografia de destaque usada nas telas públicas. */
 .font-space {
-  font-family: var(--font-space-grotesk), var(--font-jakarta-sans), ui-sans-serif, system-ui, sans-serif;
-  letter-spacing: -0.02em;
+  font-family: var(--font-manrope), var(--font-jakarta-sans), ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.028em;
 }

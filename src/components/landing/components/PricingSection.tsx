@@ -1,134 +1,124 @@
-import React from 'react';
-import Link from 'next/link';
-import { Check, Sparkles, Shield, ArrowRight } from 'lucide-react';
-import { PRICING_PLANS } from '../data/mockData';
-import type { PricingPlan } from '../types';
+import React from "react";
+import Link from "next/link";
+import { ArrowRight, Check } from "lucide-react";
+import { PRICING_PLANS } from "../data/mockData";
+import type { PricingPlan } from "../types";
 
 interface PricingSectionProps {
   plans?: PricingPlan[];
+}
+
+function formatPrice(value: number) {
+  return value.toLocaleString("pt-BR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 }
 
 export const PricingSection: React.FC<PricingSectionProps> = ({ plans }) => {
   const catalog = plans && plans.length > 0 ? plans : PRICING_PLANS;
 
   return (
-    <section id="planos" className="py-20 md:py-28 relative">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-        {/* Header */}
-        <div className="text-center max-w-2xl mx-auto mb-12">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#e4ded5] bg-[#f5efe6] text-[#8f5e3b] text-xs font-semibold uppercase tracking-wider mb-4">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Preço Justo e Sem Surpresas</span>
-          </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-[42px] font-bold text-[#171513] tracking-tight">
-            Planos simples que crescem com você
-          </h2>
-          <p className="mt-4 text-[#6b645c] text-base sm:text-lg">
-            Cobrança mensal, 7 dias de teste no cartão ou pagamento imediato no Pix. Sem fidelidade e cancele quando quiser.
-          </p>
-          <div className="mt-6 inline-flex items-center gap-2 rounded-full bg-white border border-[#ded5c8] px-4 py-2 text-xs font-bold text-[#57534e]">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-            Todos os planos com 7 dias de teste
-          </div>
-        </div>
-
-        {/* Pricing Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 xl:gap-5 items-stretch">
-          {catalog.map((plan) => {
-            const priceLabel = plan.priceMonthly.toLocaleString('pt-BR', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            });
-
-            return (
-              <div
-                key={plan.id}
-                className={`rounded-3xl p-7 sm:p-9 flex flex-col justify-between transition-all duration-200 relative ${
-                  plan.isPopular
-                    ? 'bg-white border-2 border-[#af7e56] shadow-xl scale-[1.02] z-10'
-                    : 'bg-white/80 border border-[#e5dfd4] shadow-soft hover:shadow-elevated'
-                }`}
-              >
-                {/* Popular pill */}
-                {plan.badge && (
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
-                    <span className="bg-[#af7e56] text-white text-[11px] font-extrabold px-3.5 py-1 rounded-full uppercase tracking-wider shadow-sm">
-                      {plan.badge}
-                    </span>
-                  </div>
-                )}
-
-                <div>
-                  <h3 className="text-xl font-bold text-[#171513] mb-2">{plan.name}</h3>
-                  <p className="text-xs text-[#78716c] leading-relaxed min-h-[36px] mb-6">
-                    {plan.description}
-                  </p>
-
-                  {/* Price */}
-                  <div className="flex items-baseline gap-1.5 mb-6 pb-6 border-b border-[#f0ece5]">
-                    <span className="text-xs font-bold text-[#78716c]">R$</span>
-                    <span className="text-4xl sm:text-5xl font-extrabold text-[#171513] tracking-tight">
-                      {priceLabel}
-                    </span>
-                    <span className="text-xs font-medium text-[#78716c]">
-                      /mês
-                    </span>
-                  </div>
-
-                  {/* Features list */}
-                  <div className="space-y-3.5 mb-8">
-                    <div className="text-xs font-bold uppercase tracking-wider text-[#8c827a]">
-                      O que está incluso:
-                    </div>
-                    {plan.features.map((feature, idx) => (
-                      <div key={idx} className="flex items-start gap-2.5 text-xs text-[#38332d]">
-                        <div className="w-4 h-4 rounded-full bg-[#f4eee6] text-[#af7e56] flex items-center justify-center shrink-0 mt-0.5">
-                          <Check className="w-2.5 h-2.5 stroke-[3]" />
-                        </div>
-                        <span className="leading-snug">{feature}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* CTA Button */}
-                <div className="pt-4 border-t border-[#f0ece5]">
-                  <Link
-                    href={plan.slug ? `/cadastro?plano=${encodeURIComponent(plan.slug)}` : '/cadastro'}
-                    className={`w-full py-3.5 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                      plan.isPopular
-                        ? 'bg-[#af7e56] hover:bg-[#9d6d48] text-white shadow-warm'
-                        : 'bg-[#171513] hover:bg-[#2d2824] text-white shadow-xs'
-                    }`}
-                  >
-                    <span>{plan.ctaText || 'Começar teste de 7 dias'}</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </Link>
-                  <p className="text-[11px] text-center text-[#8c827a] mt-2.5">
-                    Teste grátis de 7 dias • Sem fidelidade
-                  </p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Security / Guarantee Seal */}
-        <div className="mt-14 max-w-3xl mx-auto bg-white/70 border border-[#e5dfd4] rounded-2xl p-5 flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
-          <div className="w-12 h-12 rounded-2xl bg-[#e8f7ee] text-emerald-600 flex items-center justify-center shrink-0">
-            <Shield className="w-6 h-6" />
-          </div>
-          <div>
-            <h4 className="font-bold text-sm text-[#171513]">
-              Garantia Incondicional de Satisfação
-            </h4>
-            <p className="text-xs text-[#6b645c] mt-0.5">
-              Experimente o AgendamentoON por 7 dias. Se você e sua equipe não sentirem a diferença na pontualidade e na redução de faltas, basta cancelar no painel com 1 clique.
+    <section id="planos" className="border-b border-line bg-surface py-20 sm:py-28">
+      <div className="container-page">
+        <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
+          <div className="max-w-2xl">
+            <p className="eyebrow">Planos</p>
+            <h2 className="display-title mt-4 text-3xl text-ink sm:text-4xl lg:text-[44px]">
+              Preço claro, sem taxa por agendamento.
+            </h2>
+            <p className="mt-4 text-[15px] leading-relaxed text-muted">
+              Você paga pelo tamanho da operação, não pelo número de clientes que atende.
+              Todos os planos incluem página pública, agenda por profissional e relatórios
+              do período.
             </p>
           </div>
+
+          <dl className="grid grid-cols-2 gap-x-8 gap-y-3 text-xs text-muted lg:grid-cols-1">
+            {[
+              "7 dias de teste no cartão",
+              "Pix à vista ou cartão recorrente",
+              "Sem fidelidade e sem multa",
+            ].map((item) => (
+              <div key={item} className="flex items-center gap-2">
+                <Check className="h-3.5 w-3.5 shrink-0 text-brand" aria-hidden />
+                <span>{item}</span>
+              </div>
+            ))}
+          </dl>
         </div>
 
+        <div className="mt-12 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {catalog.map((plan) => (
+            <div
+              key={plan.id}
+              className={`flex flex-col rounded-xl border bg-white p-6 ${
+                plan.isPopular
+                  ? "border-brand/40 shadow-[0_1px_2px_rgba(11,18,32,0.04),0_24px_50px_-40px_rgba(46,91,255,0.55)]"
+                  : "border-line"
+              }`}
+            >
+              <div className="flex min-h-8 items-start justify-between gap-3">
+                <h3 className="font-display text-lg font-semibold tracking-tight text-ink">
+                  {plan.name}
+                </h3>
+                {plan.isPopular && (
+                  <span className="rounded-md bg-brand/10 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-brand-hover">
+                    Mais escolhido
+                  </span>
+                )}
+              </div>
+
+              <p className="mt-2 min-h-[60px] text-[13px] leading-relaxed text-muted">
+                {plan.description}
+              </p>
+
+              <div className="mt-5 border-t border-line pt-5">
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-xs font-medium text-muted">R$</span>
+                  <span className="font-display text-[34px] font-semibold leading-none tracking-tight text-ink">
+                    {formatPrice(plan.priceMonthly)}
+                  </span>
+                  <span className="text-xs text-muted">/mês</span>
+                </div>
+                <p className="mt-2 text-[11px] text-muted">
+                  Cobrança mensal · cancele quando quiser
+                </p>
+              </div>
+
+              <ul className="mt-5 flex-1 space-y-2.5 border-t border-line pt-5">
+                {plan.features.map((feature) => (
+                  <li key={feature} className="flex items-start gap-2 text-[12.5px] text-slate-700">
+                    <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand" aria-hidden />
+                    <span className="leading-snug">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <Link
+                href={
+                  plan.slug
+                    ? `/cadastro?plano=${encodeURIComponent(plan.slug)}`
+                    : "/cadastro"
+                }
+                className={`mt-6 inline-flex w-full items-center justify-center gap-2 rounded-[10px] px-4 py-2.5 text-sm font-semibold transition ${
+                  plan.isPopular
+                    ? "bg-brand text-white hover:bg-brand-hover"
+                    : "border border-line bg-white text-ink hover:border-slate-300 hover:bg-paper"
+                }`}
+              >
+                {plan.ctaText || "Começar teste"}
+                <ArrowRight className="h-4 w-4" aria-hidden />
+              </Link>
+            </div>
+          ))}
+        </div>
+
+        <p className="mt-8 max-w-3xl text-[11px] leading-relaxed text-muted">
+          Os limites de profissionais e serviços valem para cadastros ativos. Ao trocar de
+          plano, o novo valor entra na próxima renovação e os dados já cadastrados são
+          preservados.
+        </p>
       </div>
     </section>
   );

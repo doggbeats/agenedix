@@ -22,6 +22,7 @@ import { formatCurrency, formatDateTimeInZone, formatPhone } from "@/lib/format"
 import { buildWhatsAppLink, customerContactMessage } from "@/lib/whatsapp";
 import { StatusBadge } from "@/components/ui";
 import { CancelBookingForm } from "@/components/public/CancelBookingForm";
+import { BookingNotice } from "@/components/public/BookingNotice";
 import {
   brandingCssVars,
   resolveBranding,
@@ -103,10 +104,10 @@ export default async function ConfirmationPage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ protocolo?: string; token?: string }>;
+  searchParams: Promise<{ protocolo?: string; token?: string; novo?: string }>;
 }) {
   const { slug } = await params;
-  const { protocolo, token } = await searchParams;
+  const { protocolo, token, novo } = await searchParams;
   const establishment = await prisma.establishment.findFirst({
     where: { slug, archivedAt: null },
     select: {
@@ -208,6 +209,17 @@ export default async function ConfirmationPage({
         logoUrl={establishment.logoUrl}
         branding={branding}
       />
+
+      {novo === "1" && !isCancelled && (
+        <BookingNotice
+          title={isPending ? "Horário reservado" : "Horário marcado"}
+          pending={isPending}
+          detail={`${appointment.serviceName} · ${formatDateTimeInZone(
+            appointment.startAt,
+            timezone,
+          )}`}
+        />
+      )}
 
       <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-14">
         <div className="animate-rise">
