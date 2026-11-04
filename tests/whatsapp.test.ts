@@ -4,6 +4,7 @@ import {
   buildWhatsAppLink,
   customerContactMessage,
   renderTemplate,
+  subscriptionRequestMessage,
 } from "@/lib/whatsapp";
 
 const context = {
@@ -56,5 +57,51 @@ describe("whatsapp", () => {
     expect(customerContactMessage("Barbearia Nobre")).toContain(
       "página de agendamento da Barbearia Nobre",
     );
+  });
+
+  it("monta o resumo da solicitação enviado pelo checkout", () => {
+    const message = subscriptionRequestMessage({
+      establishmentName: "Barbearia Nobre",
+      responsibleName: "Ana Paula",
+      responsibleEmail: "ana@barbearianobre.com",
+      planName: "Profissional",
+      monthlyPrice: 129.9,
+      trialDays: 7,
+      paymentPreference: "card",
+      checkoutUrl: "https://agenedix.vercel.app/checkout?plano=profissional",
+      now: new Date("2026-11-04T12:00:00.000Z"),
+    });
+
+    expect(message).toContain("Solicitação de assinatura");
+    expect(message).toContain("Estabelecimento: Barbearia Nobre");
+    expect(message).toContain("Responsável: Ana Paula");
+    expect(message).toContain("E-mail: ana@barbearianobre.com");
+    expect(message).toContain("Plano: Profissional");
+    expect(message).toContain("129,90");
+    expect(message).toContain("Cartão de crédito");
+    expect(message).toContain("7 dias de teste");
+    expect(message).toContain("https://agenedix.vercel.app/checkout?plano=profissional");
+  });
+
+  it("resume a preferência por Pix e por 'a combinar'", () => {
+    const base = {
+      establishmentName: "Barbearia Nobre",
+      responsibleName: "Ana Paula",
+      responsibleEmail: "ana@barbearianobre.com",
+      planName: "Profissional",
+      monthlyPrice: 129.9,
+      trialDays: 7,
+    } as const;
+
+    expect(
+      subscriptionRequestMessage({ ...base, paymentPreference: "pix" }),
+    ).toContain("Pix (pagamento único do primeiro período)");
+
+    const undecided = subscriptionRequestMessage({
+      ...base,
+      paymentPreference: "undecided",
+    });
+    expect(undecided).toContain("A combinar com o suporte");
+    expect(undecided).not.toContain("Checkout:");
   });
 });

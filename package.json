@@ -14,6 +14,7 @@
     "db:seed": "dotenv -e .env.local -- prisma db seed",
     "db:clear-registrations": "dotenv -e .env.local -- tsx scripts/clear-registrations.ts",
     "admin:create": "dotenv -e .env.local -- tsx scripts/create-admin.ts",
+    "payments:setup": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/setup-pagarme-env.ps1",
     "db:studio": "dotenv -e .env.local -- prisma studio"
   },
   "prisma": {

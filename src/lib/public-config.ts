@@ -1,7 +1,8 @@
-export const SUPPORT_WHATSAPP = (process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP ?? "").replace(
-  /\D/g,
-  "",
-);
+export const SUPPORT_WHATSAPP = (
+  process.env.NEXT_PUBLIC_SUPPORT_WHATSAPP ||
+  process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ||
+  ""
+).replace(/\D/g, "");
 
 export function supportWhatsAppUrl(
   message = "Olá! Preciso de ajuda com o AgendamentoON.",

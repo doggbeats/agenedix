@@ -8,6 +8,7 @@ import { logoutAction } from "@/lib/actions/auth";
 import { isSubscriptionUsable } from "@/lib/subscription";
 import { toNumber } from "@/lib/format";
 import { getPagarmeConfig } from "@/lib/payments/pagarme";
+import { SUPPORT_WHATSAPP } from "@/lib/public-config";
 import { Logo } from "@/components/ui";
 import {
   CheckoutClient,
@@ -159,6 +160,9 @@ export default async function CheckoutPage({
           initialPlanSlug={selectedSlug}
           currentPlanSlug={subscription?.plan.slug ?? null}
           establishmentName={establishment.name}
+          responsibleName={auth.user.name}
+          responsibleEmail={auth.user.email}
+          supportWhatsApp={SUPPORT_WHATSAPP}
           configured={config.configured}
           publicKey={config.publicKey}
           devBypass={devBypass}

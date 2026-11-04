@@ -10,6 +10,7 @@ import {
   CreditCard,
   Loader2,
   Lock,
+  MessageCircle,
   QrCode,
   RefreshCw,
   ShieldCheck,
@@ -25,6 +26,11 @@ import {
 } from "@/lib/actions/checkout";
 import { CardTokenError, tokenizeCard } from "@/lib/payments/pagarme-client";
 import { formatCurrency, onlyDigits } from "@/lib/format";
+import {
+  buildWhatsAppLink,
+  subscriptionRequestMessage,
+  type PaymentPreference,
+} from "@/lib/whatsapp";
 
 export type CheckoutPlan = {
   slug: string;
@@ -45,7 +51,13 @@ export type PixData = {
   amount: number;
 };
 
-type Method = "card" | "pix";
+type Method = "whatsapp" | "card" | "pix";
+
+const whatsappPreferences = [
+  { value: "card", label: "Cartão" },
+  { value: "pix", label: "Pix" },
+  { value: "undecided", label: "A combinar" },
+] as const satisfies ReadonlyArray<{ value: PaymentPreference; label: string }>;
 
 const initialState: CheckoutState = {};
 
@@ -95,6 +107,9 @@ export function CheckoutClient({
   initialPlanSlug,
   currentPlanSlug,
   establishmentName,
+  responsibleName,
+  responsibleEmail,
+  supportWhatsApp,
   configured,
   publicKey,
   devBypass,
@@ -105,6 +120,9 @@ export function CheckoutClient({
   initialPlanSlug?: string;
   currentPlanSlug: string | null;
   establishmentName: string;
+  responsibleName: string;
+  responsibleEmail: string;
+  supportWhatsApp: string;
   configured: boolean;
   publicKey: string;
   devBypass: boolean;
@@ -112,7 +130,9 @@ export function CheckoutClient({
 }) {
   const router = useRouter();
   const [planSlug, setPlanSlug] = useState(initialPlanSlug ?? plans[0]?.slug ?? "");
-  const [method, setMethod] = useState<Method>("card");
+  const [method, setMethod] = useState<Method>(configured ? "card" : "whatsapp");
+  const [whatsappPreference, setWhatsappPreference] =
+    useState<PaymentPreference>("card");
   const [dismissedPixId, setDismissedPixId] = useState<string | null>(null);
   const [cardError, setCardError] = useState<string | null>(null);
   const [tokenizing, setTokenizing] = useState(false);
@@ -164,6 +184,42 @@ export function CheckoutClient({
   const busy = cardPending || pixPending || tokenizing;
   const state = method === "card" ? cardState : pixState;
 
+  const methodOptions: Array<{
+    value: Method;
+    label: string;
+    icon: typeof CreditCard;
+  }> = [
+    { value: "whatsapp", label: "WhatsApp", icon: MessageCircle },
+    ...(configured
+      ? ([
+          { value: "card", label: "Cartão de crédito", icon: CreditCard },
+          { value: "pix", label: "Pix", icon: QrCode },
+        ] as const)
+      : []),
+  ];
+
+  const whatsappPreferenceLabel =
+    whatsappPreference === "card"
+      ? `Cartão · ${selectedPlan?.trialDays ?? 7} dias de teste`
+      : whatsappPreference === "pix"
+        ? "Pix · primeiro período à vista"
+        : "A combinar com o suporte";
+
+  const whatsappMessage = selectedPlan
+    ? subscriptionRequestMessage({
+        establishmentName,
+        responsibleName,
+        responsibleEmail,
+        planName: selectedPlan.name,
+        monthlyPrice: selectedPlan.priceMonthly,
+        trialDays: selectedPlan.trialDays,
+        paymentPreference: whatsappPreference,
+      })
+    : "";
+  const whatsappUrl = selectedPlan
+    ? buildWhatsAppLink(supportWhatsApp, whatsappMessage)
+    : "";
+
   function updateBilling(field: keyof typeof billing, value: string) {
     setBilling((current) => ({ ...current, [field]: value }));
   }
@@ -171,6 +227,7 @@ export function CheckoutClient({
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!selectedPlan) return;
+    if (method === "whatsapp") return;
     const form = event.currentTarget;
     const formData = new FormData(form);
     formData.set("planSlug", selectedPlan.slug);
@@ -232,15 +289,17 @@ export function CheckoutClient({
           <p className="mt-2 max-w-xl text-sm leading-relaxed text-slate-600">
             {mode === "change"
               ? "A troca vale imediatamente e o novo valor entra na próxima renovação."
-              : `Escolha como pagar para liberar o painel de ${establishmentName}. Sem fidelidade e com cancelamento a qualquer momento.`}
+              : configured
+                ? `Escolha como pagar para liberar o painel de ${establishmentName}. Sem fidelidade e com cancelamento a qualquer momento.`
+                : `Escolha o plano e conclua a contratação pelo WhatsApp. Sem fidelidade e com cancelamento a qualquer momento.`}
           </p>
         </div>
 
         {!configured && (
           <div className="mb-5">
-            <Alert tone="error">
-              O pagamento online ainda não está configurado neste ambiente. O responsável
-              técnico precisa cadastrar as chaves do Pagar.me para liberar o checkout.
+            <Alert tone="warning">
+              O pagamento online está indisponível neste ambiente. Você pode concluir a
+              contratação pelo WhatsApp — o resumo da solicitação já vai pronto.
             </Alert>
           </div>
         )}
@@ -403,16 +462,15 @@ export function CheckoutClient({
             </button>
           </form>
         ) : (
-          <form onSubmit={handleSubmit} className="mt-5 rounded-2xl border border-line bg-white p-4 shadow-sm sm:p-5">
+          <section className="mt-5 rounded-2xl border border-line bg-white p-4 shadow-sm sm:p-5">
             <h2 className="text-sm font-semibold text-ink">2. Forma de pagamento</h2>
 
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              {(
-                [
-                  { value: "card", label: "Cartão de crédito", icon: CreditCard },
-                  { value: "pix", label: "Pix", icon: QrCode },
-                ] as const
-              ).map((option) => {
+            <div
+              className={`mt-3 grid gap-2 ${
+                methodOptions.length > 1 ? "sm:grid-cols-3" : ""
+              }`}
+            >
+              {methodOptions.map((option) => {
                 const Icon = option.icon;
                 const active = method === option.value;
                 return (
@@ -420,6 +478,7 @@ export function CheckoutClient({
                     key={option.value}
                     type="button"
                     onClick={() => setMethod(option.value)}
+                    aria-pressed={active}
                     className={`flex items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-xs font-semibold transition ${
                       active
                         ? "border-brand bg-brand/5 text-ink ring-1 ring-brand/30"
@@ -432,208 +491,279 @@ export function CheckoutClient({
               })}
             </div>
 
-            {method === "card" && (
-              <div className="mt-4 space-y-3">
-                <div>
-                  <label className={labelClass} htmlFor="card-number">
-                    Número do cartão
-                  </label>
-                  <input
-                    id="card-number"
-                    inputMode="numeric"
-                    autoComplete="cc-number"
-                    required
-                    value={card.number}
-                    onChange={(event) =>
-                      setCard((current) => ({
-                        ...current,
-                        number: formatCardNumber(event.target.value),
-                      }))
-                    }
-                    placeholder="0000 0000 0000 0000"
-                    className={inputClass}
-                  />
+            {method === "whatsapp" ? (
+              <div className="mt-4">
+                <p className="text-[11px] leading-relaxed text-slate-500">
+                  O resumo é montado automaticamente com os dados da sua conta. Ao abrir o
+                  WhatsApp, basta confirmar o envio da mensagem.
+                </p>
+
+                <div className="mt-3">
+                  <p className={labelClass}>Forma de pagamento preferida</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {whatsappPreferences.map((option) => {
+                      const active = whatsappPreference === option.value;
+                      return (
+                        <button
+                          key={option.value}
+                          type="button"
+                          onClick={() => setWhatsappPreference(option.value)}
+                          aria-pressed={active}
+                          className={`rounded-lg border px-2 py-2 text-[11px] font-semibold transition ${
+                            active
+                              ? "border-brand bg-brand/5 text-ink ring-1 ring-brand/30"
+                              : "border-line bg-white text-slate-600 hover:border-slate-300"
+                          }`}
+                        >
+                          {option.label}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-                <div>
-                  <label className={labelClass} htmlFor="card-holder">
-                    Nome impresso no cartão
-                  </label>
-                  <input
-                    id="card-holder"
-                    autoComplete="cc-name"
-                    required
-                    value={card.holderName}
-                    onChange={(event) =>
-                      setCard((current) => ({ ...current, holderName: event.target.value }))
-                    }
-                    placeholder="Como está no cartão"
-                    className={inputClass}
-                  />
+
+                <div className="mt-3 rounded-lg border border-line bg-paper p-3">
+                  <p className="text-[11px] font-semibold text-slate-600">
+                    Resumo da solicitação
+                  </p>
+                  <pre className="mt-2 whitespace-pre-wrap break-words font-sans text-[11px] leading-relaxed text-slate-600">
+                    {whatsappMessage || "Escolha um plano para gerar o resumo."}
+                  </pre>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className={labelClass} htmlFor="card-expiry">
-                      Validade
+
+                {whatsappUrl ? (
+                  <a
+                    href={whatsappUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                    Fechar pagamento pelo WhatsApp
+                  </a>
+                ) : (
+                  <div className="mt-4">
+                    <Alert tone="warning">
+                      O WhatsApp de suporte ainda não está configurado. Cadastre o número para
+                      liberar esta opção.
+                    </Alert>
+                  </div>
+                )}
+
+                {!configured && (
+                  <p className="mt-2 text-[10px] leading-relaxed text-slate-500">
+                    O pagamento online está indisponível neste ambiente; a contratação é
+                    concluída manualmente pelo suporte.
+                  </p>
+                )}
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit}>
+                {method === "card" && (
+                  <div className="mt-4 space-y-3">
+                    <div>
+                      <label className={labelClass} htmlFor="card-number">
+                        Número do cartão
+                      </label>
+                      <input
+                        id="card-number"
+                        inputMode="numeric"
+                        autoComplete="cc-number"
+                        required
+                        value={card.number}
+                        onChange={(event) =>
+                          setCard((current) => ({
+                            ...current,
+                            number: formatCardNumber(event.target.value),
+                          }))
+                        }
+                        placeholder="0000 0000 0000 0000"
+                        className={inputClass}
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass} htmlFor="card-holder">
+                        Nome impresso no cartão
+                      </label>
+                      <input
+                        id="card-holder"
+                        autoComplete="cc-name"
+                        required
+                        value={card.holderName}
+                        onChange={(event) =>
+                          setCard((current) => ({ ...current, holderName: event.target.value }))
+                        }
+                        placeholder="Como está no cartão"
+                        className={inputClass}
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className={labelClass} htmlFor="card-expiry">
+                          Validade
+                        </label>
+                        <input
+                          id="card-expiry"
+                          inputMode="numeric"
+                          autoComplete="cc-exp"
+                          required
+                          value={card.expiry}
+                          onChange={(event) =>
+                            setCard((current) => ({
+                              ...current,
+                              expiry: formatExpiry(event.target.value),
+                            }))
+                          }
+                          placeholder="MM/AA"
+                          className={inputClass}
+                        />
+                      </div>
+                      <div>
+                        <label className={labelClass} htmlFor="card-cvv">
+                          CVV
+                        </label>
+                        <input
+                          id="card-cvv"
+                          inputMode="numeric"
+                          autoComplete="cc-csc"
+                          required
+                          value={card.cvv}
+                          onChange={(event) =>
+                            setCard((current) => ({
+                              ...current,
+                              cvv: onlyDigits(event.target.value).slice(0, 4),
+                            }))
+                          }
+                          placeholder="123"
+                          className={inputClass}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  <div className="sm:col-span-2">
+                    <label className={labelClass} htmlFor="billing-document">
+                      CPF ou CNPJ do titular
                     </label>
                     <input
-                      id="card-expiry"
+                      id="billing-document"
+                      name="document"
                       inputMode="numeric"
-                      autoComplete="cc-exp"
                       required
-                      value={card.expiry}
+                      value={billing.document}
                       onChange={(event) =>
-                        setCard((current) => ({
-                          ...current,
-                          expiry: formatExpiry(event.target.value),
-                        }))
+                        updateBilling("document", formatDocument(event.target.value))
                       }
-                      placeholder="MM/AA"
+                      placeholder="000.000.000-00"
                       className={inputClass}
                     />
                   </div>
                   <div>
-                    <label className={labelClass} htmlFor="card-cvv">
-                      CVV
+                    <label className={labelClass} htmlFor="billing-zip">
+                      CEP
                     </label>
                     <input
-                      id="card-cvv"
+                      id="billing-zip"
+                      name="zipCode"
                       inputMode="numeric"
-                      autoComplete="cc-csc"
+                      autoComplete="postal-code"
                       required
-                      value={card.cvv}
-                      onChange={(event) =>
-                        setCard((current) => ({
-                          ...current,
-                          cvv: onlyDigits(event.target.value).slice(0, 4),
-                        }))
-                      }
+                      value={billing.zipCode}
+                      onChange={(event) => updateBilling("zipCode", formatCep(event.target.value))}
+                      placeholder="00000-000"
+                      className={inputClass}
+                    />
+                  </div>
+                  <div>
+                    <label className={labelClass} htmlFor="billing-number">
+                      Número
+                    </label>
+                    <input
+                      id="billing-number"
+                      name="addressNumber"
+                      required
+                      value={billing.addressNumber}
+                      onChange={(event) => updateBilling("addressNumber", event.target.value)}
                       placeholder="123"
                       className={inputClass}
                     />
                   </div>
+                  <div>
+                    <label className={labelClass} htmlFor="billing-city">
+                      Cidade
+                    </label>
+                    <input
+                      id="billing-city"
+                      name="city"
+                      autoComplete="address-level2"
+                      required
+                      value={billing.city}
+                      onChange={(event) => updateBilling("city", event.target.value)}
+                      placeholder="São Paulo"
+                      className={inputClass}
+                    />
+                  </div>
+                  <div>
+                    <label className={labelClass} htmlFor="billing-state">
+                      UF
+                    </label>
+                    <input
+                      id="billing-state"
+                      name="state"
+                      autoComplete="address-level1"
+                      required
+                      maxLength={2}
+                      value={billing.state}
+                      onChange={(event) =>
+                        updateBilling("state", event.target.value.toUpperCase().replace(/[^A-Z]/g, ""))
+                      }
+                      placeholder="SP"
+                      className={inputClass}
+                    />
+                  </div>
                 </div>
-              </div>
+
+                {(cardError || state.error) && (
+                  <div className="mt-3">
+                    <Alert tone="error">{cardError ?? state.error}</Alert>
+                  </div>
+                )}
+                {method === "pix" && pixState.message && !pixState.pix && (
+                  <div className="mt-3">
+                    <Alert tone="info">{pixState.message}</Alert>
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={busy || !configured || !selectedPlan}
+                  className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-ink px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {busy ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : method === "card" ? (
+                    <Lock className="h-4 w-4" />
+                  ) : (
+                    <QrCode className="h-4 w-4" />
+                  )}
+                  {busy
+                    ? "Processando..."
+                    : method === "card"
+                      ? "Iniciar teste de 7 dias"
+                      : `Gerar Pix de ${formatCurrency(price)}`}
+                </button>
+
+                <p className="mt-2.5 flex items-start gap-1.5 text-[10px] leading-relaxed text-slate-500">
+                  <ShieldCheck className="mt-0.5 h-3 w-3 shrink-0 text-emerald-600" />
+                  {method === "card"
+                    ? "O cartão é tokenizado diretamente no Pagar.me. O AgendamentoON não armazena o número nem o CVV."
+                    : "O Pix é uma cobrança única do primeiro período. Para renovação automática, use cartão de crédito."}
+                </p>
+
+              </form>
             )}
-
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <div className="sm:col-span-2">
-                <label className={labelClass} htmlFor="billing-document">
-                  CPF ou CNPJ do titular
-                </label>
-                <input
-                  id="billing-document"
-                  name="document"
-                  inputMode="numeric"
-                  required
-                  value={billing.document}
-                  onChange={(event) =>
-                    updateBilling("document", formatDocument(event.target.value))
-                  }
-                  placeholder="000.000.000-00"
-                  className={inputClass}
-                />
-              </div>
-              <div>
-                <label className={labelClass} htmlFor="billing-zip">
-                  CEP
-                </label>
-                <input
-                  id="billing-zip"
-                  name="zipCode"
-                  inputMode="numeric"
-                  autoComplete="postal-code"
-                  required
-                  value={billing.zipCode}
-                  onChange={(event) => updateBilling("zipCode", formatCep(event.target.value))}
-                  placeholder="00000-000"
-                  className={inputClass}
-                />
-              </div>
-              <div>
-                <label className={labelClass} htmlFor="billing-number">
-                  Número
-                </label>
-                <input
-                  id="billing-number"
-                  name="addressNumber"
-                  required
-                  value={billing.addressNumber}
-                  onChange={(event) => updateBilling("addressNumber", event.target.value)}
-                  placeholder="123"
-                  className={inputClass}
-                />
-              </div>
-              <div>
-                <label className={labelClass} htmlFor="billing-city">
-                  Cidade
-                </label>
-                <input
-                  id="billing-city"
-                  name="city"
-                  autoComplete="address-level2"
-                  required
-                  value={billing.city}
-                  onChange={(event) => updateBilling("city", event.target.value)}
-                  placeholder="São Paulo"
-                  className={inputClass}
-                />
-              </div>
-              <div>
-                <label className={labelClass} htmlFor="billing-state">
-                  UF
-                </label>
-                <input
-                  id="billing-state"
-                  name="state"
-                  autoComplete="address-level1"
-                  required
-                  maxLength={2}
-                  value={billing.state}
-                  onChange={(event) =>
-                    updateBilling("state", event.target.value.toUpperCase().replace(/[^A-Z]/g, ""))
-                  }
-                  placeholder="SP"
-                  className={inputClass}
-                />
-              </div>
-            </div>
-
-            {(cardError || state.error) && (
-              <div className="mt-3">
-                <Alert tone="error">{cardError ?? state.error}</Alert>
-              </div>
-            )}
-            {method === "pix" && pixState.message && !pixState.pix && (
-              <div className="mt-3">
-                <Alert tone="info">{pixState.message}</Alert>
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={busy || !configured || !selectedPlan}
-              className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-ink px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {busy ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : method === "card" ? (
-                <Lock className="h-4 w-4" />
-              ) : (
-                <QrCode className="h-4 w-4" />
-              )}
-              {busy
-                ? "Processando..."
-                : method === "card"
-                  ? "Iniciar teste de 7 dias"
-                  : `Gerar Pix de ${formatCurrency(price)}`}
-            </button>
-
-            <p className="mt-2.5 flex items-start gap-1.5 text-[10px] leading-relaxed text-slate-500">
-              <ShieldCheck className="mt-0.5 h-3 w-3 shrink-0 text-emerald-600" />
-              {method === "card"
-                ? "O cartão é tokenizado diretamente no Pagar.me. O AgendamentoON não armazena o número nem o CVV."
-                : "O Pix é uma cobrança única do primeiro período. Para renovação automática, use cartão de crédito."}
-            </p>
 
             {devBypass && (
               <button
@@ -653,7 +783,7 @@ export function CheckoutClient({
             {devState.error && (
               <p className="mt-1 text-[11px] font-medium text-red-600">{devState.error}</p>
             )}
-          </form>
+          </section>
         )}
       </div>
 
@@ -691,6 +821,12 @@ export function CheckoutClient({
           <div className="mt-3 rounded-lg bg-paper px-3 py-2.5 text-[11px] leading-relaxed text-slate-600">
             {mode === "change" ? (
               <>A diferença de valor é aplicada na próxima renovação.</>
+            ) : method === "whatsapp" ? (
+              <>
+                <strong className="text-ink">Contratação pelo WhatsApp.</strong> Preferência:{" "}
+                {whatsappPreferenceLabel}. O suporte confirma os dados e envia as instruções de
+                pagamento.
+              </>
             ) : method === "card" ? (
               <>
                 <strong className="text-ink">Hoje você não paga nada.</strong> O teste de{" "}
@@ -706,8 +842,12 @@ export function CheckoutClient({
           </div>
 
           <p className="mt-3 flex items-center gap-1.5 text-[10px] text-slate-500">
-            <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" /> Pagamento processado pelo
-            Pagar.me
+            <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
+            {mode === "change"
+              ? "Alteração processada pelo Pagar.me"
+              : method === "whatsapp"
+                ? "Contratação e pagamento combinados pelo WhatsApp"
+                : "Pagamento processado pelo Pagar.me"}
           </p>
         </div>
       </aside>
