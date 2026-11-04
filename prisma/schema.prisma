@@ -22,6 +22,12 @@ enum MembershipRole {
   PROFESSIONAL
 }
 
+enum PlatformRole {
+  SUPER_ADMIN
+  ADMIN
+  SUPPORT
+}
+
 enum AppointmentStatus {
   PENDING
   CONFIRMED
@@ -66,6 +72,20 @@ enum PaymentStatus {
   PAID
   FAILED
   REFUNDED
+  EXPIRED
+  CANCELED
+}
+
+enum SubscriptionEventType {
+  CREATED
+  PLAN_CHANGED
+  STATUS_CHANGED
+  RENEWED
+  CANCELED
+  REACTIVATED
+  COURTESY_GRANTED
+  SUSPENDED
+  PAYMENT_RECEIVED
 }
 
 enum NotificationType {
@@ -142,21 +162,24 @@ model Establishment {
   scheduleExceptions         ScheduleException[]
   payments                   Payment[]
   notifications              Notification[]
+  subscriptionEvents         SubscriptionEvent[]
+  paymentEvents              PaymentEvent[]
 
   @@index([status])
   @@index([createdAt])
 }
 
 model User {
-  id              String    @id @default(cuid())
+  id              String        @id @default(cuid())
   name            String
-  email           String    @unique
+  email           String        @unique
   passwordHash    String
-  isPlatformAdmin Boolean   @default(false)
-  emailVerifiedAt DateTime? @db.Timestamptz(3)
-  lastLoginAt     DateTime? @db.Timestamptz(3)
-  createdAt       DateTime  @default(now()) @db.Timestamptz(3)
-  updatedAt       DateTime  @updatedAt @db.Timestamptz(3)
+  isPlatformAdmin Boolean       @default(false)
+  platformRole    PlatformRole?
+  emailVerifiedAt DateTime?     @db.Timestamptz(3)
+  lastLoginAt     DateTime?     @db.Timestamptz(3)
+  createdAt       DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime      @updatedAt @db.Timestamptz(3)
 
   sessions                Session[]
   memberships             Membership[]
@@ -165,8 +188,10 @@ model User {
   appointmentEvents       AppointmentEvent[]
   passwordResetTokens     PasswordResetToken[]
   emailVerificationTokens EmailVerificationToken[]
+  subscriptionEvents      SubscriptionEvent[]      @relation("SubscriptionEventActor")
 
   @@index([isPlatformAdmin])
+  @@index([platformRole])
 }
 
 model Session {
