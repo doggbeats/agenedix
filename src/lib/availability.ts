@@ -23,6 +23,26 @@ export interface BusyAppointment {
   startAt: Date;
   endAt: Date;
   status: string;
+  releasedAt?: Date | null;
+}
+
+/**
+ * Um agendamento ocupa a agenda enquanto não for cancelado. Atendimentos
+ * concluídos ou marcados como não compareceram continuam bloqueando o horário
+ * até que o estabelecimento libere a vaga explicitamente.
+ */
+export function isAppointmentBlocking(appointment: {
+  status: string;
+  releasedAt?: Date | null;
+}): boolean {
+  if (appointment.status === "CANCELLED") return false;
+  if (
+    (appointment.status === "COMPLETED" || appointment.status === "NO_SHOW") &&
+    appointment.releasedAt
+  ) {
+    return false;
+  }
+  return true;
 }
 
 export interface BlockedPeriod {
@@ -148,10 +168,7 @@ export function buildAvailability(input: AvailabilityInput): Slot[] {
     .filter((professional) => professional.isWorking);
   if (activeWindows.length === 0) return [];
 
-  const appointments = input.appointments.filter(
-    (appointment) =>
-      appointment.status === "PENDING" || appointment.status === "CONFIRMED",
-  );
+  const appointments = input.appointments.filter(isAppointmentBlocking);
 
   const slots: Slot[] = [];
   const seen = new Set<number>();
@@ -231,9 +248,7 @@ export function pickLeastBusyProfessional(
 
   for (const appointment of appointments) {
     if (!counts.has(appointment.professionalId)) continue;
-    if (appointment.status !== "PENDING" && appointment.status !== "CONFIRMED") {
-      continue;
-    }
+    if (!isAppointmentBlocking(appointment)) continue;
     if (formatInTimeZone(appointment.startAt, timezone, "yyyy-MM-dd") !== date) {
       continue;
     }

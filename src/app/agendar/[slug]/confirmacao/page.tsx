@@ -4,12 +4,10 @@ import { notFound } from "next/navigation";
 import {
   ArrowLeft,
   CalendarDays,
-  CalendarPlus,
   CheckCircle2,
   Clock3,
   MapPin,
   MessageCircle,
-  Phone,
   ReceiptText,
   Scissors,
   ShieldCheck,
@@ -36,25 +34,6 @@ const buttonTenant =
   "inline-flex items-center justify-center gap-2 rounded-[var(--brand-radius,0.5rem)] bg-[var(--brand-button)] px-4 py-2.5 text-sm font-semibold text-[var(--brand-button-text)] shadow-sm transition hover:brightness-95";
 const buttonTenantOutline =
   "inline-flex items-center justify-center gap-2 rounded-[var(--brand-radius,0.5rem)] border border-[var(--brand-line)] bg-[var(--brand-bg)] px-4 py-2.5 text-sm font-semibold text-[var(--brand-text)] transition hover:border-[var(--brand)] hover:text-[var(--brand)]";
-
-function googleCalendarUrl(input: {
-  title: string;
-  details: string;
-  location: string;
-  startAt: Date;
-  endAt: Date;
-}) {
-  const format = (date: Date) =>
-    date.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
-  const params = new URLSearchParams({
-    action: "TEMPLATE",
-    text: input.title,
-    details: input.details,
-    location: input.location,
-    dates: `${format(input.startAt)}/${format(input.endAt)}`,
-  });
-  return `https://calendar.google.com/calendar/render?${params.toString()}`;
-}
 
 function TenantHeader({
   slug,
@@ -186,17 +165,6 @@ export default async function ConfirmationPage({
     appointment.establishment.whatsapp,
     customerContactMessage(appointment.establishment.name, appointment.publicCode),
   );
-  const calendarUrl = googleCalendarUrl({
-    title: `${appointment.serviceName} — ${appointment.establishment.name}`,
-    details: `Protocolo ${appointment.publicCode}. Profissional: ${appointment.professionalName}.`,
-    location: appointment.establishment.address ?? "",
-    startAt: appointment.startAt,
-    endAt: appointment.endAt,
-  });
-  const icsUrl = `/api/public/${encodeURIComponent(slug)}/calendar?${new URLSearchParams({
-    protocolo: appointment.publicCode,
-    token: token ?? "",
-  }).toString()}`;
 
   return (
     <div
@@ -344,42 +312,20 @@ export default async function ConfirmationPage({
           </div>
 
           {!isCancelled && (
-            <div className="mt-5 flex flex-wrap gap-2">
+            <div className="mt-5 flex flex-wrap items-center gap-2">
               {whatsappUrl && (
                 <a href={whatsappUrl} target="_blank" rel="noreferrer" className={buttonTenant}>
                   <MessageCircle className="h-4 w-4" /> Enviar no WhatsApp
                 </a>
               )}
-              <a href={icsUrl} className={buttonTenantOutline}>
-                <CalendarPlus className="h-4 w-4" /> Baixar .ics
-              </a>
-              <a
-                href={calendarUrl}
-                target="_blank"
-                rel="noreferrer"
-                className={buttonTenantOutline}
-              >
-                <CalendarDays className="h-4 w-4" /> Google Agenda
-              </a>
-              {appointment.establishment.phone && (
-                <a
-                  href={`tel:${appointment.establishment.phone}`}
-                  className={buttonTenantOutline}
-                >
-                  <Phone className="h-4 w-4" /> Ligar
-                </a>
+              {canCancel && (
+                <CancelBookingForm
+                  slug={establishment.slug}
+                  protocol={appointment.publicCode}
+                  token={token ?? ""}
+                  cancellationNoticeHours={establishment.cancellationNoticeHours}
+                />
               )}
-            </div>
-          )}
-
-          {!isCancelled && canCancel && (
-            <div className="mt-6">
-              <CancelBookingForm
-                slug={establishment.slug}
-                protocol={appointment.publicCode}
-                token={token ?? ""}
-                cancellationNoticeHours={establishment.cancellationNoticeHours}
-              />
             </div>
           )}
 

@@ -5,6 +5,7 @@ export const DEFAULT_BRANDING = {
   primaryColor: BRAND_PALETTE.primary,
   secondaryColor: BRAND_PALETTE.secondary,
   backgroundColor: BRAND_PALETTE.white,
+  menuColor: BRAND_PALETTE.white,
   textColor: BRAND_PALETTE.ink,
   buttonColor: BRAND_PALETTE.ink,
   fontFamily: "sans",
@@ -22,10 +23,23 @@ export const DEFAULT_BRANDING = {
   showAddress: true,
 } as const;
 
+export const BRAND_FONTS = [
+  { value: "sans", label: "Moderna" },
+  { value: "poppins", label: "Geométrica" },
+  { value: "inter", label: "Minimalista" },
+  { value: "serif", label: "Clássica" },
+  { value: "lora", label: "Elegante" },
+  { value: "playfair", label: "Luxo" },
+  { value: "montserrat", label: "Impacto" },
+] as const;
+
+export type BrandFont = (typeof BRAND_FONTS)[number]["value"];
+
 export type BrandingView = {
   primaryColor: string;
   secondaryColor: string;
   backgroundColor: string;
+  menuColor: string;
   textColor: string;
   buttonColor: string;
   fontFamily: string;
@@ -47,6 +61,10 @@ const HEX = /^#[0-9a-fA-F]{6}$/;
 
 export function isHexColor(value: unknown): value is string {
   return typeof value === "string" && HEX.test(value);
+}
+
+export function isBrandFont(value: unknown): value is BrandFont {
+  return BRAND_FONTS.some((font) => font.value === value);
 }
 
 export function safeHttpUrl(value: unknown): string | null {
@@ -91,13 +109,16 @@ export function resolveBranding(
     backgroundColor: isHexColor(branding?.backgroundColor)
       ? branding.backgroundColor
       : DEFAULT_BRANDING.backgroundColor,
+    menuColor: isHexColor(branding?.menuColor)
+      ? branding.menuColor
+      : DEFAULT_BRANDING.menuColor,
     textColor: isHexColor(branding?.textColor)
       ? branding.textColor
       : DEFAULT_BRANDING.textColor,
     buttonColor: isHexColor(branding?.buttonColor)
       ? branding.buttonColor
       : DEFAULT_BRANDING.buttonColor,
-    fontFamily: branding?.fontFamily === "serif" ? "serif" : "sans",
+    fontFamily: isBrandFont(branding?.fontFamily) ? branding.fontFamily : "sans",
     buttonStyle:
       branding?.buttonStyle === "pill" || branding?.buttonStyle === "square"
         ? branding.buttonStyle
@@ -154,10 +175,8 @@ export function mixHex(hex: string, target: string, weight: number): string {
 export function brandingCssVars(branding: BrandingView): Record<string, string> {
   const radius =
     branding.buttonStyle === "pill" ? "9999px" : branding.buttonStyle === "square" ? "0.15rem" : "0.55rem";
-  const font =
-    branding.fontFamily === "serif"
-      ? 'Georgia, "Times New Roman", ui-serif, serif'
-      : '"Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+  const font = brandFontStack(branding.fontFamily);
+  const menuText = readableTextOn(branding.menuColor);
   return {
     "--brand": branding.primaryColor,
     "--brand-hover": mixHex(branding.primaryColor, "#000000", 0.16),
@@ -165,6 +184,10 @@ export function brandingCssVars(branding: BrandingView): Record<string, string> 
     "--brand-strong": mixHex(branding.primaryColor, "#000000", 0.22),
     "--brand-secondary": branding.secondaryColor,
     "--brand-bg": branding.backgroundColor,
+    "--brand-menu": branding.menuColor,
+    "--brand-menu-text": menuText,
+    "--brand-menu-muted": mixHex(menuText, branding.menuColor, 0.34),
+    "--brand-menu-line": mixHex(menuText, branding.menuColor, 0.78),
     "--brand-text": branding.textColor,
     "--brand-button": branding.buttonColor,
     "--brand-button-text": readableTextOn(branding.buttonColor),
@@ -179,6 +202,25 @@ export function brandingCssVars(branding: BrandingView): Record<string, string> 
     "--background": branding.backgroundColor,
     "--foreground": branding.textColor,
   };
+}
+
+function brandFontStack(fontFamily: string): string {
+  switch (fontFamily) {
+    case "serif":
+      return 'Georgia, "Times New Roman", ui-serif, serif';
+    case "lora":
+      return 'var(--font-lora), Georgia, ui-serif, serif';
+    case "playfair":
+      return 'var(--font-playfair), Georgia, ui-serif, serif';
+    case "poppins":
+      return 'var(--font-poppins), ui-sans-serif, system-ui, "Segoe UI", Roboto, Arial, sans-serif';
+    case "inter":
+      return 'var(--font-inter), ui-sans-serif, system-ui, "Segoe UI", Roboto, Arial, sans-serif';
+    case "montserrat":
+      return 'var(--font-montserrat), ui-sans-serif, system-ui, "Segoe UI", Roboto, Arial, sans-serif';
+    default:
+      return '"Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+  }
 }
 
 export function brandingFormDefaults(

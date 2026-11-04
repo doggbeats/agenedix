@@ -121,7 +121,7 @@ export async function computeAvailability(
       where: {
         establishmentId: params.establishment.id,
         professionalId: { in: professionalIds },
-        status: { in: ["PENDING", "CONFIRMED"] },
+        status: { not: "CANCELLED" },
         startAt: { lt: dayEnd },
         endAt: { gt: dayStart },
         ...(params.excludeAppointmentId
@@ -133,6 +133,7 @@ export async function computeAvailability(
         startAt: true,
         endAt: true,
         status: true,
+        releasedAt: true,
       },
     }),
     db.timeBlock.findMany({

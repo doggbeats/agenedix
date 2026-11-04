@@ -179,6 +179,7 @@ describe("validation", () => {
       primaryColor: "#9A6B4F",
       secondaryColor: "#111111",
       backgroundColor: "#ffffff",
+      menuColor: "#ffffff",
       textColor: "#111111",
       buttonColor: "#111111",
       fontFamily: "sans",

@@ -127,7 +127,7 @@ function UnavailablePage({
         } as React.CSSProperties
       }
     >
-      <header className="border-b border-[var(--brand-line)]">
+      <header className="border-b border-[var(--brand-menu-line)] bg-[var(--brand-menu)] text-[var(--brand-menu-text)]">
         <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-5 sm:px-6">
           <Link href={`/agendar/${establishment.slug}`} className="flex items-center gap-3">
             {establishment.logoUrl ? (
@@ -326,7 +326,7 @@ export default async function PublicBookingPage({
         } as React.CSSProperties
       }
     >
-      <header className="sticky top-0 z-40 border-b border-[var(--brand-line)] bg-[var(--brand-bg)]/90 backdrop-blur-md">
+      <header className="sticky top-0 z-40 border-b border-[var(--brand-menu-line)] bg-[var(--brand-menu)]/95 text-[var(--brand-menu-text)] backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
           <Link
             href={`/agendar/${establishment.slug}`}
@@ -348,7 +348,7 @@ export default async function PublicBookingPage({
               <span className="block truncate font-display text-[15px] font-semibold leading-tight">
                 {establishment.name}
               </span>
-              <span className="mt-0.5 block truncate text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">
+              <span className="mt-0.5 block truncate text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--brand-menu-muted)]">
                 {establishment.segment}
               </span>
             </span>
@@ -359,7 +359,7 @@ export default async function PublicBookingPage({
               <a
                 key={item.href}
                 href={item.href}
-                className="border-b border-transparent py-1.5 text-[13px] font-medium text-[var(--muted)] transition-colors hover:border-[var(--brand)] hover:text-[var(--brand-text)]"
+                className="border-b border-transparent py-1.5 text-[13px] font-medium text-[var(--brand-menu-muted)] transition-colors hover:border-[var(--brand)] hover:text-[var(--brand-menu-text)]"
               >
                 {item.label}
               </a>
@@ -414,25 +414,6 @@ export default async function PublicBookingPage({
                 </p>
               </div>
             )}
-            <figcaption className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-5 gap-y-2 border-t border-[var(--brand-line)] bg-[var(--brand-bg)] px-4 py-3 text-[11px] text-[var(--muted)] sm:px-6">
-              <span className="inline-flex items-center gap-2">
-                <CalendarDays className="h-3.5 w-3.5 text-[var(--brand)]" />
-                {services.length} serviço(s) · {professionals.length} profissional(is)
-              </span>
-              {showAddress ? (
-                <span className="inline-flex items-center gap-1.5">
-                  <MapPin className="h-3.5 w-3.5 text-[var(--brand)]" />
-                  {address}
-                </span>
-              ) : (
-                openHours[0] && (
-                  <span className="inline-flex items-center gap-1.5">
-                    <Clock3 className="h-3.5 w-3.5 text-[var(--brand)]" />
-                    {openHours[0].day} · {openHours[0].time}
-                  </span>
-                )
-              )}
-            </figcaption>
           </figure>
 
           <div className="mx-auto grid max-w-6xl gap-10 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,0.65fr)] lg:items-start lg:gap-14">

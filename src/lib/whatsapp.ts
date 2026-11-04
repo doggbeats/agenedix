@@ -25,6 +25,30 @@ export function renderTemplate(template: string, values: Record<string, string>)
   return template.replace(/\{(\w+)\}/g, (match, key: string) => values[key] ?? match);
 }
 
+/**
+ * Renderiza um modelo e remove linhas cujo valor ficou vazio (ex.: "Endereço: "),
+ * para o texto não sair com campos em branco.
+ */
+export function renderMessage(template: string, values: Record<string, string>): string {
+  return renderTemplate(template, values)
+    .split("\n")
+    .filter((line) => !/^[^:\n]+:\s*$/.test(line))
+    .join("\n")
+    .trim();
+}
+
+export const DEFAULT_WHATSAPP_MESSAGE = [
+  "Olá, {primeiro_nome}! Seu horário na {estabelecimento} está reservado.",
+  "",
+  "Serviço: {servico}",
+  "Profissional: {profissional}",
+  "Data: {data}",
+  "Endereço: {endereco}",
+  "Protocolo: {protocolo}",
+  "",
+  "Qualquer dúvida, é só responder esta mensagem.",
+].join("\n");
+
 export function appointmentMessage(context: MessageContext): string {
   const date = formatDateTimeInZone(context.startAt, context.timezone);
   const values: Record<string, string> = {
@@ -40,24 +64,9 @@ export function appointmentMessage(context: MessageContext): string {
     politica: context.policy ?? "",
   };
 
-  if (context.customTemplate?.trim()) {
-    return renderTemplate(context.customTemplate.trim(), values);
-  }
+  const template = context.customTemplate?.trim() || DEFAULT_WHATSAPP_MESSAGE;
 
-  return [
-    `Olá, ${values.primeiro_nome}!`,
-    "",
-    `Seu agendamento na ${context.establishmentName} está registrado.`,
-    `Serviço: ${context.serviceName}`,
-    `Profissional: ${context.professionalName}`,
-    `Data: ${date}`,
-    `Protocolo: ${context.protocol}`,
-    context.address ? `Endereço: ${context.address}` : "",
-    "",
-    "Se precisar remarcar, fale com a gente por este WhatsApp.",
-  ]
-    .filter(Boolean)
-    .join("\n");
+  return renderMessage(template, values);
 }
 
 export function customerContactMessage(

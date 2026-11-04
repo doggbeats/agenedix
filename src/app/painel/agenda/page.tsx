@@ -338,6 +338,7 @@ export default async function AgendaPage({
                         role={auth.role}
                         returnTo={`/painel/agenda?data=${date}`}
                         compact
+                        releasedAt={appointment.releasedAt}
                       />
                     </li>
                   ))}

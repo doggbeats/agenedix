@@ -15,6 +15,7 @@ import { ownerAppointmentSchema, rescheduleSchema } from "@/lib/validation";
 import {
   BookingError,
   createPanelAppointment,
+  releaseAppointmentSlot,
   rescheduleAppointment,
   updateAppointmentStatus,
 } from "@/lib/booking";
@@ -75,6 +76,39 @@ export async function updateStatusFormAction(formData: FormData): Promise<void> 
   revalidatePath("/painel/agenda");
   revalidatePath("/painel/agendamentos");
   redirect(`${returnTo}?ok=${encodeURIComponent("Agendamento atualizado.")}`);
+}
+
+export async function releaseSlotFormAction(formData: FormData): Promise<void> {
+  const auth = await requirePanel();
+  const appointmentId = formString(formData, "appointmentId");
+  const returnTo = safeReturnTo(formString(formData, "returnTo"));
+
+  if (!appointmentId) {
+    redirect(`${returnTo}?erro=${encodeURIComponent("Agendamento inválido.")}`);
+  }
+
+  try {
+    await releaseAppointmentSlot(
+      {
+        userId: auth.user.id,
+        establishmentId: auth.establishment.id,
+        role: auth.role,
+        professionalId: auth.professionalId,
+      },
+      appointmentId,
+    );
+  } catch (error) {
+    const message =
+      error instanceof BookingError
+        ? error.message
+        : "Não foi possível liberar o horário.";
+    redirect(`${returnTo}?erro=${encodeURIComponent(message)}`);
+  }
+
+  revalidatePath("/painel");
+  revalidatePath("/painel/agenda");
+  revalidatePath("/painel/agendamentos");
+  redirect(`${returnTo}?ok=${encodeURIComponent("Horário liberado para novos agendamentos.")}`);
 }
 
 export async function createAppointmentAction(

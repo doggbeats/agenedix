@@ -360,6 +360,7 @@ model Appointment {
   cancelledAt        DateTime?         @db.Timestamptz(3)
   confirmedAt        DateTime?         @db.Timestamptz(3)
   completedAt        DateTime?         @db.Timestamptz(3)
+  releasedAt         DateTime?         @db.Timestamptz(3)
   createdAt          DateTime          @default(now()) @db.Timestamptz(3)
   updatedAt          DateTime          @updatedAt @db.Timestamptz(3)
 
@@ -480,6 +481,7 @@ model TenantBranding {
   primaryColor    String   @default("#B08D68")
   secondaryColor  String   @default("#C4A484")
   backgroundColor String   @default("#FFFFFF")
+  menuColor       String   @default("#FFFFFF")
   textColor       String   @default("#0B0B0B")
   buttonColor     String   @default("#0B0B0B")
   fontFamily      String   @default("sans")

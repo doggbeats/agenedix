@@ -8,6 +8,7 @@ import { initialActionState } from "@/lib/action-utils";
 import { updateBrandingAction } from "@/lib/actions/branding";
 import { prepareImageDataUrl } from "@/lib/image-file";
 import {
+  BRAND_FONTS,
   brandingCssVars,
   readableTextOn,
   resolveBranding,
@@ -25,7 +26,8 @@ type BrandingFormProps = {
 const colorFields = [
   { name: "primaryColor", label: "Cor principal", hint: "Marca, links e destaques" },
   { name: "secondaryColor", label: "Cor secundária", hint: "Apoio e detalhes" },
-  { name: "backgroundColor", label: "Fundo", hint: "Fundo da página pública" },
+  { name: "backgroundColor", label: "Fundo da página", hint: "Fundo do conteúdo, sem o menu" },
+  { name: "menuColor", label: "Fundo do menu", hint: "Cabeçalho e menu de navegação" },
   { name: "textColor", label: "Texto", hint: "Títulos e textos" },
   { name: "buttonColor", label: "Botões", hint: "Cor dos botões principais" },
 ] as const;
@@ -42,6 +44,7 @@ export function BrandingForm({
     primaryColor: branding.primaryColor,
     secondaryColor: branding.secondaryColor,
     backgroundColor: branding.backgroundColor,
+    menuColor: branding.menuColor,
     textColor: branding.textColor,
     buttonColor: branding.buttonColor,
     fontFamily: branding.fontFamily,
@@ -140,6 +143,7 @@ export function BrandingForm({
           primaryColor: values.primaryColor,
           secondaryColor: values.secondaryColor,
           backgroundColor: values.backgroundColor,
+          menuColor: values.menuColor,
           textColor: values.textColor,
           buttonColor: values.buttonColor,
           fontFamily: values.fontFamily,
@@ -234,7 +238,11 @@ export function BrandingForm({
                 onChange={(event) => update("fontFamily", event.target.value)}
               >
                 <option value="sans">Moderna (sem serifa)</option>
-                <option value="serif">Clássica (com serifa)</option>
+                {BRAND_FONTS.filter((font) => font.value !== "sans").map((font) => (
+                  <option key={font.value} value={font.value}>
+                    {font.label}
+                  </option>
+                ))}
               </select>
             </div>
             <div>
@@ -507,6 +515,30 @@ export function BrandingForm({
           className="overflow-hidden rounded-2xl border border-line shadow-lg"
           style={{ ...cssVars, backgroundColor: preview.backgroundColor, color: preview.textColor } as React.CSSProperties}
         >
+          <div
+            className="flex items-center justify-between gap-3 border-b px-4 py-2.5"
+            style={{
+              backgroundColor: preview.menuColor,
+              borderColor: cssVars["--brand-menu-line"],
+              color: readableTextOn(preview.menuColor),
+            }}
+          >
+            <div className="flex min-w-0 items-center gap-2">
+              <span
+                className="grid h-6 w-6 shrink-0 place-items-center rounded-md text-[8px] font-bold"
+                style={{ backgroundColor: preview.buttonColor, color: buttonText }}
+              >
+                AG
+              </span>
+              <span className="truncate text-[11px] font-semibold">{establishmentName}</span>
+            </div>
+            <div className="flex items-center gap-3 text-[9px] font-medium opacity-70">
+              <span>Início</span>
+              <span>Agendar</span>
+              <span className="hidden sm:inline">Contato</span>
+            </div>
+          </div>
+
           <div
             className="relative flex min-h-44 flex-col justify-end px-5 py-5"
             style={{

@@ -15,6 +15,7 @@ import { updateSettingsAction } from "@/lib/actions/settings";
 import { SEGMENTS } from "@/lib/constants";
 import { formatPhone, maskPhoneInput } from "@/lib/format";
 import { prepareImageDataUrl } from "@/lib/image-file";
+import { DEFAULT_WHATSAPP_MESSAGE, renderMessage } from "@/lib/whatsapp";
 
 export type SettingsValues = {
   name: string;
@@ -55,6 +56,9 @@ export function SettingsForm({ establishment }: { establishment: SettingsValues 
   const [state, formAction] = useActionState(updateSettingsAction, initialActionState);
   const [phone, setPhone] = useState(formatPhone(establishment.phone));
   const [whatsapp, setWhatsapp] = useState(formatPhone(establishment.whatsapp));
+  const [whatsappTemplate, setWhatsappTemplate] = useState(
+    establishment.whatsappMessage.trim() || DEFAULT_WHATSAPP_MESSAGE,
+  );
   const [logo, setLogo] = useState(establishment.logoUrl);
   const [logoError, setLogoError] = useState<string | null>(null);
   const [logoLoading, setLogoLoading] = useState(false);
@@ -82,6 +86,24 @@ export function SettingsForm({ establishment }: { establishment: SettingsValues 
     setLogoError(null);
     if (logoInputRef.current) logoInputRef.current.value = "";
   }
+
+  const messagePreview = renderMessage(
+    whatsappTemplate.trim() || DEFAULT_WHATSAPP_MESSAGE,
+    {
+      primeiro_nome: "Ana",
+      cliente: "Ana Souza",
+      servico: "Corte feminino",
+      profissional: "Bruno",
+      data: "28/10/2026 às 15:30",
+      hora: "15:30",
+      protocolo: "AG-7F3K2",
+      estabelecimento: establishment.name,
+      endereco: establishment.address || "Rua das Palmeiras, 100",
+      politica:
+        establishment.cancellationPolicy ||
+        "Cancelamentos com até 4 horas de antecedência.",
+    },
+  );
 
   return (
     <form action={formAction} className="space-y-5">
@@ -448,24 +470,58 @@ export function SettingsForm({ establishment }: { establishment: SettingsValues 
         <FieldError messages={state.fieldErrors?.cancellationPolicy} />
       </div>
 
-      <div>
-        <label className={labelClass} htmlFor="settings-whatsapp-message">
-          Modelo de mensagem de WhatsApp
-        </label>
-        <textarea
-          id="settings-whatsapp-message"
-          name="whatsappMessage"
-          rows={5}
-          maxLength={1000}
-          defaultValue={establishment.whatsappMessage}
-          className={`${inputClass} font-mono text-xs`}
-        />
-        <p className="mt-1 text-[11px] text-slate-500">
-          Variáveis: {"{primeiro_nome}"}, {"{cliente}"}, {"{servico}"}, {"{profissional}"},{" "}
-          {"{data}"}, {"{hora}"}, {"{protocolo}"}, {"{estabelecimento}"}, {"{endereco}"} e{" "}
-          {"{politica}"}.
-        </p>
-        <FieldError messages={state.fieldErrors?.whatsappMessage} />
+      <div
+        id="mensagens"
+        className="scroll-mt-24 rounded-xl border border-line bg-paper/60 p-4"
+      >
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h3 className="text-sm font-semibold text-ink">
+              Mensagem enviada ao cliente
+            </h3>
+            <p className="mt-1 max-w-xl text-[11px] leading-relaxed text-slate-500">
+              Texto padrão usado nos botões de WhatsApp ao compartilhar um agendamento. Você
+              pode adaptar o tom e incluir as informações que fizerem sentido.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setWhatsappTemplate(DEFAULT_WHATSAPP_MESSAGE)}
+            className={buttonSmall}
+          >
+            Restaurar padrão
+          </button>
+        </div>
+
+        <div className="mt-4">
+          <label className={labelClass} htmlFor="settings-whatsapp-message">
+            Modelo da mensagem
+          </label>
+          <textarea
+            id="settings-whatsapp-message"
+            name="whatsappMessage"
+            rows={7}
+            maxLength={1000}
+            value={whatsappTemplate}
+            onChange={(event) => setWhatsappTemplate(event.target.value)}
+            className={`${inputClass} font-mono text-xs`}
+          />
+          <p className="mt-1 text-[11px] leading-relaxed text-slate-500">
+            Variáveis: {"{primeiro_nome}"}, {"{cliente}"}, {"{servico}"}, {"{profissional}"},{" "}
+            {"{data}"}, {"{hora}"}, {"{protocolo}"}, {"{estabelecimento}"}, {"{endereco}"} e{" "}
+            {"{politica}"}. Linhas com valor vazio são removidas automaticamente.
+          </p>
+          <FieldError messages={state.fieldErrors?.whatsappMessage} />
+        </div>
+
+        <div className="mt-4 rounded-lg border border-line bg-white p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+            Prévia
+          </p>
+          <pre className="mt-2 whitespace-pre-wrap break-words font-sans text-[11px] leading-relaxed text-slate-600">
+            {messagePreview}
+          </pre>
+        </div>
       </div>
 
       <div className="flex justify-end">

@@ -319,6 +319,7 @@ export default async function PanelDashboard({
                       role={auth.role}
                       returnTo="/painel"
                       compact
+                      releasedAt={appointment.releasedAt}
                     />
                   </div>
                 </li>

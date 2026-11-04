@@ -467,6 +467,65 @@ export async function updateAppointmentStatus(
   return { ok: true };
 }
 
+/**
+ * Libera o horário de um atendimento já encerrado para que a vaga volte a
+ * aparecer na página pública. O bloqueio só é removido quando o dono/equipe
+ * confirma explicitamente.
+ */
+export async function releaseAppointmentSlot(
+  actor: PanelActor,
+  appointmentId: string,
+) {
+  const appointment = await prisma.appointment.findFirst({
+    where: { id: appointmentId, establishmentId: actor.establishmentId },
+  });
+  if (!appointment) throw new BookingError("Agendamento não encontrado.", 404);
+  if (
+    !canAccessAppointment(actor.role, actor.professionalId, appointment.professionalId)
+  ) {
+    throw new BookingError("Você não tem permissão para este agendamento.", 403);
+  }
+  if (appointment.status !== "COMPLETED" && appointment.status !== "NO_SHOW") {
+    throw new BookingError(
+      "Só é possível liberar o horário de atendimentos concluídos ou marcados como não compareceu.",
+      409,
+    );
+  }
+  if (appointment.releasedAt) {
+    return { ok: true, unchanged: true };
+  }
+
+  const now = new Date();
+  await prisma.$transaction(async (tx) => {
+    await tx.appointment.update({
+      where: { id: appointment.id },
+      data: { releasedAt: now },
+    });
+
+    await tx.appointmentEvent.create({
+      data: {
+        establishmentId: actor.establishmentId,
+        appointmentId: appointment.id,
+        type: "UPDATED",
+        actorUserId: actor.userId,
+        actorLabel: ROLE_LABELS[actor.role],
+        metadata: { releasedAt: now.toISOString() },
+      },
+    });
+  });
+
+  await recordAudit({
+    actorUserId: actor.userId,
+    establishmentId: actor.establishmentId,
+    action: "appointment.slot.released",
+    entityType: "Appointment",
+    entityId: appointment.id,
+    metadata: { status: appointment.status, startAt: appointment.startAt.toISOString() },
+  });
+
+  return { ok: true };
+}
+
 export async function rescheduleAppointment(
   actor: PanelActor,
   appointmentId: string,

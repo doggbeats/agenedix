@@ -51,7 +51,7 @@ export function PublicPageMenu({
         aria-expanded={open}
         aria-controls="public-page-menu"
         aria-label="Abrir menu"
-        className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--brand-radius)] border border-[var(--brand-line)] bg-transparent text-[var(--brand-text)] transition hover:border-[var(--brand)] hover:text-[var(--brand)] lg:hidden"
+        className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-[var(--brand-radius)] border border-[var(--brand-menu-line)] bg-transparent text-[var(--brand-menu-text)] transition hover:border-[var(--brand)] hover:text-[var(--brand)] lg:hidden"
       >
         <Menu className="h-4 w-4" />
       </button>
@@ -70,9 +70,9 @@ export function PublicPageMenu({
               role="dialog"
               aria-modal="true"
               aria-label="Menu da página"
-              className="animate-slide-in absolute inset-y-0 right-0 flex w-[90%] max-w-sm flex-col border-l border-[var(--brand-line)] bg-[var(--brand-bg)] text-[var(--brand-text)]"
+              className="animate-slide-in absolute inset-y-0 right-0 flex w-[90%] max-w-sm flex-col border-l border-[var(--brand-menu-line)] bg-[var(--brand-menu)] text-[var(--brand-menu-text)]"
             >
-              <div className="flex items-start justify-between gap-3 border-b border-[var(--brand-line)] px-5 py-5">
+              <div className="flex items-start justify-between gap-3 border-b border-[var(--brand-menu-line)] px-5 py-5">
                 <div className="flex min-w-0 items-center gap-3">
                   <span className="grid h-10 w-10 shrink-0 place-items-center rounded-[var(--brand-radius)] bg-[var(--brand-button)] text-[11px] font-bold text-[var(--brand-button-text)]">
                     {establishmentName.slice(0, 2).toUpperCase()}
@@ -81,7 +81,7 @@ export function PublicPageMenu({
                     <p className="truncate font-display text-sm font-semibold">
                       {establishmentName}
                     </p>
-                    <p className="mt-0.5 text-[10px] uppercase tracking-[0.16em] text-[var(--muted)]">
+                    <p className="mt-0.5 text-[10px] uppercase tracking-[0.16em] text-[var(--brand-menu-muted)]">
                       Navegação
                     </p>
                   </div>
@@ -90,7 +90,7 @@ export function PublicPageMenu({
                   type="button"
                   onClick={() => setOpen(false)}
                   aria-label="Fechar"
-                  className="grid h-10 w-10 shrink-0 place-items-center rounded-[var(--brand-radius)] border border-[var(--brand-line)] text-[var(--muted)] transition hover:border-[var(--brand)] hover:text-[var(--brand)]"
+                  className="grid h-10 w-10 shrink-0 place-items-center rounded-[var(--brand-radius)] border border-[var(--brand-menu-line)] text-[var(--brand-menu-muted)] transition hover:border-[var(--brand)] hover:text-[var(--brand)]"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -105,20 +105,20 @@ export function PublicPageMenu({
                     key={`${item.href}-${item.label}`}
                     href={item.href}
                     onClick={() => setOpen(false)}
-                    className="group flex items-center justify-between gap-4 border-b border-[var(--brand-line)] py-4 text-[15px] font-medium transition hover:text-[var(--brand)]"
+                    className="group flex items-center justify-between gap-4 border-b border-[var(--brand-menu-line)] py-4 text-[15px] font-medium transition hover:text-[var(--brand)]"
                   >
                     <span className="inline-flex items-center gap-3">
-                      <span className="font-mono text-[10px] text-[var(--muted)]">
+                      <span className="font-mono text-[10px] text-[var(--brand-menu-muted)]">
                         {String(index + 1).padStart(2, "0")}
                       </span>
                       {item.label}
                     </span>
-                    <ArrowRight className="h-3.5 w-3.5 text-[var(--muted)] transition group-hover:text-[var(--brand)]" />
+                    <ArrowRight className="h-3.5 w-3.5 text-[var(--brand-menu-muted)] transition group-hover:text-[var(--brand)]" />
                   </a>
                 ))}
               </nav>
 
-              <div className="mt-auto border-t border-[var(--brand-line)] p-5">
+              <div className="mt-auto border-t border-[var(--brand-menu-line)] p-5">
                 <a
                   href="#agendar"
                   onClick={() => setOpen(false)}

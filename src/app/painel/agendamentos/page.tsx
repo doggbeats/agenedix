@@ -391,12 +391,16 @@ export default async function AppointmentsPage({
                     status={detail.status}
                     role={auth.role}
                     returnTo={`/painel/agendamentos?protocolo=${encodeURIComponent(detail.publicCode)}`}
+                    releasedAt={detail.releasedAt}
                   />
                   {(detail.status === "COMPLETED" ||
                     detail.status === "CANCELLED" ||
                     detail.status === "NO_SHOW") && (
-                    <p className="text-xs text-slate-500">
+                    <p className="mt-2 text-xs text-slate-500">
                       Este atendimento está encerrado e não aceita novas alterações de status.
+                      {!detail.releasedAt &&
+                        (detail.status === "COMPLETED" || detail.status === "NO_SHOW") &&
+                        " Use “Liberar horário” para devolver a vaga à agenda."}
                     </p>
                   )}
                 </div>

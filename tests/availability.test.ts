@@ -85,6 +85,39 @@ describe("buildAvailability", () => {
     expect(times({ ...baseInput, appointments: [appointment] })).toContain("10:00");
   });
 
+  it("mantém o horário bloqueado após concluir até o estabelecimento liberar", () => {
+    const completed: BusyAppointment = {
+      professionalId: "pro-a",
+      startAt: new Date("2026-10-28T13:00:00.000Z"),
+      endAt: new Date("2026-10-28T13:30:00.000Z"),
+      status: "COMPLETED",
+      releasedAt: null,
+    };
+    expect(times({ ...baseInput, appointments: [completed] })).not.toContain("10:00");
+
+    const released: BusyAppointment = {
+      ...completed,
+      releasedAt: new Date("2026-10-28T14:00:00.000Z"),
+    };
+    expect(times({ ...baseInput, appointments: [released] })).toContain("10:00");
+  });
+
+  it("libera o horário de quem não compareceu somente após a liberação", () => {
+    const noShow: BusyAppointment = {
+      professionalId: "pro-a",
+      startAt: new Date("2026-10-28T13:00:00.000Z"),
+      endAt: new Date("2026-10-28T13:30:00.000Z"),
+      status: "NO_SHOW",
+    };
+    expect(times({ ...baseInput, appointments: [noShow] })).not.toContain("10:00");
+    expect(
+      times({
+        ...baseInput,
+        appointments: [{ ...noShow, releasedAt: new Date("2026-10-28T14:00:00.000Z") }],
+      }),
+    ).toContain("10:00");
+  });
+
   it("aplica bloqueio geral e bloqueio por profissional", () => {
     const general = times({
       ...baseInput,
@@ -215,6 +248,21 @@ describe("pickLeastBusyProfessional", () => {
       },
     ];
     expect(pickLeastBusyProfessional(["pro-b", "pro-a"], appointments, timezone, date)).toBe(
+      "pro-a",
+    );
+  });
+
+  it("não conta atendimentos com horário liberado", () => {
+    const appointments: BusyAppointment[] = [
+      {
+        professionalId: "pro-b",
+        startAt: new Date("2026-10-28T13:00:00.000Z"),
+        endAt: new Date("2026-10-28T13:30:00.000Z"),
+        status: "COMPLETED",
+        releasedAt: new Date("2026-10-28T14:00:00.000Z"),
+      },
+    ];
+    expect(pickLeastBusyProfessional(["pro-a", "pro-b"], appointments, timezone, date)).toBe(
       "pro-a",
     );
   });

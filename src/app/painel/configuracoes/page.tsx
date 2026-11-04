@@ -107,6 +107,7 @@ export default async function SettingsPage({
       >
         {[
           ["#dados", "Dados do estabelecimento"],
+          ["#mensagens", "Mensagens"],
           ["#horarios", "Horários"],
           ["#bloqueios", "Bloqueios"],
           ["#excecoes", "Exceções"],

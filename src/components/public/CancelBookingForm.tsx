@@ -64,7 +64,10 @@ export function CancelBookingForm({
   }
 
   return (
-    <form onSubmit={submit} className="rounded-xl border border-red-200 bg-red-50 p-4">
+    <form
+      onSubmit={submit}
+      className="w-full rounded-xl border border-red-200 bg-red-50 p-4"
+    >
       <p className="text-sm font-semibold text-red-800">Cancelar este agendamento?</p>
       <p className="mt-1 text-xs leading-relaxed text-red-700">
         O cancelamento online é permitido até {cancellationNoticeHours} hora(s) antes do

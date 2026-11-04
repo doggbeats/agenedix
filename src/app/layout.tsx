@@ -1,5 +1,14 @@
 import type { Metadata } from "next";
-import { JetBrains_Mono, Manrope, Plus_Jakarta_Sans } from "next/font/google";
+import {
+  Inter,
+  JetBrains_Mono,
+  Lora,
+  Manrope,
+  Montserrat,
+  Playfair_Display,
+  Plus_Jakarta_Sans,
+  Poppins,
+} from "next/font/google";
 import "./globals.css";
 import { APP_NAME, APP_TAGLINE } from "@/lib/constants";
 
@@ -24,6 +33,41 @@ const jetBrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
+const poppins = Poppins({
+  variable: "--font-poppins",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
+
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
+
+const montserrat = Montserrat({
+  variable: "--font-montserrat",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
+
+const lora = Lora({
+  variable: "--font-lora",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
+
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: {
     default: `${APP_NAME} — ${APP_TAGLINE}`,
@@ -45,7 +89,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="pt-BR"
-      className={`${jakartaSans.variable} ${manrope.variable} ${jetBrainsMono.variable} h-full antialiased`}
+      className={`${jakartaSans.variable} ${manrope.variable} ${jetBrainsMono.variable} ${poppins.variable} ${inter.variable} ${montserrat.variable} ${lora.variable} ${playfair.variable} h-full antialiased`}
     >
       <body className="page-enter flex min-h-full flex-col">{children}</body>
     </html>

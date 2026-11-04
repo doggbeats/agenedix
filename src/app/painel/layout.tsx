@@ -65,11 +65,11 @@ export default async function PanelLayout({ children }: { children: ReactNode })
     <div className="min-h-screen bg-paper text-ink">
       <div className="flex min-h-screen">
         <aside className="sticky top-0 hidden h-screen w-[268px] shrink-0 flex-col border-r border-line bg-white px-4 py-5 lg:flex">
-          <Link href="/painel" className="px-1" aria-label="AgendamentoON — painel">
+          <Link href="/painel" className="shrink-0 px-1" aria-label="AgendamentoON — painel">
             <Logo />
           </Link>
 
-          <div className="mt-6 flex items-center gap-3 border-y border-line py-4">
+          <div className="mt-6 flex shrink-0 items-center gap-3 border-y border-line py-4">
             <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-line bg-paper text-[11px] font-semibold text-ink">
               {initials(auth.establishment.name)}
             </span>
@@ -84,7 +84,7 @@ export default async function PanelLayout({ children }: { children: ReactNode })
             </div>
           </div>
 
-          <div className="mt-5 flex flex-1 flex-col">
+          <div className="mt-5 flex min-h-0 flex-1 flex-col overflow-y-auto pb-1 pr-1">
             <PanelNav
               items={mainItems}
               footerItems={footerItems}
@@ -92,7 +92,7 @@ export default async function PanelLayout({ children }: { children: ReactNode })
             />
           </div>
 
-          <div className="mt-4 space-y-2 border-t border-line pt-4">
+          <div className="mt-4 shrink-0 space-y-2 border-t border-line pt-4">
             <Link
               href={`/agendar/${auth.establishment.slug}`}
               target="_blank"
