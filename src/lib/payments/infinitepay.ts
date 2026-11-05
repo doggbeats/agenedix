@@ -23,9 +23,10 @@ export function getInfinitePayConfig(): InfinitePayConfig {
   return {
     handle,
     apiKey,
-    // A handle identifica a conta no link e também é usada no payment_check.
-    // A API Key é opcional e só habilita as opções avançadas do link.
-    configured: Boolean(handle),
+    // A API Key sozinha já identifica a conta. A handle é usada quando não há
+    // chave e também no payment_check. Exigir só a handle mantém a integração
+    // simples, mas a chave é suficiente para operar.
+    configured: Boolean(handle || apiKey),
   };
 }
 
@@ -170,7 +171,9 @@ export async function createInfinitePayLink(
   );
 
   const payload: Record<string, unknown> = {
-    ...(config.handle ? { handle: config.handle } : {}),
+    // Com API Key a conta vem da chave; enviar uma handle de outra conta
+    // faz a InfinitePay responder 403.
+    ...(!config.apiKey && config.handle ? { handle: config.handle } : {}),
     order_nsu: input.orderNsu,
     redirect_url: input.redirectUrl,
     webhook: {
@@ -243,7 +246,7 @@ export async function checkInfinitePayPayment(input: {
   }
 
   const payload = await infinitePayFetch<unknown>("/payment_check", {
-    handle: config.handle,
+    ...(config.handle ? { handle: config.handle } : {}),
     order_nsu: input.orderNsu,
     transaction_nsu: input.transactionNsu,
     slug: input.slug,
