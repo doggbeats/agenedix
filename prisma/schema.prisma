@@ -134,6 +134,7 @@ model Establishment {
   slotIntervalMinutes      Int                 @default(15)
   cancellationPolicy       String?
   whatsappMessage          String?
+  customerContactMessage   String?
   onboardingCompletedAt    DateTime?           @db.Timestamptz(3)
   holdMinutes              Int                 @default(30)
   emailNotifications       Boolean             @default(true)
@@ -162,8 +163,6 @@ model Establishment {
   scheduleExceptions         ScheduleException[]
   payments                   Payment[]
   notifications              Notification[]
-  subscriptionEvents         SubscriptionEvent[]
-  paymentEvents              PaymentEvent[]
 
   @@index([status])
   @@index([createdAt])
@@ -188,7 +187,6 @@ model User {
   appointmentEvents       AppointmentEvent[]
   passwordResetTokens     PasswordResetToken[]
   emailVerificationTokens EmailVerificationToken[]
-  subscriptionEvents      SubscriptionEvent[]      @relation("SubscriptionEventActor")
 
   @@index([isPlatformAdmin])
   @@index([platformRole])

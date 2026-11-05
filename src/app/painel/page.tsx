@@ -296,14 +296,16 @@ export default async function PanelDashboard({
                             customerName: appointment.customerName,
                             customerPhone: appointment.customerPhone,
                             serviceName: appointment.serviceName,
+                            serviceDuration: appointment.durationMin,
+                            servicePrice: appointment.price,
                             professionalName: appointment.professionalName,
                             startAt: appointment.startAt,
+                            endAt: appointment.endAt,
                             timezone: establishment.timezone,
                             protocol: appointment.publicCode,
                             establishmentName: establishment.name,
                             address: establishment.address,
                             policy: establishment.cancellationPolicy,
-                            customTemplate: establishment.whatsappMessage,
                           }),
                         )}
                         target="_blank"

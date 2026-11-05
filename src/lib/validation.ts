@@ -132,7 +132,7 @@ export const establishmentSettingsSchema = z.object({
     .int()
     .refine((value) => [5, 10, 15, 20, 30, 60].includes(value), "Intervalo inválido."),
   cancellationPolicy: optionalText(1000),
-  whatsappMessage: optionalText(1000),
+  customerContactMessage: optionalText(1000),
 });
 
 export const serviceSchema = z.object({
@@ -445,6 +445,13 @@ export const cardCheckoutSchema = checkoutSchema.extend({
 });
 
 export const pixCheckoutSchema = checkoutSchema;
+
+// O checkout hospedado da InfinitePay coleta os dados do comprador, então o
+// nosso lado envia apenas o plano e o ciclo.
+export const infinitePayCheckoutSchema = z.object({
+  planSlug: z.string().trim().min(1, "Escolha um plano."),
+  cycle: z.enum(["MONTHLY", "YEARLY"]).default("MONTHLY"),
+});
 
 export const planChangeSchema = z.object({
   planSlug: z.string().trim().min(1, "Escolha um plano."),

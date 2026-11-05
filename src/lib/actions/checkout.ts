@@ -8,7 +8,12 @@ import { prisma } from "@/lib/prisma";
 import { getAuthContext, getRequestMeta } from "@/lib/auth/session";
 import { recordAudit } from "@/lib/audit";
 import { parseForm, failure, success, type ActionState } from "@/lib/action-utils";
-import { cardCheckoutSchema, pixCheckoutSchema, planChangeSchema } from "@/lib/validation";
+import {
+  cardCheckoutSchema,
+  infinitePayCheckoutSchema,
+  pixCheckoutSchema,
+  planChangeSchema,
+} from "@/lib/validation";
 import {
   PagarmeError,
   createPagarmePixOrder,
@@ -17,12 +22,18 @@ import {
   updatePagarmeSubscription,
 } from "@/lib/payments/pagarme";
 import {
+  InfinitePayError,
+  createInfinitePayLink,
+  getInfinitePayConfig,
+} from "@/lib/payments/infinitepay";
+import {
   billingAddress,
   getOrCreateCustomer,
   getProviderPlanId,
   planAmount,
   planAmountCents,
 } from "@/lib/payments/service";
+import { getAppUrl } from "@/lib/urls";
 
 export type PixCharge = {
   paymentId: string;
@@ -32,7 +43,15 @@ export type PixCharge = {
   amount: number;
 };
 
-export type CheckoutState = ActionState & { pix?: PixCharge };
+export type InfinitePayCharge = {
+  orderNsu: string;
+  url: string;
+};
+
+export type CheckoutState = ActionState & {
+  pix?: PixCharge;
+  infinitePay?: InfinitePayCharge;
+};
 
 function pagarmeFailure(error: unknown): CheckoutState {
   if (error instanceof PagarmeError) {
@@ -45,6 +64,33 @@ function pagarmeFailure(error: unknown): CheckoutState {
   }
   console.error("Erro inesperado no checkout", error);
   return failure("Não foi possível concluir o pagamento agora. Tente novamente.");
+}
+
+function infinitePayErrorCode(details: unknown): string | null {
+  if (!details || typeof details !== "object" || Array.isArray(details)) return null;
+  const code = (details as Record<string, unknown>).error;
+  return typeof code === "string" && code.trim() ? code.trim() : null;
+}
+
+function infinitePayFailure(error: unknown): CheckoutState {
+  if (error instanceof InfinitePayError) {
+    console.error("Erro na InfinitePay", error.status, error.details);
+    const code = infinitePayErrorCode(error.details);
+    if (code === "external_checkout_not_enabled") {
+      return failure(
+        "A InfinitePay ainda não liberou o Checkout Integrado nesta conta. Ative o recurso nas configurações de checkout da InfinitePay e tente novamente.",
+      );
+    }
+    return failure(
+      error.status === 401 || error.status === 403
+        ? "A InfinitePay recusou as credenciais configuradas. Fale com o suporte."
+        : error.message,
+    );
+  }
+  console.error("Erro inesperado no checkout InfinitePay", error);
+  return failure(
+    "Não foi possível gerar o pagamento na InfinitePay agora. Tente novamente.",
+  );
 }
 
 async function loadContext() {
@@ -420,6 +466,159 @@ export async function startPixPaymentAction(
     };
   } catch (error) {
     return pagarmeFailure(error);
+  }
+}
+
+function internationalPhone(value: string): string | undefined {
+  const digits = value.replace(/\D/g, "");
+  if (!digits) return undefined;
+  if (digits.startsWith("55")) return `+${digits}`;
+  if (digits.length >= 10) return `+55${digits}`;
+  return `+${digits}`;
+}
+
+export async function startInfinitePayPaymentAction(
+  _prevState: CheckoutState,
+  formData: FormData,
+): Promise<CheckoutState> {
+  const parsed = parseForm(infinitePayCheckoutSchema, {
+    planSlug: formData.get("planSlug"),
+    cycle: formData.get("cycle") || "MONTHLY",
+  });
+  if (!parsed.data) return parsed.state ?? failure("Dados inválidos.");
+  const input = parsed.data;
+
+  const context = await loadContext();
+  if (context.error) return failure(context.error);
+  const { auth } = context;
+  const establishment = auth.establishment;
+  const subscription = context.subscription;
+
+  const config = getInfinitePayConfig();
+  if (!config.configured) {
+    return failure(
+      "O pagamento pela InfinitePay ainda não está configurado. Fale com o suporte para liberar o acesso.",
+    );
+  }
+
+  const plan = await findPlan(input.planSlug);
+  if (!plan) return failure("Plano indisponível. Escolha outro plano.");
+
+  const cycle = input.cycle as BillingCycle;
+  const amount = planAmount(plan, cycle);
+  const amountCents = planAmountCents(plan, cycle);
+  const orderNsu = `agendamentoon-${crypto.randomUUID()}`;
+  const appUrl = getAppUrl();
+  const redirectUrl = `${appUrl}/checkout/retorno?order_nsu=${encodeURIComponent(orderNsu)}`;
+  const webhookUrl = `${appUrl}/api/webhooks/infinitepay`;
+
+  try {
+    const link = await createInfinitePayLink({
+      orderNsu,
+      amountCents,
+      description: `AgendamentoON · plano ${plan.name} (${cycle === "YEARLY" ? "anual" : "mensal"})`,
+      redirectUrl,
+      webhookUrl,
+      customer: {
+        name: establishment.ownerName || auth.user.name,
+        email: establishment.email || auth.user.email,
+        phone_number: internationalPhone(establishment.whatsapp || establishment.phone),
+      },
+    });
+
+    await prisma.$transaction(async (tx) => {
+      await tx.payment.updateMany({
+        where: {
+          establishmentId: establishment.id,
+          status: "PENDING",
+          provider: "INFINITEPAY",
+        },
+        data: { status: "CANCELED", notes: "Substituído por um novo link InfinitePay." },
+      });
+
+      const localSubscription = await tx.subscription.upsert({
+        where: { establishmentId: establishment.id },
+        create: {
+          establishmentId: establishment.id,
+          planId: plan.id,
+          status: "PENDING_PAYMENT",
+          billingCycle: cycle,
+          provider: "INFINITEPAY",
+        },
+        update: {
+          planId: plan.id,
+          status: "PENDING_PAYMENT",
+          billingCycle: cycle,
+          provider: "INFINITEPAY",
+          providerCustomerId: null,
+          providerSubscriptionId: null,
+          trialEndsAt: null,
+          currentPeriodStart: null,
+          currentPeriodEnd: null,
+          notes: "Aguardando confirmação do pagamento via InfinitePay.",
+        },
+      });
+
+      await tx.payment.upsert({
+        where: { providerPaymentId: orderNsu },
+        create: {
+          establishmentId: establishment.id,
+          subscriptionId: localSubscription.id,
+          amount,
+          status: "PENDING",
+          provider: "INFINITEPAY",
+          providerPaymentId: orderNsu,
+          method: "checkout",
+          notes: "Link InfinitePay aguardando pagamento.",
+          metadata: {
+            checkout: "infinitepay",
+            orderNsu,
+            linkUrl: link.url,
+            redirectUrl,
+            establishmentId: establishment.id,
+            planId: plan.id,
+            planSlug: plan.slug,
+            cycle,
+            amountCents,
+          },
+        },
+        update: {
+          subscriptionId: localSubscription.id,
+          amount,
+          status: "PENDING",
+          method: "checkout",
+          notes: "Link InfinitePay aguardando pagamento.",
+          metadata: {
+            checkout: "infinitepay",
+            orderNsu,
+            linkUrl: link.url,
+            redirectUrl,
+            establishmentId: establishment.id,
+            planId: plan.id,
+            planSlug: plan.slug,
+            cycle,
+            amountCents,
+          },
+        },
+      });
+    });
+
+    await recordAudit({
+      actorUserId: auth.user.id,
+      establishmentId: establishment.id,
+      action: "subscription.infinitepay_link_created",
+      entityType: "Payment",
+      entityId: orderNsu,
+      metadata: { plan: plan.slug, cycle, amount, previousProvider: subscription?.provider ?? null },
+    });
+
+    revalidatePath("/checkout");
+    return {
+      ...success("Link da InfinitePay criado. Redirecionando para o pagamento..."),
+      infinitePay: { orderNsu, url: link.url },
+    };
+  } catch (error) {
+    return infinitePayFailure(error);
   }
 }
 

@@ -8,6 +8,7 @@ import { logoutAction } from "@/lib/actions/auth";
 import { isSubscriptionUsable } from "@/lib/subscription";
 import { toNumber } from "@/lib/format";
 import { getPagarmeConfig } from "@/lib/payments/pagarme";
+import { getInfinitePayConfig } from "@/lib/payments/infinitepay";
 import { SUPPORT_WHATSAPP } from "@/lib/public-config";
 import { Logo } from "@/components/ui";
 import {
@@ -128,6 +129,7 @@ export default async function CheckoutPage({
     : null;
 
   const config = getPagarmeConfig();
+  const infinitePayConfig = getInfinitePayConfig();
   const devBypass =
     process.env.NODE_ENV !== "production" &&
     process.env.PAYMENTS_DEV_BYPASS === "true";
@@ -165,6 +167,7 @@ export default async function CheckoutPage({
           supportWhatsApp={SUPPORT_WHATSAPP}
           configured={config.configured}
           publicKey={config.publicKey}
+          infinitePayConfigured={infinitePayConfig.configured}
           devBypass={devBypass}
           pendingPix={pendingPix}
         />

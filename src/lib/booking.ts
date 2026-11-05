@@ -80,6 +80,9 @@ export interface BookingResult {
   professionalName: string;
   serviceName: string;
   startAt: Date;
+  endAt: Date;
+  durationMin: number;
+  price: unknown;
   requiresConfirmation: boolean;
 }
 
@@ -245,6 +248,9 @@ export async function createPublicBooking(
             professionalName: professional.name,
             serviceName: availability.service.name,
             startAt: appointment.startAt,
+            endAt: slot.endAt,
+            durationMin: availability.service.durationMin,
+            price: availability.service.price,
             requiresConfirmation: status === "PENDING",
           } satisfies BookingResult;
         },
@@ -755,6 +761,9 @@ export async function createPanelAppointment(
         professionalName: professional.name,
         serviceName: availability.service.name,
         startAt: appointment.startAt,
+        endAt: appointment.endAt,
+        durationMin: appointment.durationMin,
+        price: appointment.price,
         requiresConfirmation: false,
       } satisfies BookingResult;
     },

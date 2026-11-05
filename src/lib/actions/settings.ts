@@ -59,7 +59,7 @@ export async function updateSettingsAction(
     defaultServiceMin: formString(formData, "defaultServiceMin"),
     slotIntervalMinutes: formString(formData, "slotIntervalMinutes"),
     cancellationPolicy: formString(formData, "cancellationPolicy"),
-    whatsappMessage: formString(formData, "whatsappMessage"),
+    customerContactMessage: formString(formData, "customerContactMessage"),
   });
 
   if (!parsed.data) return parsed.state ?? failure("Dados inválidos.");
@@ -99,7 +99,7 @@ export async function updateSettingsAction(
       defaultServiceMin: parsed.data.defaultServiceMin,
       slotIntervalMinutes: parsed.data.slotIntervalMinutes,
       cancellationPolicy: parsed.data.cancellationPolicy ?? null,
-      whatsappMessage: parsed.data.whatsappMessage ?? null,
+      customerContactMessage: parsed.data.customerContactMessage ?? null,
     },
   });
 

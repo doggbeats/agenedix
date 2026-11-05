@@ -107,7 +107,7 @@ export default async function SettingsPage({
       >
         {[
           ["#dados", "Dados do estabelecimento"],
-          ["#mensagens", "Mensagens"],
+          ["#mensagem-cliente", "Mensagem do cliente"],
           ["#horarios", "Horários"],
           ["#bloqueios", "Bloqueios"],
           ["#excecoes", "Exceções"],
@@ -163,7 +163,7 @@ export default async function SettingsPage({
                 defaultServiceMin: establishment.defaultServiceMin,
                 slotIntervalMinutes: establishment.slotIntervalMinutes,
                 cancellationPolicy: establishment.cancellationPolicy ?? "",
-                whatsappMessage: establishment.whatsappMessage ?? "",
+                customerContactMessage: establishment.customerContactMessage ?? "",
               }}
             />
           </div>

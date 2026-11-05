@@ -41,6 +41,17 @@ function safeReturnTo(value: string): string {
   return value.startsWith("/painel") ? value : "/painel/agendamentos";
 }
 
+function withPanelMessage(
+  returnTo: string,
+  key: "ok" | "erro",
+  message: string,
+): string {
+  const [path, query = ""] = returnTo.split("?", 2);
+  const params = new URLSearchParams(query);
+  params.set(key, message);
+  return `${path}?${params.toString()}`;
+}
+
 export async function updateStatusFormAction(formData: FormData): Promise<void> {
   const auth = await requirePanel();
   const appointmentId = formString(formData, "appointmentId");
@@ -49,7 +60,7 @@ export async function updateStatusFormAction(formData: FormData): Promise<void> 
   const returnTo = safeReturnTo(formString(formData, "returnTo"));
 
   if (!appointmentId || !VALID_STATUSES.includes(status)) {
-    redirect(`${returnTo}?erro=${encodeURIComponent("Dados do agendamento inválidos.")}`);
+    redirect(withPanelMessage(returnTo, "erro", "Dados do agendamento inválidos."));
   }
 
   try {
@@ -69,13 +80,13 @@ export async function updateStatusFormAction(formData: FormData): Promise<void> 
       error instanceof BookingError
         ? error.message
         : "Não foi possível atualizar o agendamento.";
-    redirect(`${returnTo}?erro=${encodeURIComponent(message)}`);
+    redirect(withPanelMessage(returnTo, "erro", message));
   }
 
   revalidatePath("/painel");
   revalidatePath("/painel/agenda");
   revalidatePath("/painel/agendamentos");
-  redirect(`${returnTo}?ok=${encodeURIComponent("Agendamento atualizado.")}`);
+  redirect(withPanelMessage(returnTo, "ok", "Agendamento atualizado."));
 }
 
 export async function releaseSlotFormAction(formData: FormData): Promise<void> {
@@ -84,7 +95,7 @@ export async function releaseSlotFormAction(formData: FormData): Promise<void> {
   const returnTo = safeReturnTo(formString(formData, "returnTo"));
 
   if (!appointmentId) {
-    redirect(`${returnTo}?erro=${encodeURIComponent("Agendamento inválido.")}`);
+    redirect(withPanelMessage(returnTo, "erro", "Agendamento inválido."));
   }
 
   try {
@@ -102,13 +113,13 @@ export async function releaseSlotFormAction(formData: FormData): Promise<void> {
       error instanceof BookingError
         ? error.message
         : "Não foi possível liberar o horário.";
-    redirect(`${returnTo}?erro=${encodeURIComponent(message)}`);
+    redirect(withPanelMessage(returnTo, "erro", message));
   }
 
   revalidatePath("/painel");
   revalidatePath("/painel/agenda");
   revalidatePath("/painel/agendamentos");
-  redirect(`${returnTo}?ok=${encodeURIComponent("Horário liberado para novos agendamentos.")}`);
+  redirect(withPanelMessage(returnTo, "ok", "Horário liberado para novos agendamentos."));
 }
 
 export async function createAppointmentAction(
@@ -146,14 +157,16 @@ export async function createAppointmentAction(
       customerName: parsed.data.customerName,
       customerPhone: parsed.data.customerPhone,
       serviceName: result.serviceName,
+      serviceDuration: result.durationMin,
+      servicePrice: result.price,
       professionalName: result.professionalName,
       startAt: result.startAt,
+      endAt: result.endAt,
       timezone: auth.establishment.timezone,
       protocol: result.protocol,
       establishmentName: auth.establishment.name,
       address: auth.establishment.address,
       policy: auth.establishment.cancellationPolicy,
-      customTemplate: auth.establishment.whatsappMessage,
     });
 
     return {

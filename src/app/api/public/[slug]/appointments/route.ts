@@ -39,7 +39,6 @@ export async function POST(
         timezone: true,
         address: true,
         cancellationPolicy: true,
-        whatsappMessage: true,
       },
     });
 
@@ -48,14 +47,16 @@ export async function POST(
           customerName: parsed.data.name,
           customerPhone: parsed.data.phone,
           serviceName: result.serviceName,
+          serviceDuration: result.durationMin,
+          servicePrice: result.price,
           professionalName: result.professionalName,
           startAt: result.startAt,
+          endAt: result.endAt,
           timezone: establishment.timezone,
           protocol: result.protocol,
           establishmentName: establishment.name,
           address: establishment.address,
           policy: establishment.cancellationPolicy,
-          customTemplate: establishment.whatsappMessage,
         })
       : "";
 

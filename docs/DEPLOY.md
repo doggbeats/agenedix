@@ -34,6 +34,11 @@ Não é necessário executar o seed em produção. Se quiser criar a Barbearia N
    RESEND_API_KEY=re_...
    EMAIL_FROM=AgendamentoON <nao-responda@seu-dominio.com>
    PAYMENT_WEBHOOK_SECRET=...
+   PAGARME_SECRET_KEY=...
+   NEXT_PUBLIC_PAGARME_PUBLIC_KEY=...
+   PAGARME_WEBHOOK_SECRET=...
+   INFINITEPAY_HANDLE=...
+   INFINITEPAY_API_KEY=...
    CRON_SECRET=...
    ```
 
@@ -75,6 +80,25 @@ POST https://seu-dominio.com/api/webhooks/pagarme
 
 Sem essas chaves, o checkout responde com erro de configuração e nenhuma assinatura é criada. O webhook genérico `POST /api/webhooks/payments` continua disponível para integrações manuais, com `PAYMENT_WEBHOOK_SECRET`.
 
+### InfinitePay
+
+Antes de configurar a Vercel, ative o **Checkout Integrado** em `app.infinitepay.io/external-checkout`. Sem isso a API responde `external_checkout_not_enabled` ao criar o link.
+
+Configure na Vercel:
+
+- `INFINITEPAY_HANDLE` (InfiniteTag sem o `$`)
+- `INFINITEPAY_API_KEY` (opcional, `inchk_...`)
+
+O webhook é configurado na criação de cada link (não há cadastro prévio na InfinitePay) e aponta para:
+
+```text
+POST https://seu-dominio.com/api/webhooks/infinitepay
+```
+
+- A InfinitePay não assina o webhook; cada evento `paid` é revalidado em `POST /payment_check`.
+- O retorno do cliente acontece em `https://seu-dominio.com/checkout/retorno`.
+- Não existe sandbox: valide com uma compra real de baixo valor e estorne depois, se necessário.
+
 ## 5. Domínio
 
 1. Adicione o domínio na Vercel.
@@ -88,7 +112,7 @@ Sem essas chaves, o checkout responde com erro de configuração e nenhuma assin
 
 - [ ] `/` abre a landing page e `/agendar` lista os estabelecimentos publicados.
 - [ ] `/cadastro` cria estabelecimento, branding inicial, unidade padrão e assinatura pendente.
-- [ ] `/checkout` aceita Pix e cartão, libera o painel após pagamento ou teste e bloqueia contas sem plano válido.
+- [ ] `/checkout` aceita Pix, cartão (Pagar.me) e InfinitePay, libera o painel após pagamento ou teste e bloqueia contas sem plano válido.
 - [ ] Login em `/login` funciona e o painel abre no estabelecimento correto.
 - [ ] `/admin` exige `isPlatformAdmin` e mostra dados reais.
 - [ ] Planos aparecem em `/admin/planos` com preços e limites corretos.
@@ -139,7 +163,7 @@ O código remove buckets de rate limit expirados ocasionalmente. Para volumes ma
 
 ## 9. Limitações operacionais
 
-- O checkout usa o Pagar.me Core API v5. Emissão de nota fiscal, conciliação bancária e estorno automático não estão implementadas.
+- O checkout usa o Pagar.me Core API v5 e a InfinitePay (Checkout Integrado). A InfinitePay não oferece cobrança recorrente nem sandbox. Emissão de nota fiscal, conciliação bancária e estorno automático não estão implementados.
 - Pagamentos manuais em `/admin/pagamentos` continuam disponíveis para cortesias e ajustes de suporte.
 - WhatsApp é link externo, sem envio automático.
 - Logo, capa e galeria são anexadas nos formulários e salvas no banco como data URL. A foto de profissional usa URL externa validada.

@@ -74,7 +74,7 @@ export default async function PlanPage({
       <PageHeader
         eyebrow="Plano e cobrança"
         title="Seu plano no AgendamentoON"
-        description="Acompanhe o período de teste, os limites do plano e o histórico de pagamentos. A cobrança é processada pelo Pagar.me via Pix ou cartão de crédito."
+        description="Acompanhe o período de teste, os limites do plano e o histórico de pagamentos. A cobrança é processada pelo Pagar.me ou pela InfinitePay via Pix ou cartão de crédito."
         actions={
           <>
             <Link href="/painel/equipe" className={buttonSecondary}>
@@ -116,7 +116,13 @@ export default async function PlanPage({
           value={plan?.name ?? "Sem plano"}
           hint={
             subscription
-              ? `${subscription.billingCycle === "YEARLY" ? "Anual" : "Mensal"} · ${subscription.provider === "PAGARME" ? "Pagar.me" : "cobrança manual"}`
+              ? `${subscription.billingCycle === "YEARLY" ? "Anual" : "Mensal"} · ${
+                  subscription.provider === "PAGARME"
+                    ? "Pagar.me"
+                    : subscription.provider === "INFINITEPAY"
+                      ? "InfinitePay"
+                      : "cobrança manual"
+                }`
               : "Escolha um plano para começar"
           }
           accent

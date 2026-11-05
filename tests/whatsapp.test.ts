@@ -11,8 +11,11 @@ const context = {
   customerName: "Ana Paula Souza",
   customerPhone: "5561988887777",
   serviceName: "Corte premium",
+  serviceDuration: 45,
+  servicePrice: 120,
   professionalName: "Bruno",
   startAt: new Date("2026-10-28T15:30:00.000Z"),
+  endAt: new Date("2026-10-28T16:15:00.000Z"),
   timezone: "America/Sao_Paulo",
   protocol: "CP-ABC123",
   establishmentName: "Barbearia Nobre",
@@ -28,22 +31,14 @@ describe("whatsapp", () => {
 
   it("monta mensagem padrão com os dados do agendamento", () => {
     const message = appointmentMessage(context);
-    expect(message).toContain("Olá, Ana!");
+    expect(message).toContain("Olá! Tudo bem?");
+    expect(message).toContain("Gostaria de falar sobre meu agendamento na *Barbearia Nobre*.");
     expect(message).toContain("Corte premium");
     expect(message).toContain("28/10/2026 às 12:30");
+    expect(message).toContain("12:30 às 13:15");
     expect(message).toContain("CP-ABC123");
     expect(message).toContain("Rua das Palmeiras, 100");
-  });
-
-  it("usa modelo personalizado e substitui variáveis", () => {
-    const message = appointmentMessage({
-      ...context,
-      customTemplate:
-        "Oi {primeiro_nome}, seu {servico} com {profissional} é {data}. Protocolo {protocolo}. {variavel_inexistente}",
-    });
-    expect(message).toBe(
-      "Oi Ana, seu Corte premium com Bruno é 28/10/2026 às 12:30. Protocolo CP-ABC123. {variavel_inexistente}",
-    );
+    expect(message).toMatch(/R\$\s120,00/);
   });
 
   it("mantém placeholders desconhecidos", () => {
@@ -53,10 +48,22 @@ describe("whatsapp", () => {
   });
 
   it("cria mensagem de contato com e sem protocolo", () => {
-    expect(customerContactMessage("Barbearia Nobre", "CP-ABC123")).toContain("CP-ABC123");
-    expect(customerContactMessage("Barbearia Nobre")).toContain(
-      "página de agendamento da Barbearia Nobre",
+    expect(customerContactMessage("Barbearia Nobre", "CP-ABC123")).toContain(
+      "Gostaria de falar sobre meu agendamento na *Barbearia Nobre*.",
     );
+    expect(customerContactMessage("Barbearia Nobre")).toContain(
+      "página de agendamento da *Barbearia Nobre*",
+    );
+  });
+
+  it("usa modelo personalizado na mensagem do cliente", () => {
+    expect(
+      customerContactMessage(
+        "Barbearia Nobre",
+        "CP-ABC123",
+        "Oi! Quero falar sobre o protocolo {protocolo} da *{estabelecimento}*.",
+      ),
+    ).toBe("Oi! Quero falar sobre o protocolo CP-ABC123 da *Barbearia Nobre*.");
   });
 
   it("monta o resumo da solicitação enviado pelo checkout", () => {

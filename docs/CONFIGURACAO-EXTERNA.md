@@ -1,6 +1,6 @@
 # Configuração externa
 
-O AgendamentoON funciona localmente com PostgreSQL e as chaves do Pagar.me para liberar o checkout. E-mail, webhook genérico e cron de lembretes são opcionais e ficam desativados com segurança quando não configurados. A URL pública e o WhatsApp de suporte são configuráveis.
+O AgendamentoON funciona localmente com PostgreSQL e as chaves do Pagar.me ou da InfinitePay para liberar o checkout. E-mail, webhook genérico e cron de lembretes são opcionais e ficam desativados com segurança quando não configurados. A URL pública e o WhatsApp de suporte são configuráveis.
 
 ## Variáveis de ambiente
 
@@ -15,6 +15,8 @@ O AgendamentoON funciona localmente com PostgreSQL e as chaves do Pagar.me para 
 | `PAGARME_SECRET_KEY` | Sim para cobrança | Servidor | Chave secreta da API Pagar.me (Core v5) |
 | `NEXT_PUBLIC_PAGARME_PUBLIC_KEY` | Sim para cobrança | Público | Chave pública usada para tokenizar o cartão no navegador |
 | `PAGARME_WEBHOOK_SECRET` | Sim para cobrança | Servidor | Segredo HMAC do webhook do Pagar.me |
+| `INFINITEPAY_HANDLE` | Opcional | Servidor | InfiniteTag da conta, sem `$`, usada nos links e no `payment_check` |
+| `INFINITEPAY_API_KEY` | Opcional | Servidor | Chave `inchk_...` do Checkout Integrado; habilita opções avançadas do link |
 | `PAYMENTS_DEV_BYPASS` | Opcional | Servidor | `true` libera o painel sem cobrança apenas fora de produção |
 | `CRON_SECRET` | Opcional | Servidor | Segredo que protege a rota de cron de lembretes |
 | `SEED_ADMIN_EMAIL` | Opcional | Seed | E-mail do superadmin de demonstração |
@@ -95,6 +97,35 @@ Endpoint: `POST /api/webhooks/pagarme`.
 - Idempotência por `eventId` e `providerPaymentId`.
 - Sem o segredo, responde `503`; assinatura inválida responde `401`.
 - Eventos de pagamento pago ativam a assinatura; falha ou reembolso marcam `PAST_DUE`; cancelamento encerra a assinatura.
+
+## InfinitePay
+
+O checkout integrado usa a API `https://api.checkout.infinitepay.io`.
+
+Pré-requisitos na conta InfinitePay:
+
+1. Ativar o **Checkout Integrado** em `app.infinitepay.io/external-checkout` (sem isso a API responde `external_checkout_not_enabled`).
+2. Copiar a **InfiniteTag** da conta, sem o `$` do início, para `INFINITEPAY_HANDLE`.
+3. Opcionalmente, criar uma **API Key** `inchk_...` em Configurações do Checkout e salvar em `INFINITEPAY_API_KEY`. Sem ela o link continua funcionando, mas não recebe `options` como validade e pagamento único.
+
+O fluxo é de pagamento avulso, não de assinatura recorrente:
+
+| Etapa | Comportamento |
+| --- | --- |
+| Link | `POST /links` com `order_nsu`, `items`, `redirect_url`, `webhook` e dados opcionais do comprador |
+| Checkout | O cliente paga com Pix ou cartão na página hospedada da InfinitePay |
+| Confirmação | Webhook `POST /api/webhooks/infinitepay` e/ou `POST /payment_check` |
+| Liberação | O pagamento é marcado como `PAID` e a assinatura fica `ACTIVE` pelo primeiro período |
+
+Limitações da InfinitePay neste produto:
+
+- não existe sandbox; para testar é preciso uma compra real de no mínimo R$ 1,00 e, se quiser, estornar depois;
+- não há cobrança recorrente, split, subcontas ou armazenamento de cartão;
+- o checkout não pode ser embutido em iframe nem personalizado;
+- o webhook não tem assinatura, por isso todo evento `paid` é revalidado em `POST /payment_check` antes de liberar o painel;
+- a confirmação exige `order_nsu`, `transaction_nsu` e `invoice_slug`/`slug`, recebidos no webhook e no retorno.
+
+O retorno do cliente acontece em `/checkout/retorno`, que também consulta o `payment_check` e mostra o status do pedido.
 
 ## Webhook genérico de pagamentos
 
@@ -208,6 +239,7 @@ Não há APM ou serviço de erro integrado. Os logs ficam disponíveis na plataf
 - [ ] `RESEND_API_KEY` e `EMAIL_FROM` configurados se o e-mail for usado.
 - [ ] `PAYMENT_WEBHOOK_SECRET` configurado se houver provedor genérico.
 - [ ] Chaves do Pagar.me configuradas e webhook apontando para `/api/webhooks/pagarme`.
+- [ ] `INFINITEPAY_HANDLE`/`INFINITEPAY_API_KEY` configuradas e webhook da InfinitePay apontando para `/api/webhooks/infinitepay`.
 - [ ] `CRON_SECRET` configurado e cron agendado.
 - [ ] Senhas de seed alteradas ou seed não executado em produção.
 - [ ] Backup do banco configurado.

@@ -11,15 +11,18 @@ interface MessageContext {
   customerName: string;
   customerPhone: string;
   serviceName: string;
+  serviceDuration: number;
+  servicePrice: unknown;
   professionalName: string;
   startAt: Date;
+  endAt: Date;
   timezone: string;
   protocol: string;
   establishmentName: string;
   address?: string | null;
   policy?: string | null;
-  customTemplate?: string | null;
 }
+
 
 export function renderTemplate(template: string, values: Record<string, string>): string {
   return template.replace(/\{(\w+)\}/g, (match, key: string) => values[key] ?? match);
@@ -38,15 +41,23 @@ export function renderMessage(template: string, values: Record<string, string>):
 }
 
 export const DEFAULT_WHATSAPP_MESSAGE = [
-  "Olá, {primeiro_nome}! Seu horário na {estabelecimento} está reservado.",
+  "Olá! Tudo bem? 😊",
   "",
-  "Serviço: {servico}",
-  "Profissional: {profissional}",
-  "Data: {data}",
-  "Endereço: {endereco}",
-  "Protocolo: {protocolo}",
+  "Gostaria de falar sobre meu agendamento na *{estabelecimento}*.",
   "",
-  "Qualquer dúvida, é só responder esta mensagem.",
+  "📋 *Código:* {protocolo}",
+  "",
+  "👤 *Cliente:* {cliente}",
+  "",
+  "💆 *Serviço:* {servico}",
+  "⏱️ *Duração:* {duracao} minutos",
+  "💰 *Valor:* {valor}",
+  "",
+  "📅 *Data:* {data}",
+  "🕘 *Horário:* {hora} às {hora_fim}",
+  "",
+  "👩 *Profissional:* {profissional}",
+  "📍 *Local:* {endereco}",
 ].join("\n");
 
 export function appointmentMessage(context: MessageContext): string {
@@ -55,27 +66,50 @@ export function appointmentMessage(context: MessageContext): string {
     cliente: context.customerName,
     primeiro_nome: context.greetingName ?? context.customerName.split(" ")[0],
     servico: context.serviceName,
+    duracao: String(context.serviceDuration),
+    valor: formatCurrency(context.servicePrice),
     profissional: context.professionalName,
     data: date,
     hora: formatDateTimeInZone(context.startAt, context.timezone, "HH:mm"),
+    hora_fim: formatDateTimeInZone(context.endAt, context.timezone, "HH:mm"),
     protocolo: context.protocol,
     estabelecimento: context.establishmentName,
     endereco: context.address ?? "",
     politica: context.policy ?? "",
   };
 
-  const template = context.customTemplate?.trim() || DEFAULT_WHATSAPP_MESSAGE;
-
-  return renderMessage(template, values);
+  return renderMessage(DEFAULT_WHATSAPP_MESSAGE, values);
 }
+
+export const DEFAULT_CUSTOMER_CONTACT_MESSAGE = [
+  "Olá! Tudo bem? 😊",
+  "",
+  "Gostaria de falar sobre meu agendamento na *{estabelecimento}*.",
+  "",
+  "Poderia me ajudar com algumas informações, por favor?",
+  "",
+  "Obrigado(a)!",
+].join("\n");
+
+export const DEFAULT_CUSTOMER_INQUIRY_MESSAGE = [
+  "Olá! Tudo bem? 😊",
+  "",
+  "Vim pela página de agendamento da *{estabelecimento}* e gostaria de mais informações.",
+].join("\n");
 
 export function customerContactMessage(
   establishmentName: string,
   protocol?: string,
+  customTemplate?: string | null,
 ): string {
-  return protocol
-    ? `Olá! Gostaria de falar sobre o agendamento ${protocol} na ${establishmentName}.`
-    : `Olá! Vim pela página de agendamento da ${establishmentName} e gostaria de mais informações.`;
+  const template =
+    (protocol ? customTemplate?.trim() : "") ||
+    (protocol ? DEFAULT_CUSTOMER_CONTACT_MESSAGE : DEFAULT_CUSTOMER_INQUIRY_MESSAGE);
+
+  return renderMessage(template, {
+    estabelecimento: establishmentName,
+    protocolo: protocol ?? "",
+  });
 }
 
 export type PaymentPreference = "card" | "pix" | "undecided";

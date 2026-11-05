@@ -99,6 +99,7 @@ export default async function ConfirmationPage({
       address: true,
       cancellationPolicy: true,
       cancellationNoticeHours: true,
+      customerContactMessage: true,
       timezone: true,
       branding: true,
     },
@@ -142,7 +143,11 @@ export default async function ConfirmationPage({
               <a
                 href={buildWhatsAppLink(
                   establishment.whatsapp,
-                  customerContactMessage(establishment.name, protocolo),
+                  customerContactMessage(
+                    establishment.name,
+                    protocolo,
+                    establishment.customerContactMessage,
+                  ),
                 )}
                 target="_blank"
                 rel="noreferrer"
@@ -163,7 +168,11 @@ export default async function ConfirmationPage({
   const isPending = appointment.status === "PENDING";
   const whatsappUrl = buildWhatsAppLink(
     appointment.establishment.whatsapp,
-    customerContactMessage(appointment.establishment.name, appointment.publicCode),
+    customerContactMessage(
+      appointment.establishment.name,
+      appointment.publicCode,
+      establishment.customerContactMessage,
+    ),
   );
 
   return (

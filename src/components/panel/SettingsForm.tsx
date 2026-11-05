@@ -15,7 +15,10 @@ import { updateSettingsAction } from "@/lib/actions/settings";
 import { SEGMENTS } from "@/lib/constants";
 import { formatPhone, maskPhoneInput } from "@/lib/format";
 import { prepareImageDataUrl } from "@/lib/image-file";
-import { DEFAULT_WHATSAPP_MESSAGE, renderMessage } from "@/lib/whatsapp";
+import {
+  DEFAULT_CUSTOMER_CONTACT_MESSAGE,
+  renderMessage,
+} from "@/lib/whatsapp";
 
 export type SettingsValues = {
   name: string;
@@ -38,7 +41,7 @@ export type SettingsValues = {
   defaultServiceMin: number;
   slotIntervalMinutes: number;
   cancellationPolicy: string;
-  whatsappMessage: string;
+  customerContactMessage: string;
 };
 
 const commonTimezones = [
@@ -56,8 +59,8 @@ export function SettingsForm({ establishment }: { establishment: SettingsValues 
   const [state, formAction] = useActionState(updateSettingsAction, initialActionState);
   const [phone, setPhone] = useState(formatPhone(establishment.phone));
   const [whatsapp, setWhatsapp] = useState(formatPhone(establishment.whatsapp));
-  const [whatsappTemplate, setWhatsappTemplate] = useState(
-    establishment.whatsappMessage.trim() || DEFAULT_WHATSAPP_MESSAGE,
+  const [customerTemplate, setCustomerTemplate] = useState(
+    establishment.customerContactMessage.trim() || DEFAULT_CUSTOMER_CONTACT_MESSAGE,
   );
   const [logo, setLogo] = useState(establishment.logoUrl);
   const [logoError, setLogoError] = useState<string | null>(null);
@@ -87,21 +90,11 @@ export function SettingsForm({ establishment }: { establishment: SettingsValues 
     if (logoInputRef.current) logoInputRef.current.value = "";
   }
 
-  const messagePreview = renderMessage(
-    whatsappTemplate.trim() || DEFAULT_WHATSAPP_MESSAGE,
+  const customerMessagePreview = renderMessage(
+    customerTemplate.trim() || DEFAULT_CUSTOMER_CONTACT_MESSAGE,
     {
-      primeiro_nome: "Ana",
-      cliente: "Ana Souza",
-      servico: "Corte feminino",
-      profissional: "Bruno",
-      data: "28/10/2026 às 15:30",
-      hora: "15:30",
-      protocolo: "AG-7F3K2",
       estabelecimento: establishment.name,
-      endereco: establishment.address || "Rua das Palmeiras, 100",
-      politica:
-        establishment.cancellationPolicy ||
-        "Cancelamentos com até 4 horas de antecedência.",
+      protocolo: "AG-7F3K2",
     },
   );
 
@@ -471,22 +464,22 @@ export function SettingsForm({ establishment }: { establishment: SettingsValues 
       </div>
 
       <div
-        id="mensagens"
+        id="mensagem-cliente"
         className="scroll-mt-24 rounded-xl border border-line bg-paper/60 p-4"
       >
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h3 className="text-sm font-semibold text-ink">
-              Mensagem enviada ao cliente
+              Mensagem do cliente no WhatsApp
             </h3>
             <p className="mt-1 max-w-xl text-[11px] leading-relaxed text-slate-500">
-              Texto padrão usado nos botões de WhatsApp ao compartilhar um agendamento. Você
-              pode adaptar o tom e incluir as informações que fizerem sentido.
+              Texto usado quando o cliente toca em “Enviar no WhatsApp” na confirmação do
+              agendamento. Deixe em branco para usar o padrão do sistema.
             </p>
           </div>
           <button
             type="button"
-            onClick={() => setWhatsappTemplate(DEFAULT_WHATSAPP_MESSAGE)}
+            onClick={() => setCustomerTemplate(DEFAULT_CUSTOMER_CONTACT_MESSAGE)}
             className={buttonSmall}
           >
             Restaurar padrão
@@ -494,24 +487,23 @@ export function SettingsForm({ establishment }: { establishment: SettingsValues 
         </div>
 
         <div className="mt-4">
-          <label className={labelClass} htmlFor="settings-whatsapp-message">
+          <label className={labelClass} htmlFor="settings-customer-contact-message">
             Modelo da mensagem
           </label>
           <textarea
-            id="settings-whatsapp-message"
-            name="whatsappMessage"
-            rows={7}
+            id="settings-customer-contact-message"
+            name="customerContactMessage"
+            rows={6}
             maxLength={1000}
-            value={whatsappTemplate}
-            onChange={(event) => setWhatsappTemplate(event.target.value)}
+            value={customerTemplate}
+            onChange={(event) => setCustomerTemplate(event.target.value)}
             className={`${inputClass} font-mono text-xs`}
           />
           <p className="mt-1 text-[11px] leading-relaxed text-slate-500">
-            Variáveis: {"{primeiro_nome}"}, {"{cliente}"}, {"{servico}"}, {"{profissional}"},{" "}
-            {"{data}"}, {"{hora}"}, {"{protocolo}"}, {"{estabelecimento}"}, {"{endereco}"} e{" "}
-            {"{politica}"}. Linhas com valor vazio são removidas automaticamente.
+            Variáveis: {"{estabelecimento}"} e {"{protocolo}"}. A mensagem do cliente é
+            enviada para o WhatsApp do estabelecimento.
           </p>
-          <FieldError messages={state.fieldErrors?.whatsappMessage} />
+          <FieldError messages={state.fieldErrors?.customerContactMessage} />
         </div>
 
         <div className="mt-4 rounded-lg border border-line bg-white p-3">
@@ -519,7 +511,7 @@ export function SettingsForm({ establishment }: { establishment: SettingsValues 
             Prévia
           </p>
           <pre className="mt-2 whitespace-pre-wrap break-words font-sans text-[11px] leading-relaxed text-slate-600">
-            {messagePreview}
+            {customerMessagePreview}
           </pre>
         </div>
       </div>

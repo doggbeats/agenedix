@@ -155,7 +155,6 @@ describe("validation", () => {
       defaultServiceMin: "30",
       slotIntervalMinutes: "15",
       cancellationPolicy: "",
-      whatsappMessage: "",
     };
     expect(
       establishmentSettingsSchema.safeParse({

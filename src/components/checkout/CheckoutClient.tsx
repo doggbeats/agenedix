@@ -15,12 +15,14 @@ import {
   RefreshCw,
   ShieldCheck,
   Sparkles,
+  Wallet,
 } from "lucide-react";
 import { Alert, inputClass, labelClass } from "@/components/ui";
 import {
   confirmPlanChangeAction,
   devActivateTrialAction,
   startCardTrialAction,
+  startInfinitePayPaymentAction,
   startPixPaymentAction,
   type CheckoutState,
 } from "@/lib/actions/checkout";
@@ -51,7 +53,7 @@ export type PixData = {
   amount: number;
 };
 
-type Method = "whatsapp" | "card" | "pix";
+type Method = "whatsapp" | "card" | "pix" | "infinitepay";
 
 const whatsappPreferences = [
   { value: "card", label: "Cartão" },
@@ -112,6 +114,7 @@ export function CheckoutClient({
   supportWhatsApp,
   configured,
   publicKey,
+  infinitePayConfigured,
   devBypass,
   pendingPix,
 }: {
@@ -125,12 +128,16 @@ export function CheckoutClient({
   supportWhatsApp: string;
   configured: boolean;
   publicKey: string;
+  infinitePayConfigured: boolean;
   devBypass: boolean;
   pendingPix: PixData | null;
 }) {
   const router = useRouter();
+  const onlineConfigured = configured || infinitePayConfigured;
   const [planSlug, setPlanSlug] = useState(initialPlanSlug ?? plans[0]?.slug ?? "");
-  const [method, setMethod] = useState<Method>(configured ? "card" : "whatsapp");
+  const [method, setMethod] = useState<Method>(
+    configured ? "card" : infinitePayConfigured ? "infinitepay" : "whatsapp",
+  );
   const [whatsappPreference, setWhatsappPreference] =
     useState<PaymentPreference>("card");
   const [dismissedPixId, setDismissedPixId] = useState<string | null>(null);
@@ -160,6 +167,10 @@ export function CheckoutClient({
     startPixPaymentAction,
     initialState,
   );
+  const [infinitePayState, infinitePayDispatch, infinitePayPending] = useActionState(
+    startInfinitePayPaymentAction,
+    initialState,
+  );
   const [changeState, changeDispatch, changePending] = useActionState(
     confirmPlanChangeAction,
     initialState,
@@ -180,9 +191,15 @@ export function CheckoutClient({
     return () => window.clearInterval(timer);
   }, [pix, router]);
 
+  useEffect(() => {
+    const url = infinitePayState.infinitePay?.url;
+    if (url) window.location.assign(url);
+  }, [infinitePayState.infinitePay?.url]);
+
   const price = selectedPlan?.priceMonthly ?? 0;
-  const busy = cardPending || pixPending || tokenizing;
-  const state = method === "card" ? cardState : pixState;
+  const busy = cardPending || pixPending || infinitePayPending || tokenizing;
+  const state =
+    method === "card" ? cardState : method === "pix" ? pixState : infinitePayState;
 
   const methodOptions: Array<{
     value: Method;
@@ -196,7 +213,18 @@ export function CheckoutClient({
           { value: "pix", label: "Pix", icon: QrCode },
         ] as const)
       : []),
+    ...(infinitePayConfigured
+      ? ([{ value: "infinitepay", label: "InfinitePay", icon: Wallet }] as const)
+      : []),
   ];
+  const methodGridClass =
+    methodOptions.length >= 4
+      ? "sm:grid-cols-2 lg:grid-cols-4"
+      : methodOptions.length === 3
+        ? "sm:grid-cols-3"
+        : methodOptions.length === 2
+          ? "sm:grid-cols-2"
+          : "";
 
   const whatsappPreferenceLabel =
     whatsappPreference === "card"
@@ -232,6 +260,11 @@ export function CheckoutClient({
     const formData = new FormData(form);
     formData.set("planSlug", selectedPlan.slug);
     formData.set("cycle", "MONTHLY");
+
+    if (method === "infinitepay") {
+      infinitePayDispatch(formData);
+      return;
+    }
 
     if (method === "card") {
       if (!configured) return;
@@ -289,13 +322,13 @@ export function CheckoutClient({
           <p className="mt-2 max-w-xl text-sm leading-relaxed text-slate-600">
             {mode === "change"
               ? "A troca vale imediatamente e o novo valor entra na próxima renovação."
-              : configured
+              : onlineConfigured
                 ? `Escolha como pagar para liberar o painel de ${establishmentName}. Sem fidelidade e com cancelamento a qualquer momento.`
                 : `Escolha o plano e conclua a contratação pelo WhatsApp. Sem fidelidade e com cancelamento a qualquer momento.`}
           </p>
         </div>
 
-        {!configured && (
+        {!onlineConfigured && (
           <div className="mb-5">
             <Alert tone="warning">
               O pagamento online está indisponível neste ambiente. Você pode concluir a
@@ -465,11 +498,7 @@ export function CheckoutClient({
           <section className="mt-5 rounded-2xl border border-line bg-white p-4 shadow-sm sm:p-5">
             <h2 className="text-sm font-semibold text-ink">2. Forma de pagamento</h2>
 
-            <div
-              className={`mt-3 grid gap-2 ${
-                methodOptions.length > 1 ? "sm:grid-cols-3" : ""
-              }`}
-            >
+            <div className={`mt-3 grid gap-2 ${methodGridClass}`}>
               {methodOptions.map((option) => {
                 const Icon = option.icon;
                 const active = method === option.value;
@@ -550,13 +579,58 @@ export function CheckoutClient({
                   </div>
                 )}
 
-                {!configured && (
+                {!onlineConfigured && (
                   <p className="mt-2 text-[10px] leading-relaxed text-slate-500">
                     O pagamento online está indisponível neste ambiente; a contratação é
                     concluída manualmente pelo suporte.
                   </p>
                 )}
               </div>
+            ) : method === "infinitepay" ? (
+              <form onSubmit={handleSubmit}>
+                <div className="mt-4 rounded-xl border border-line bg-paper p-3.5">
+                  <p className="text-[11px] font-semibold text-ink">
+                    Pagamento único pelo checkout da InfinitePay
+                  </p>
+                  <p className="mt-1 text-[11px] leading-relaxed text-slate-600">
+                    Você será redirecionado para uma página segura da InfinitePay e poderá
+                    pagar com Pix ou cartão de crédito. O painel é liberado automaticamente
+                    após a confirmação.
+                  </p>
+                  <ul className="mt-2 space-y-1 text-[10px] leading-relaxed text-slate-500">
+                    <li>• O valor cobre o primeiro período do plano escolhido.</li>
+                    <li>• A InfinitePay não faz cobrança recorrente; a renovação é manual.</li>
+                    <li>• Nenhum dado de cartão passa pelo AgendamentoON.</li>
+                  </ul>
+                </div>
+
+                {infinitePayState.error && (
+                  <div className="mt-3">
+                    <Alert tone="error">{infinitePayState.error}</Alert>
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={busy || !selectedPlan}
+                  className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-ink px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {infinitePayPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Wallet className="h-4 w-4" />
+                  )}
+                  {infinitePayPending
+                    ? "Gerando pagamento..."
+                    : `Pagar com InfinitePay · ${formatCurrency(price)}`}
+                </button>
+
+                <p className="mt-2.5 flex items-start gap-1.5 text-[10px] leading-relaxed text-slate-500">
+                  <ShieldCheck className="mt-0.5 h-3 w-3 shrink-0 text-emerald-600" />
+                  Pagamento processado pela InfinitePay. Você poderá voltar ao painel depois
+                  de concluir.
+                </p>
+              </form>
             ) : (
               <form onSubmit={handleSubmit}>
                 {method === "card" && (
@@ -827,6 +901,12 @@ export function CheckoutClient({
                 {whatsappPreferenceLabel}. O suporte confirma os dados e envia as instruções de
                 pagamento.
               </>
+            ) : method === "infinitepay" ? (
+              <>
+                <strong className="text-ink">Pagamento único agora.</strong> Você será
+                redirecionado ao checkout da InfinitePay para pagar com Pix ou cartão. O
+                painel é liberado após a confirmação.
+              </>
             ) : method === "card" ? (
               <>
                 <strong className="text-ink">Hoje você não paga nada.</strong> O teste de{" "}
@@ -847,7 +927,9 @@ export function CheckoutClient({
               ? "Alteração processada pelo Pagar.me"
               : method === "whatsapp"
                 ? "Contratação e pagamento combinados pelo WhatsApp"
-                : "Pagamento processado pelo Pagar.me"}
+                : method === "infinitepay"
+                  ? "Pagamento processado pela InfinitePay"
+                  : "Pagamento processado pelo Pagar.me"}
           </p>
         </div>
       </aside>
