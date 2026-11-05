@@ -126,30 +126,6 @@ const plans: PlanSeed[] = [
     highlight: false,
     isDemo: false,
   },
-  {
-    id: "plan-premium",
-    slug: "premium",
-    name: "Premium",
-    description: "Para redes e operações que precisam de escala e personalização.",
-    priceMonthly: 189.9,
-    priceYearly: 1899,
-    maxProfessionals: 20,
-    maxServices: 200,
-    maxUnits: 5,
-    maxUsers: 20,
-    maxAppointmentsMonth: null,
-    trialDays: 7,
-    features: [
-      "20 profissionais ativos",
-      "200 serviços cadastrados",
-      "Múltiplas cores e identidade visual",
-      "Relatórios completos",
-      "Suporte prioritário AgendamentoON",
-    ],
-    sortOrder: 4,
-    highlight: false,
-    isDemo: false,
-  },
 ];
 
 async function seedPlans() {
@@ -195,6 +171,10 @@ async function seedPlans() {
       },
     });
   }
+  await prisma.subscriptionPlan.updateMany({
+    where: { slug: "premium" },
+    data: { active: false },
+  });
 }
 
 async function seedUser(input: {

@@ -98,7 +98,7 @@ A constraint `Appointment_professional_no_overlap` impede que dois agendamentos 
 
 O seed padrão cria:
 
-- os quatro planos (`Essencial`, `Profissional`, `Equipe`, `Premium`) com os valores e limites atuais;
+- os três planos (`Essencial`, `Profissional`, `Equipe`) com os valores e limites atuais;
 - a **Barbearia Nobre** com branding, unidade padrão, assinatura ativa, serviços, profissionais e agendamentos de exemplo;
 - os acessos de `OWNER`, `ADMIN` e `PROFESSIONAL` da Barbearia Nobre.
 

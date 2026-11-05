@@ -28,8 +28,6 @@ O isolamento é feito no servidor por `establishmentId` e vínculo (`Membership`
 | **Essencial** | R$ 79,90 | R$ 799,00 | 1 | 15 | 1 | 2 | 7 dias |
 | **Profissional** | R$ 109,90 | R$ 1.099,00 | 5 | 60 | 1 | 5 | 7 dias |
 | **Equipe** | R$ 139,90 | R$ 1.399,00 | 15 | 200 | 3 | 15 | 7 dias |
-| **Premium** | R$ 189,90 | R$ 1.899,00 | 20 | 200 | 5 | 20 | 7 dias |
-
 Os valores, limites e textos dos planos podem ser editados pelo superadmin em `/admin/planos`. O plano Essencial tem limite de 300 agendamentos por mês; os demais não têm limite mensal. A cobrança é processada pelo Pagar.me: no cartão, o cliente testa 7 dias e a primeira cobrança automática acontece no 8º dia; no Pix, o primeiro período é pago na hora e o acesso libera após a confirmação do webhook.
 
 ## O que está implementado

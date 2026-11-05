@@ -48,7 +48,7 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ plans }) => {
           </dl>
         </div>
 
-        <div className="mt-12 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-12 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {catalog.map((plan) => (
             <div
               key={plan.id}

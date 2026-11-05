@@ -385,25 +385,8 @@ export const PRICING_PLANS: PricingPlan[] = [
     ctaText: "Começar teste de 7 dias",
     trialDays: 7,
   },
-  {
-    id: "premium",
-    slug: "premium",
-    name: "Premium",
-    priceMonthly: 189.9,
-    priceAnnual: 158.25,
-    description: "Para redes que precisam de escala, identidade visual e personalização.",
-    features: [
-      "20 profissionais ativos",
-      "200 serviços cadastrados",
-      "Múltiplas cores e identidade visual",
-      "Relatórios completos",
-      "Suporte prioritário",
-    ],
-    ctaText: "Começar teste de 7 dias",
-    trialDays: 7,
-  },
-];
 
+];
 export const SCENARIOS: Scenario[] = [
   {
     id: "barbearia",
