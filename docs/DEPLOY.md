@@ -44,9 +44,13 @@ Não é necessário executar o seed em produção. Se quiser criar a Barbearia N
 
    As variáveis de e-mail, webhook e cron são opcionais, mas necessárias para esses recursos. Veja [CONFIGURACAO-EXTERNA.md](CONFIGURACAO-EXTERNA.md).
 
+   `RESEND_API_KEY` e `EMAIL_FROM` são obrigatórios para o cadastro: contas novas só liberam o painel depois de confirmar o e-mail pelo link. Sem a chave, o link não é enviado em produção.
+
 6. Faça o deploy.
 
 A migração é intencionalmente separada do build. Isso evita que um build de preview altere o banco de produção. Execute `prisma migrate deploy` no ambiente correto antes de publicar uma versão que dependa de mudanças de schema.
+
+> A migração `20261106150000_email_verification_gate` adiciona `User.emailVerificationExempt` e marca as contas existentes como isentas. Aplique-a antes de publicar o código que exige confirmação de e-mail para contas novas.
 
 ## 3. Cron de lembretes
 

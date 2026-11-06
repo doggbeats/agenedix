@@ -27,8 +27,8 @@ export function ManualPaymentForm({ establishments }: { establishments: ManualPa
   if (establishments.length === 0) {
     return (
       <Alert tone="warning">
-        Nenhum estabelecimento com assinatura vinculada. Crie a assinatura em
-        Estabelecimentos antes de registrar pagamentos.
+        Nenhum estabelecimento com assinatura vinculada. Crie a assinatura em Clientes
+        antes de registrar pagamentos.
       </Alert>
     );
   }

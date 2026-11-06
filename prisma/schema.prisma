@@ -176,6 +176,7 @@ model User {
   isPlatformAdmin Boolean       @default(false)
   platformRole    PlatformRole?
   emailVerifiedAt DateTime?     @db.Timestamptz(3)
+  emailVerificationExempt Boolean @default(false)
   lastLoginAt     DateTime?     @db.Timestamptz(3)
   createdAt       DateTime      @default(now()) @db.Timestamptz(3)
   updatedAt       DateTime      @updatedAt @db.Timestamptz(3)

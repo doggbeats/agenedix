@@ -2,6 +2,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getAuthContext } from "@/lib/auth/session";
+import { isPlatformAdminUser } from "@/lib/auth/platform-admin";
+import { requiresEmailVerification } from "@/lib/auth/email-verification";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { AuthShell } from "@/components/auth/AuthShell";
 import { Alert } from "@/components/ui";
@@ -16,6 +18,10 @@ export default async function LoginPage({
   searchParams: Promise<{ erro?: string; next?: string }>;
 }) {
   const auth = await getAuthContext();
+  if (auth && isPlatformAdminUser(auth.user)) redirect("/admin");
+  if (auth && requiresEmailVerification(auth.user)) {
+    redirect("/verificar-email/pendente");
+  }
   if (auth?.activeMembership) redirect("/painel");
 
   const { erro, next } = await searchParams;

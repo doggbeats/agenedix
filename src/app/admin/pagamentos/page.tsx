@@ -146,8 +146,8 @@ export default async function AdminPaymentsPage({
         title="Pagamentos"
         description="Registre pagamentos recebidos fora da plataforma e acompanhe o histórico financeiro das assinaturas."
         actions={
-          <Link href="/admin/estabelecimentos" className={buttonSecondary}>
-            Gerenciar assinaturas
+          <Link href="/admin/clientes" className={buttonSecondary}>
+            Gerenciar clientes
           </Link>
         }
       />
@@ -250,7 +250,12 @@ export default async function AdminPaymentsPage({
                 {payments.map((payment) => (
                   <tr key={payment.id}>
                     <td className="px-4 py-3 sm:px-5">
-                      <p className="font-semibold text-ink">{payment.establishment.name}</p>
+                      <Link
+                        href={`/admin/clientes/${payment.establishment.id}`}
+                        className="font-semibold text-ink hover:text-brand"
+                      >
+                        {payment.establishment.name}
+                      </Link>
                       <p className="font-mono text-[10px] text-slate-500">
                         /agendar/{payment.establishment.slug}
                       </p>

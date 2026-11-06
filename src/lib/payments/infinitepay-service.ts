@@ -57,7 +57,20 @@ export async function confirmInfinitePayPayment(input: {
     slug: input.slug,
   });
 
-  if (!check.paid) {
+  if (!check.success || !check.paid) {
+    return { status: "PENDING", paymentId: payment.id };
+  }
+
+  // Nunca ativa uma assinatura por um valor menor que o contratado. Se a
+  // InfinitePay não informar o valor pago, mantém pendente para conferência.
+  const expectedCents = Math.round(Number(payment.amount) * 100);
+  const paidCents = check.paidAmountCents ?? check.amountCents;
+  if (paidCents === null || paidCents < expectedCents) {
+    console.warn("InfinitePay: valor divergente", {
+      orderNsu: input.orderNsu,
+      expectedCents,
+      paidCents,
+    });
     return { status: "PENDING", paymentId: payment.id };
   }
 
@@ -146,6 +159,36 @@ export async function markInfinitePayPaymentFailure(input: {
   if (!payment || payment.provider !== "INFINITEPAY") return null;
   if (payment.status === input.kind) {
     return { status: payment.status, paymentId: payment.id };
+  }
+
+  // A InfinitePay não assina o webhook. Um evento forjado de falha não pode
+  // derrubar uma assinatura que já foi paga; só um estorno (REFUNDED) pode
+  // rebaixar um pagamento aprovado, e apenas após revalidação na InfinitePay.
+  if (payment.status === "PAID" && input.kind !== "REFUNDED") {
+    return { status: payment.status, paymentId: payment.id };
+  }
+
+  if (input.kind === "REFUNDED") {
+    if (payment.status !== "PAID") {
+      return { status: payment.status, paymentId: payment.id };
+    }
+    if (!input.transactionNsu || !input.slug) {
+      return { status: payment.status, paymentId: payment.id };
+    }
+    try {
+      const check = await checkInfinitePayPayment({
+        orderNsu: input.orderNsu,
+        transactionNsu: input.transactionNsu,
+        slug: input.slug,
+      });
+      // Se a InfinitePay ainda considera o pagamento aprovado, ignora o evento.
+      if (!check.success || check.paid) {
+        return { status: payment.status, paymentId: payment.id };
+      }
+    } catch (error) {
+      console.error("InfinitePay: não foi possível revalidar estorno", error);
+      return { status: payment.status, paymentId: payment.id };
+    }
   }
 
   const notes =

@@ -60,8 +60,13 @@ Os valores, limites e textos dos planos podem ser editados pelo superadmin em `/
 
 ### Administração da plataforma
 
+- Acesso ao `/admin` restrito aos e-mails definidos em `PLATFORM_ADMIN_EMAILS` (padrão `admin.1973@agendix.app,admin@agendix.app`), além da marcação `isPlatformAdmin`. A conta de administrador entra no `/admin` sem precisar confirmar o e-mail. Donos de estabelecimento continuam acessando apenas o próprio `/painel`.
+- Modo administrador: pela ficha do cliente, o admin abre o painel do estabelecimento como se fosse o dono, com faixa de aviso e retorno direto ao `/admin`. O acesso e a saída ficam registrados na auditoria.
+- Apagar cliente: arquiva o estabelecimento, remove das listas e do diretório público e bloqueia o painel dos vínculos. Em `/admin/estabelecimentos?status=archived` é possível restaurar ou excluir definitivamente (com confirmação pelo nome).
+- Clientes com busca, filtros por situação e ficha completa do estabelecimento.
+- Ficha do cliente com contato, responsável, assinatura, uso do plano, equipe, pagamentos e auditoria.
 - Estabelecimentos com status, assinatura e acesso rápido à página pública.
-- Planos com criação, edição, ativação e limites.
+- Planos com criação, edição, ativação e limites de profissionais, serviços, unidades, acessos e agendamentos.
 - Pagamentos manuais para exceções, com ativação e extensão de período.
 - Webhook do Pagar.me com assinatura HMAC, idempotência e ativação de assinatura.
 - Webhook genérico de pagamentos com assinatura HMAC, idempotência e ativação de assinatura.
@@ -105,6 +110,7 @@ Os valores, limites e textos dos planos podem ser editados pelo superadmin em `/
 | Onboarding | `/painel/onboarding` |
 | Configurações | `/painel/configuracoes` |
 | Administração | `/admin` |
+| Clientes | `/admin/clientes`, `/admin/clientes/[id]` |
 | Estabelecimentos | `/admin/estabelecimentos` |
 | Planos | `/admin/planos` |
 | Pagamentos | `/admin/pagamentos` |
@@ -189,7 +195,7 @@ Com `SEED_EXTRA_DEMO=true`, o seed também cria:
 
 | Perfil | E-mail |
 | --- | --- |
-| Superadmin da plataforma | `admin@agendix.app` |
+| Superadmin da plataforma | `admin.1973@agendix.app` |
 | Proprietária — Studio Aurora (teste) | `dono@studioaurora.com.br` |
 
 As senhas não são mais versionadas. Defina `SEED_ADMIN_PASSWORD`, `SEED_OWNER_PASSWORD` e `SEED_PROFESSIONAL_PASSWORD` no `.env.local` (mínimo 8 caracteres) antes de rodar o seed.
@@ -199,6 +205,8 @@ As senhas não são mais versionadas. Defina `SEED_ADMIN_PASSWORD`, `SEED_OWNER_
 ### E-mail
 
 Sem `RESEND_API_KEY`, os e-mails são registrados no log do servidor (útil em desenvolvimento). Com a chave, o envio usa a API da Resend. Configure `EMAIL_FROM` com um remetente verificado.
+
+Contas novas só liberam o painel depois de clicar no link de confirmação enviado no cadastro. Por isso, em produção, `RESEND_API_KEY` e `EMAIL_FROM` são obrigatórios: sem eles o envio fica apenas no log e a confirmação não chega. Contas criadas antes dessa regra continuam com acesso e veem um aviso para confirmar o e-mail; o admin também pode marcar o e-mail como verificado manualmente em `/admin/clientes/[id]`.
 
 ### Webhook do Pagar.me
 

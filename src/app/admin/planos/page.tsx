@@ -129,6 +129,7 @@ export default async function AdminPlansPage({
                       ) : (
                         <Badge tone="neutral">Inativo</Badge>
                       )}
+                      {plan.highlight && <Badge tone="brand">Destaque</Badge>}
                       {plan.isDemo && (
                         <Badge tone="warn">
                           <FlaskConical className="mr-1 h-3 w-3" /> Demonstração
@@ -158,6 +159,9 @@ export default async function AdminPlansPage({
                     <p className="font-semibold text-slate-700">Limites</p>
                     <p className="text-slate-500">
                       {plan.maxProfessionals} profissional(is) · {plan.maxServices} serviço(s)
+                    </p>
+                    <p className="text-slate-500">
+                      {plan.maxUnits} unidade(s) · {plan.maxUsers} acesso(s) ao painel
                     </p>
                     <p className="text-slate-500">
                       {plan.maxAppointmentsMonth
@@ -221,6 +225,8 @@ export default async function AdminPlansPage({
                             priceYearly: String(plan.priceYearly),
                             maxProfessionals: String(plan.maxProfessionals),
                             maxServices: String(plan.maxServices),
+                            maxUnits: String(plan.maxUnits),
+                            maxUsers: String(plan.maxUsers),
                             maxAppointmentsMonth: plan.maxAppointmentsMonth
                               ? String(plan.maxAppointmentsMonth)
                               : "",
@@ -228,6 +234,7 @@ export default async function AdminPlansPage({
                             features: features.join("\n"),
                             active: plan.active,
                             isDemo: plan.isDemo,
+                            highlight: plan.highlight,
                           }}
                         />
                       </div>
@@ -244,10 +251,9 @@ export default async function AdminPlansPage({
         <p className="font-semibold text-slate-700">Sobre a cobrança</p>
         <p className="mt-1">
           As assinaturas são processadas pelo Pagar.me via Pix ou cartão de crédito. O webhook
-          do gateway atualiza o status automaticamente; o registro manual em Estabelecimentos
-          serve para casos excepcionais, como cortesia ou ajuste de suporte.
-          Os limites de profissionais, serviços e agendamentos por mês são aplicados pelo
-          servidor.
+          do gateway atualiza o status automaticamente; o registro manual em Clientes serve para
+          casos excepcionais, como cortesia ou ajuste de suporte. Os limites de profissionais,
+          serviços, unidades, acessos e agendamentos por mês são aplicados pelo servidor.
         </p>
       </div>
     </div>

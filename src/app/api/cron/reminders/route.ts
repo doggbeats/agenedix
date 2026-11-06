@@ -1,14 +1,27 @@
+import crypto from "node:crypto";
 import { sendDueReminders } from "@/lib/notifications";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
+/**
+ * Compara segredos em tempo constante. Comparar com `===` vaza, pelo tempo de
+ * resposta, quantos caracteres do segredo o atacante já acertou.
+ */
+function secretMatches(candidate: string | null, secret: string): boolean {
+  if (!candidate) return false;
+  const provided = Buffer.from(candidate);
+  const expected = Buffer.from(secret);
+  if (provided.length !== expected.length) return false;
+  return crypto.timingSafeEqual(provided, expected);
+}
+
 function authorized(request: Request, secret: string): boolean {
   const header = request.headers.get("authorization");
   if (header?.startsWith("Bearer ")) {
-    return header.slice(7).trim() === secret;
+    return secretMatches(header.slice(7).trim(), secret);
   }
-  return request.headers.get("x-cron-secret") === secret;
+  return secretMatches(request.headers.get("x-cron-secret"), secret);
 }
 
 async function run(request: Request) {

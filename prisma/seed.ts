@@ -29,7 +29,7 @@ function secret(name: string): string {
   return value;
 }
 
-const ADMIN_EMAIL = env("SEED_ADMIN_EMAIL", "admin@agendix.app");
+const ADMIN_EMAIL = env("SEED_ADMIN_EMAIL", "admin.1973@agendix.app");
 const ADMIN_PASSWORD = secret("SEED_ADMIN_PASSWORD");
 const OWNER_PASSWORD = secret("SEED_OWNER_PASSWORD");
 const PROFESSIONAL_PASSWORD = secret("SEED_PROFESSIONAL_PASSWORD");
@@ -193,11 +193,15 @@ async function seedUser(input: {
       email: input.email,
       passwordHash,
       isPlatformAdmin: input.isPlatformAdmin ?? false,
+      emailVerifiedAt: new Date(),
+      emailVerificationExempt: true,
     },
     update: {
       name: input.name,
       passwordHash,
       isPlatformAdmin: input.isPlatformAdmin ?? false,
+      emailVerifiedAt: new Date(),
+      emailVerificationExempt: true,
     },
   });
 }

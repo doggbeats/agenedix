@@ -36,8 +36,10 @@ export async function enforceRateLimit(
       retryAfter: Math.max(1, Math.ceil((expiresAt.getTime() - now) / 1000)),
     };
   } catch (error) {
+    // Falha fechada: se o contador não pode ser gravado, é mais seguro negar a
+    // operação do que liberar tentativas ilimitadas de login/cadastro/booking.
     console.error("Rate limit indisponível", error);
-    return { allowed: true, retryAfter: 0 };
+    return { allowed: false, retryAfter: Math.max(30, windowSeconds) };
   }
 }
 

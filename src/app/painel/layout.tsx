@@ -1,11 +1,12 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { ExternalLink, LogOut } from "lucide-react";
+import { ExternalLink, LogOut, ArrowLeft, ShieldCheck, MailWarning } from "lucide-react";
 import { requirePanel } from "@/lib/auth/session";
 import { ROLE_LABELS, APP_NAME } from "@/lib/constants";
 import { isManagerRole } from "@/lib/permissions";
 import { logoutAction } from "@/lib/actions/auth";
+import { stopImpersonationAction } from "@/lib/actions/admin";
 import { Logo } from "@/components/ui";
 import {
   MobilePanelNav,
@@ -110,6 +111,43 @@ export default async function PanelLayout({ children }: { children: ReactNode })
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col">
+          {auth.impersonating && (
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-amber-300 bg-amber-50 px-4 py-2.5 text-[11px] text-amber-900 sm:px-6">
+              <p className="flex min-w-0 items-center gap-2">
+                <ShieldCheck className="h-4 w-4 shrink-0" aria-hidden />
+                <span className="min-w-0">
+                  <strong>Modo administrador:</strong> você está no painel de{" "}
+                  <strong>{auth.establishment.name}</strong> como dono. As ações ficam em
+                  auditoria.
+                </span>
+              </p>
+              <form action={stopImpersonationAction}>
+                <button
+                  type="submit"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-amber-400 bg-white px-3 py-1.5 text-[11px] font-semibold text-amber-900 transition hover:bg-amber-100"
+                >
+                  <ArrowLeft className="h-3.5 w-3.5" aria-hidden /> Voltar ao admin
+                </button>
+              </form>
+            </div>
+          )}
+          {!auth.impersonating && !auth.user.emailVerifiedAt && (
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-amber-300 bg-amber-50 px-4 py-2.5 text-[11px] text-amber-900 sm:px-6">
+              <p className="flex min-w-0 items-center gap-2">
+                <MailWarning className="h-4 w-4 shrink-0" aria-hidden />
+                <span className="min-w-0">
+                  <strong>Confirme seu e-mail.</strong> Enviamos um link para{" "}
+                  <strong>{auth.user.email}</strong>. Confirme para manter o acesso seguro.
+                </span>
+              </p>
+              <Link
+                href="/verificar-email/pendente"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-amber-400 bg-white px-3 py-1.5 text-[11px] font-semibold text-amber-900 transition hover:bg-amber-100"
+              >
+                Confirmar e-mail
+              </Link>
+            </div>
+          )}
           <header className="sticky top-0 z-30 border-b border-line bg-white/90 backdrop-blur-md">
             <div className="flex items-center justify-between gap-3 px-4 py-3 sm:px-6">
               <div className="flex min-w-0 items-center gap-3">

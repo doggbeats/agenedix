@@ -79,7 +79,7 @@ export async function consumeEmailVerificationToken(
 
   await prisma.user.update({
     where: { id: record.userId },
-    data: { emailVerifiedAt: new Date() },
+    data: { emailVerifiedAt: new Date(), emailVerificationExempt: false },
   });
   return { userId: record.userId };
 }

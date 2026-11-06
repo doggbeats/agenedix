@@ -7,6 +7,7 @@ import {
   CreditCard,
   Sparkles,
   TrendingUp,
+  Users,
 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import {
@@ -45,10 +46,18 @@ const ACTION_LABELS: Record<string, string> = {
   "customer.anonymized": "Dados de cliente anonimizados",
   "platform.establishment.active": "Estabelecimento reativado",
   "platform.establishment.suspended": "Estabelecimento suspenso",
+  "platform.establishment.archived": "Estabelecimento apagado",
+  "platform.establishment.restored": "Estabelecimento restaurado",
+  "platform.establishment.deleted": "Estabelecimento excluído definitivamente",
+  "platform.subscription.created": "Assinatura criada",
   "platform.subscription.updated": "Assinatura atualizada",
+  "platform.payment.registered": "Pagamento registrado",
   "platform.plan.created": "Plano criado",
   "platform.plan.updated": "Plano atualizado",
   "platform.plan.toggled": "Plano ativado/desativado",
+  "platform.impersonation.started": "Acesso ao painel do cliente",
+  "platform.impersonation.stopped": "Retorno ao admin",
+  "platform.user.email.verified": "E-mail verificado manualmente",
   "subscription.change_requested": "Troca de plano solicitada",
 };
 
@@ -214,6 +223,9 @@ export default async function AdminDashboardPage() {
         description="Acompanhe estabelecimentos, assinaturas e a operação sem acessar dados de clientes."
         actions={
           <>
+            <Link href="/admin/clientes" className={buttonSecondary}>
+              <Users className="h-4 w-4" /> Clientes
+            </Link>
             <Link href="/admin/estabelecimentos" className={buttonSecondary}>
               <Building2 className="h-4 w-4" /> Estabelecimentos
             </Link>
@@ -343,7 +355,7 @@ export default async function AdminDashboardPage() {
                       <Badge tone="neutral">Sem plano</Badge>
                     )}
                     <Link
-                      href={`/admin/estabelecimentos?q=${encodeURIComponent(item.name)}`}
+                      href={`/admin/clientes/${item.id}`}
                       className="rounded-md border border-line bg-white px-2.5 py-1.5 text-[11px] font-semibold text-slate-600 hover:bg-paper"
                     >
                       Gerenciar
@@ -383,7 +395,7 @@ export default async function AdminDashboardPage() {
           )}
           <div className="border-t border-line px-4 py-3 sm:px-5">
             <Link
-              href="/admin/estabelecimentos"
+              href="/admin/clientes"
               className="text-xs font-semibold text-slate-600 hover:text-brand"
             >
               Revisar assinaturas

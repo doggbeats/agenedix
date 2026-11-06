@@ -21,7 +21,7 @@ function secret(name: string): string {
 const ROUNDS = 10;
 
 async function main() {
-  const email = env("SEED_ADMIN_EMAIL", "admin@agendix.app");
+  const email = env("SEED_ADMIN_EMAIL", "admin.1973@agendix.app");
   const password = secret("SEED_ADMIN_PASSWORD");
   const name = env("SEED_ADMIN_NAME", "Administrador da plataforma");
 

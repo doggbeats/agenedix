@@ -5,9 +5,13 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { isManagerRole } from "@/lib/permissions";
 import { isSubscriptionUsable } from "@/lib/subscription";
+import { isPlatformAdminUser } from "@/lib/auth/platform-admin";
+import { requiresEmailVerification } from "@/lib/auth/email-verification";
 
 export const SESSION_COOKIE = "agendix_session";
 export const ESTABLISHMENT_COOKIE = "agendix_establishment";
+export const ADMIN_IMPERSONATION_COOKIE = "agendix_admin_impersonation";
+export const ADMIN_IMPERSONATION_MAX_AGE = 60 * 60 * 2;
 const SESSION_DAYS = 7;
 
 function hashToken(token: string): string {
@@ -86,6 +90,7 @@ export async function destroySession(): Promise<void> {
   }
   store.delete(SESSION_COOKIE);
   store.delete(ESTABLISHMENT_COOKIE);
+  store.delete(ADMIN_IMPERSONATION_COOKIE);
 }
 
 export async function setActiveEstablishment(establishmentId: string): Promise<void> {
@@ -108,7 +113,44 @@ export const getAuthContext = cache(async () => {
 
   const store = await cookies();
   const requested = store.get(ESTABLISHMENT_COOKIE)?.value;
-  const memberships = session.user.memberships;
+  // Estabelecimentos arquivados não dão mais acesso ao painel.
+  const memberships = session.user.memberships.filter(
+    (membership) => membership.establishment.archivedAt === null,
+  );
+
+  // O administrador da plataforma pode abrir o painel de qualquer cliente.
+  // A sessão continua sendo dele; apenas trocamos o contexto ativo para o
+  // estabelecimento escolhido, sem criar vínculo ou alterar a equipe real.
+  const impersonationId = store.get(ADMIN_IMPERSONATION_COOKIE)?.value;
+  if (isPlatformAdminUser(session.user) && impersonationId) {
+    const establishment = await prisma.establishment.findFirst({
+      where: { id: impersonationId, archivedAt: null },
+    });
+
+    if (establishment) {
+      const impersonatedMembership: AuthMembership = {
+        id: `admin-impersonation-${establishment.id}`,
+        userId: session.user.id,
+        establishmentId: establishment.id,
+        role: "OWNER",
+        professionalId: null,
+        createdAt: session.user.createdAt,
+        establishment,
+        professional: null,
+      };
+
+      return {
+        user: session.user,
+        memberships,
+        activeMembership: impersonatedMembership,
+        establishment,
+        role: "OWNER" as const,
+        professionalId: null,
+        impersonating: true,
+      };
+    }
+  }
+
   const active =
     memberships.find((membership) => membership.establishmentId === requested) ??
     memberships[0] ??
@@ -121,6 +163,7 @@ export const getAuthContext = cache(async () => {
     establishment: active?.establishment ?? null,
     role: active?.role ?? null,
     professionalId: active?.professionalId ?? null,
+    impersonating: false,
   };
 });
 
@@ -148,11 +191,25 @@ export async function requirePanel() {
     redirect("/login?erro=sem-estabelecimento");
   }
 
+  // Contas novas só usam o painel depois de confirmar o e-mail.
+  // O admin da plataforma e o modo administrador ficam dispensados.
+  if (
+    !auth.impersonating &&
+    !isPlatformAdminUser(auth.user) &&
+    requiresEmailVerification(auth.user)
+  ) {
+    redirect("/verificar-email/pendente");
+  }
+
   // O painel só abre depois que o plano está pago ou em teste válido.
   // Sem isso, qualquer conta recém-criada teria acesso mesmo sem pagar.
-  const subscription = await getPanelSubscription(auth.establishment.id);
-  if (!isSubscriptionUsable(subscription)) {
-    redirect("/checkout");
+  // O administrador da plataforma entra mesmo sem assinatura para poder
+  // diagnosticar e corrigir o cadastro do cliente.
+  if (!auth.impersonating) {
+    const subscription = await getPanelSubscription(auth.establishment.id);
+    if (!isSubscriptionUsable(subscription)) {
+      redirect("/checkout");
+    }
   }
 
   return {
@@ -178,7 +235,7 @@ export async function requireManager() {
 
 export async function requirePlatformAdmin() {
   const auth = await requireUser();
-  if (!auth.user.isPlatformAdmin) redirect("/painel");
+  if (!isPlatformAdminUser(auth.user)) redirect("/painel");
   return auth;
 }
 

@@ -8,10 +8,12 @@ import {
   LayoutDashboard,
   ReceiptText,
   ScrollText,
+  Users,
 } from "lucide-react";
 
 const items = [
   { href: "/admin", label: "Visão geral", icon: LayoutDashboard, exact: true },
+  { href: "/admin/clientes", label: "Clientes", icon: Users },
   { href: "/admin/estabelecimentos", label: "Estabelecimentos", icon: Building2 },
   { href: "/admin/planos", label: "Planos", icon: CreditCard },
   { href: "/admin/pagamentos", label: "Pagamentos", icon: ReceiptText },

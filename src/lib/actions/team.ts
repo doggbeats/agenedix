@@ -6,6 +6,7 @@ import { requireOwner } from "@/lib/auth/session";
 import { recordAudit } from "@/lib/audit";
 import { hashPassword } from "@/lib/auth/password";
 import { sendEmail } from "@/lib/email";
+import { createEmailVerificationLink } from "@/lib/auth/send-verification";
 import { getAppUrl } from "@/lib/urls";
 import {
   failure,
@@ -89,8 +90,14 @@ export async function inviteTeamMemberAction(
 
   const passwordHash = await hashPassword(input.password);
 
+  let invitedUser: {
+    id: string;
+    name: string;
+    email: string;
+    emailVerifiedAt: Date | null;
+  };
   try {
-    await prisma.$transaction(async (tx) => {
+    invitedUser = await prisma.$transaction(async (tx) => {
       const user =
         existingUser ??
         (await tx.user.create({
@@ -123,10 +130,26 @@ export async function inviteTeamMemberAction(
           },
         },
       });
+
+      return {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        emailVerifiedAt: user.emailVerifiedAt,
+      };
     });
   } catch (error) {
     console.error("Falha ao convidar membro", error);
     return failure("Não foi possível criar o acesso. Tente novamente.");
+  }
+
+  let verificationLink: string | null = null;
+  if (!invitedUser.emailVerifiedAt) {
+    try {
+      verificationLink = await createEmailVerificationLink(invitedUser.id);
+    } catch (error) {
+      console.error("Falha ao gerar verificação do convite", error);
+    }
   }
 
   await sendEmail({
@@ -143,6 +166,14 @@ export async function inviteTeamMemberAction(
           "",
           `Use sua senha atual para entrar em ${getAppUrl()}/login.`,
           "",
+          ...(verificationLink
+            ? [
+                "Confirme seu e-mail para liberar o painel:",
+                verificationLink,
+                "O link expira em 24 horas.",
+                "",
+              ]
+            : []),
           "Se você não esperava este convite, ignore esta mensagem.",
         ].join("\n")
       : [
@@ -156,6 +187,14 @@ export async function inviteTeamMemberAction(
           "",
           `Entre em ${getAppUrl()}/login e altere sua senha após o primeiro acesso.`,
           "",
+          ...(verificationLink
+            ? [
+                "Confirme seu e-mail para liberar o painel:",
+                verificationLink,
+                "O link expira em 24 horas.",
+                "",
+              ]
+            : []),
           "Se você não esperava este convite, ignore esta mensagem.",
         ].join("\n"),
   }).catch((error) => console.error("Falha ao enviar convite", error));

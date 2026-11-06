@@ -8,7 +8,12 @@ export const dynamic = "force-dynamic";
 
 function csvCell(value: string | number | null | undefined): string {
   const text = value == null ? "" : String(value);
-  return `"${text.replace(/"/g, '""')}"`;
+  // Mitiga CSV/formula injection no Excel, LibreOffice e Google Sheets.
+  // Valores que começam com = + - @ (ou tab/CR) são interpretados como
+  // fórmula; o apóstrofo força a célula a permanecer texto.
+  const safe =
+    /^[=+\-@\t\r]/.test(text) || /^\s+[=+\-@]/.test(text) ? `'${text}` : text;
+  return `"${safe.replace(/"/g, '""')}"`;
 }
 
 export async function GET(request: Request) {

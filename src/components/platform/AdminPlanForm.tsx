@@ -15,11 +15,14 @@ export type PlanFormValues = {
   priceYearly: string;
   maxProfessionals: string;
   maxServices: string;
+  maxUnits: string;
+  maxUsers: string;
   maxAppointmentsMonth: string;
   trialDays: string;
   features: string;
   active: boolean;
   isDemo: boolean;
+  highlight: boolean;
 };
 
 const emptyPlan: PlanFormValues = {
@@ -30,11 +33,14 @@ const emptyPlan: PlanFormValues = {
   priceYearly: "0",
   maxProfessionals: "3",
   maxServices: "20",
+  maxUnits: "1",
+  maxUsers: "2",
   maxAppointmentsMonth: "",
   trialDays: "14",
   features: "",
   active: true,
   isDemo: false,
+  highlight: false,
 };
 
 export function AdminPlanForm({
@@ -164,6 +170,38 @@ export function AdminPlanForm({
           <FieldError messages={state.fieldErrors?.maxServices} />
         </div>
         <div>
+          <label className={labelClass} htmlFor={`plan-units-${plan.id ?? "new"}`}>
+            Máximo de unidades
+          </label>
+          <input
+            id={`plan-units-${plan.id ?? "new"}`}
+            name="maxUnits"
+            type="number"
+            min="1"
+            max="50"
+            required
+            defaultValue={plan.maxUnits}
+            className={inputClass}
+          />
+          <FieldError messages={state.fieldErrors?.maxUnits} />
+        </div>
+        <div>
+          <label className={labelClass} htmlFor={`plan-users-${plan.id ?? "new"}`}>
+            Máximo de acessos ao painel
+          </label>
+          <input
+            id={`plan-users-${plan.id ?? "new"}`}
+            name="maxUsers"
+            type="number"
+            min="1"
+            max="500"
+            required
+            defaultValue={plan.maxUsers}
+            className={inputClass}
+          />
+          <FieldError messages={state.fieldErrors?.maxUsers} />
+        </div>
+        <div>
           <label className={labelClass} htmlFor={`plan-appointments-${plan.id ?? "new"}`}>
             Limite de agendamentos/mês
           </label>
@@ -211,7 +249,7 @@ export function AdminPlanForm({
         </div>
       </div>
 
-      <div className="grid gap-2 rounded-lg bg-paper px-3 py-3 sm:grid-cols-2">
+      <div className="grid gap-2 rounded-lg bg-paper px-3 py-3 sm:grid-cols-3">
         <label className="flex items-start gap-2 text-xs font-medium text-slate-700">
           <input
             type="checkbox"
@@ -223,6 +261,20 @@ export function AdminPlanForm({
             Plano ativo
             <span className="mt-0.5 block font-normal text-slate-500">
               Aparece no site e pode ser solicitado por estabelecimentos.
+            </span>
+          </span>
+        </label>
+        <label className="flex items-start gap-2 text-xs font-medium text-slate-700">
+          <input
+            type="checkbox"
+            name="highlight"
+            defaultChecked={plan.highlight}
+            className="mt-0.5 h-4 w-4 rounded border-slate-300 accent-brand"
+          />
+          <span>
+            Plano em destaque
+            <span className="mt-0.5 block font-normal text-slate-500">
+              Recebe o selo de recomendado no site e no painel.
             </span>
           </span>
         </label>

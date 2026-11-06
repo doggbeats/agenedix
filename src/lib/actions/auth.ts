@@ -19,11 +19,13 @@ import { loginSchema, passwordRecoverySchema, passwordResetSchema, signupSchema 
 import { ensureUniqueSlug } from "@/lib/slug";
 import { normalizePhone } from "@/lib/format";
 import { BRAND_COLOR } from "@/lib/constants";
+import { isPlatformAdminUser } from "@/lib/auth/platform-admin";
 import {
   consumePasswordResetToken,
-  createEmailVerificationToken,
   createPasswordResetToken,
 } from "@/lib/auth/tokens";
+import { sendEmailVerification } from "@/lib/auth/send-verification";
+import { requiresEmailVerification } from "@/lib/auth/email-verification";
 import { sendEmail } from "@/lib/email";
 import { getAppUrl } from "@/lib/urls";
 
@@ -62,9 +64,13 @@ export async function loginAction(
     return failure("E-mail ou senha inválidos.");
   }
 
-  if (!user.isPlatformAdmin && user.memberships.length === 0) {
+  const accessibleMemberships = user.memberships.filter(
+    (membership) => membership.establishment.archivedAt === null,
+  );
+
+  if (!isPlatformAdminUser(user) && accessibleMemberships.length === 0) {
     return failure(
-      "Esta conta não está vinculada a nenhum estabelecimento. Fale com o responsável pelo negócio.",
+      "Esta conta não está vinculada a nenhum estabelecimento ativo. Fale com o responsável pelo negócio.",
     );
   }
 
@@ -73,8 +79,8 @@ export async function loginAction(
     data: { lastLoginAt: new Date() },
   });
   await createSession(user.id);
-  if (user.memberships[0]) {
-    await setActiveEstablishment(user.memberships[0].establishmentId);
+  if (accessibleMemberships[0]) {
+    await setActiveEstablishment(accessibleMemberships[0].establishmentId);
   }
   await recordAudit({
     actorUserId: user.id,
@@ -84,8 +90,11 @@ export async function loginAction(
     ip,
   });
 
-  if (user.isPlatformAdmin && user.memberships.length === 0) {
+  if (isPlatformAdminUser(user)) {
     redirect("/admin");
+  }
+  if (requiresEmailVerification(user)) {
+    redirect("/verificar-email/pendente");
   }
   redirect("/painel");
 }
@@ -142,7 +151,10 @@ export async function signupAction(
   const whatsapp = input.whatsapp ? normalizePhone(input.whatsapp) : phone;
   const passwordHash = await hashPassword(input.password);
 
-  let result: { user: { id: string }; establishment: { id: string } };
+  let result: {
+    user: { id: string; name: string; email: string };
+    establishment: { id: string };
+  };
   try {
     result = await prisma.$transaction(async (tx) => {
       const slug = await ensureUniqueSlug(tx, input.businessName);
@@ -255,29 +267,65 @@ export async function signupAction(
   await createSession(result.user.id);
   await setActiveEstablishment(result.establishment.id);
 
-  try {
-    const verificationToken = await createEmailVerificationToken(result.user.id);
-    const verifyUrl = `${getAppUrl()}/verificar-email?token=${encodeURIComponent(verificationToken)}`;
-    await sendEmail({
-      to: input.email,
-      subject: "Confirme seu e-mail no AgendamentoON",
-      text: [
-        `Olá, ${input.ownerName}!`,
-        "",
-        `Sua conta em ${input.businessName} foi criada no AgendamentoON.`,
-        "",
-        "Confirme seu e-mail para garantir o acesso e o recebimento de avisos:",
-        verifyUrl,
-        "",
-        "O link expira em 24 horas. Se você não criou esta conta, ignore esta mensagem.",
-      ].join("\n"),
-    });
-  } catch (error) {
-    console.error("Falha ao enviar verificação de e-mail", error);
+  const verification = await sendEmailVerification(
+    {
+      id: result.user.id,
+      name: result.user.name,
+      email: result.user.email,
+    },
+    { businessName: input.businessName },
+  );
+  if (!verification.ok) {
+    console.error("Falha ao enviar verificação de e-mail", verification.error);
   }
 
   revalidatePath("/", "layout");
-  redirect("/checkout?plano=" + encodeURIComponent(plan.slug));
+  const pendingParams = new URLSearchParams({ novo: "1" });
+  if (!verification.ok) {
+    pendingParams.set(
+      "erro",
+      verification.error ?? "Não foi possível enviar o e-mail de confirmação.",
+    );
+  }
+  redirect(`/verificar-email/pendente?${pendingParams.toString()}`);
+}
+
+/**
+ * Reenvia o link de confirmação para o usuário logado.
+ */
+export async function resendEmailVerificationAction(): Promise<void> {
+  const auth = await requireUser();
+  if (isPlatformAdminUser(auth.user)) redirect("/admin");
+  if (auth.user.emailVerifiedAt) {
+    redirect(auth.activeMembership ? "/painel" : "/login");
+  }
+
+  const limit = await enforceRateLimit("email-verification", auth.user.id, 3, 900);
+  if (!limit.allowed) {
+    redirect(
+      `/verificar-email/pendente?erro=${encodeURIComponent(
+        "Muitas solicitações. Aguarde alguns minutos antes de pedir outro link.",
+      )}`,
+    );
+  }
+
+  const result = await sendEmailVerification(auth.user, {
+    businessName: auth.establishment?.name,
+  });
+
+  if (!result.ok) {
+    redirect(
+      `/verificar-email/pendente?erro=${encodeURIComponent(
+        result.error ?? "Não foi possível enviar o e-mail agora. Tente novamente.",
+      )}`,
+    );
+  }
+
+  redirect(
+    `/verificar-email/pendente?ok=${encodeURIComponent(
+      `Enviamos um novo link de confirmação para ${auth.user.email}.`,
+    )}`,
+  );
 }
 
 export async function logoutAction(): Promise<void> {

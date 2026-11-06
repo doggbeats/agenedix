@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/prisma";
+import { clientIp } from "@/lib/http";
+import { enforceRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import {
   getInfinitePayConfig,
   normalizeInfinitePayEvent,
@@ -19,6 +21,16 @@ export const dynamic = "force-dynamic";
  * POST anônimo consiga atingir um pedido que não exista.
  */
 export async function POST(request: Request) {
+  // A InfinitePay não assina o webhook, então limitamos a origem por IP para
+  // evitar que um atacante use o endpoint como amplificador de chamadas.
+  const limit = await enforceRateLimit(
+    "webhooks.infinitepay",
+    clientIp(request),
+    300,
+    60,
+  );
+  if (!limit.allowed) return rateLimitResponse(limit.retryAfter);
+
   const config = getInfinitePayConfig();
   if (!config.configured) {
     return Response.json(
